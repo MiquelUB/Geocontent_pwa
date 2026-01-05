@@ -1,36 +1,159 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# GeoContent PWA 🗺️
 
-## Getting Started
+Progressive Web Application de geolocalización que entrega contenido multimedia
+contextualizado basado en la ubicación del usuario mediante geofencing
+inteligente.
 
-First, run the development server:
+## 🚀 Características
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- 📍 **Geolocalización en tiempo real** con OpenStreetMap
+- 🎯 **Geofencing inteligente** con Turf.js
+- 🎵 **Contenido multimedia** (audio, video, imágenes, texto, PDF)
+- 🎮 **Gamificación** con sistema de puntos y logros
+- 💬 **Comentarios y ratings** de ubicaciones
+- 🧩 **Mini-quizzes** interactivos
+- 👤 **Perfiles de usuario** con estadísticas
+- 🏆 **Leaderboard** global
+- 📱 **PWA instalable** con funcionalidad offline
+- 🔐 **Autenticación** con Supabase (Google + Email)
+
+## 🛠️ Stack Tecnológico
+
+- **Framework:** Next.js 14+ (App Router)
+- **Lenguaje:** TypeScript
+- **Estilos:** Tailwind CSS
+- **Backend:** Supabase (PostgreSQL + PostGIS)
+- **Autenticación:** Supabase Auth
+- **Almacenamiento:** Supabase Storage
+- **Mapas:** Leaflet + OpenStreetMap
+- **Geofencing:** Turf.js
+- **Formularios:** React Hook Form + Zod
+- **Iconos:** Lucide React
+- **PWA:** next-pwa
+
+## 📋 Requisitos Previos
+
+- Node.js 18+
+- npm o yarn
+- Cuenta en Supabase
+
+## 🔧 Instalación
+
+1. **Clonar el repositorio**
+   ```bash
+   git clone https://github.com/tu-usuario/geocontent-pwa.git
+   cd geocontent-pwa
+   ```
+
+2. **Instalar dependencias**
+   ```bash
+   npm install
+   ```
+
+3. **Configurar variables de entorno**
+
+   Crea un archivo `.env.local` en la raíz del proyecto:
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=tu_supabase_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_supabase_anon_key
+   SUPABASE_SERVICE_ROLE_KEY=tu_service_role_key
+   NEXT_PUBLIC_APP_URL=http://localhost:3000
+   ```
+
+4. **Configurar Supabase**
+
+   Ver [setup_guide.md](./docs/setup_guide.md) para instrucciones detalladas.
+
+5. **Ejecutar en desarrollo**
+   ```bash
+   npm run dev
+   ```
+
+   Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
+
+## 📁 Estructura del Proyecto
+
+```
+geocontent-pwa/
+├── app/                    # Next.js App Router
+│   ├── (auth)/            # Rutas de autenticación
+│   ├── (app)/             # Rutas de aplicación
+│   ├── admin/             # Panel de administración
+│   └── api/               # API Routes
+├── components/            # Componentes React
+│   ├── map/              # Componentes de mapa
+│   ├── media/            # Reproductores multimedia
+│   ├── quiz/             # Componentes de quiz
+│   └── ui/               # Componentes UI base
+├── lib/                   # Utilidades y servicios
+│   ├── supabase/         # Clientes Supabase
+│   ├── services/         # Servicios de negocio
+│   └── hooks/            # React Hooks personalizados
+├── public/               # Archivos estáticos
+│   ├── icons/            # Iconos PWA
+│   └── manifest.json     # PWA Manifest
+└── next.config.js        # Configuración Next.js
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🎮 Uso
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Para Usuarios
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. **Permitir geolocalización** cuando la app lo solicite
+2. **Explorar el mapa** para ver geocercas disponibles
+3. **Entrar en geocercas** para descubrir contenido multimedia
+4. **Completar quizzes** para ganar puntos
+5. **Dejar comentarios** y ratings en ubicaciones
+6. **Ver tu perfil** en "Mi Cuenta" para ver estadísticas
 
-## Learn More
+### Para Administradores
 
-To learn more about Next.js, take a look at the following resources:
+1. **Acceder al panel admin** en `/admin`
+2. **Crear geocercas** dibujando polígonos en el mapa
+3. **Subir contenido multimedia** y asociarlo a geocercas
+4. **Crear quizzes** para cada ubicación
+5. **Gestionar usuarios** y contenido
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🚀 Despliegue en Vercel
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. **Push a GitHub**
+   ```bash
+   git add .
+   git commit -m "Initial commit"
+   git push origin main
+   ```
 
-## Deploy on Vercel
+2. **Conectar con Vercel**
+   - Ve a [vercel.com](https://vercel.com)
+   - Importa tu repositorio
+   - Configura las variables de entorno
+   - Deploy automático
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📚 Documentación
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [Plan de Implementación](./docs/implementation_plan.md)
+- [Guía de Configuración](./docs/setup_guide.md)
+- [Extensiones de VS Code](./docs/vscode_extensions.md)
+
+## 🤝 Contribuir
+
+Las contribuciones son bienvenidas. Por favor:
+
+1. Fork el proyecto
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
+
+## 📄 Licencia
+
+Este proyecto está bajo la Licencia MIT.
+
+## 👨‍💻 Autor
+
+Desarrollado con ❤️ para crear experiencias de contenido basadas en ubicación.
+
+---
+
+**Estado del Proyecto:** ✅ Fase 1 Completada - Listo para desarrollo de base de
+datos
