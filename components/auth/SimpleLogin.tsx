@@ -8,7 +8,7 @@ import { motion } from "motion/react";
 import { Loader2 } from "lucide-react";
 
 interface SimpleLoginProps {
-  onLoginSuccess: (user: any) => void;
+  onLoginSuccess: (user: { id: string; email?: string }) => void;
 }
 
 export function SimpleLogin({ onLoginSuccess }: SimpleLoginProps) {
@@ -37,7 +37,7 @@ export function SimpleLogin({ onLoginSuccess }: SimpleLoginProps) {
       } else {
         setError(result.error || "Error desconegut");
       }
-    } catch (err) {
+    } catch {
       setError("Error de connexió");
     } finally {
       setIsLoading(false);
@@ -53,7 +53,7 @@ export function SimpleLogin({ onLoginSuccess }: SimpleLoginProps) {
       >
         <div className="mb-6">
             <h1 className="text-2xl font-serif font-bold text-pallars-green mb-2">Benvingut/da</h1>
-            <p className="text-gray-500 text-sm">Introdueix les teves dades per començar l'aventura</p>
+            <p className="text-gray-500 text-sm">Introdueix les teves dades per començar l&apos;aventura</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">

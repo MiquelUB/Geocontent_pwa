@@ -5,17 +5,35 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { deleteLegend, createLegend, updateLegend } from "@/lib/actions";
 import { useRouter } from "next/navigation";
 
-export default function AdminDashboard({ legends, profiles }: { legends: any[], profiles: any[] }) {
+interface Legend {
+  id: string;
+  title: string;
+  category: string;
+  location_name: string;
+  latitude: number;
+  longitude: number;
+  [key: string]: unknown;
+}
+
+interface Profile {
+  id: string;
+  username?: string;
+  role: string;
+  level: number;
+  [key: string]: unknown;
+}
+
+export default function AdminDashboard({ legends, profiles }: { legends: Legend[], profiles: Profile[] }) {
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [editingLegend, setEditingLegend] = useState<any>(null);
+  const [editingLegend, setEditingLegend] = useState<Legend | null>(null);
 
   async function handleDelete(id: string) {
     if(!confirm("Estàs segur que vols esborrar aquesta llegenda?")) return;
@@ -24,7 +42,7 @@ export default function AdminDashboard({ legends, profiles }: { legends: any[], 
     router.refresh();
   }
 
-  function handleEditClick(legend: any) {
+  function handleEditClick(legend: Legend) {
     setEditingLegend(legend);
     setIsDialogOpen(true);
   }
@@ -60,7 +78,7 @@ export default function AdminDashboard({ legends, profiles }: { legends: any[], 
   return (
     <div className="container mx-auto p-6 bg-background min-h-screen">
       <h1 className="text-3xl font-serif font-bold text-pallars-green mb-8">
-        Panell d'Administració
+        Panell d&apos;Administració
       </h1>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -175,7 +193,7 @@ export default function AdminDashboard({ legends, profiles }: { legends: any[], 
                 <DialogHeader>
                 <DialogTitle>{editingLegend ? 'Editar Llegenda' : 'Afegir Nova Llegenda'}</DialogTitle>
                 <DialogDescription>
-                    Omple el formulari per {editingLegend ? 'actualitzar la' : 'crear una nova'} llegenda. Les coordenades s'han de posar en format decimal (WGS84).
+                    Omple el formulari per {editingLegend ? 'actualitzar la' : 'crear una nova'} llegenda. Les coordenades s&apos;han de posar en format decimal (WGS84).
                 </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="grid gap-4 py-4">
