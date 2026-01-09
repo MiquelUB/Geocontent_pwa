@@ -28,8 +28,7 @@ export default function Home() {
 
     useEffect(() => {
         if (geoError) {
-          console.log("Geolocation error:", geoError); 
-          // Optional: handle GPS error state here if strict dependency
+          // Geolocation error occurred - could show user notification
         }
     }, [geoError]);
 
@@ -58,14 +57,14 @@ export default function Home() {
              const savedUser = JSON.parse(savedUserSting);
              
              if (savedUser?.id) {
-               console.log("Validating session for:", savedUser.id);
+               // Validating saved session
                const profile = await getUserProfile(savedUser.id);
                
                if (profile) {
-                 console.log("Session valid.");
+                 // Session valid
                  setCurrentUser(profile);
                } else {
-                 console.warn("Invalid session found (User local but not in DB). Clearing.");
+                 // Invalid session - clearing
                  localStorage.removeItem("pallars_user");
                  setCurrentUser(null);
                }

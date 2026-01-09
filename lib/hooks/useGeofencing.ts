@@ -80,12 +80,11 @@ export function useGeofencing(
   // Configurar callbacks para eventos de entrada/salida
   useEffect(() => {
     const handleEnter = (event: GeofenceEvent) => {
-      console.log('🎯 Entrada en geocerca:', event.location.name)
-      // Aquí se puede mostrar notificación, reproducir contenido, etc.
+      // Geofence entered - notification could be shown here
     }
 
     const handleExit = (event: GeofenceEvent) => {
-      console.log('👋 Salida de geocerca:', event.location.name)
+      // Geofence exited - cleanup could be done here
     }
 
     geofencingService.onEnter(handleEnter)

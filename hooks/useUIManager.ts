@@ -18,13 +18,11 @@ export function useUIManager(): UIManagerHook {
 
   // 1. Abrir una nueva pantalla (Push to stack)
   const openScreen = useCallback((config: DashboardButtonConfig) => {
-    console.log('UIManager: Opening screen', config.label);
     setStack((prev) => [...prev, config]);
   }, []);
 
   // 2. Cerrar la pantalla actual (Pop from stack)
   const closeScreen = useCallback(() => {
-    console.log('UIManager: Closing top screen');
     setStack((prev) => {
       if (prev.length === 0) return prev;
       return prev.slice(0, -1);

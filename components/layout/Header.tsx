@@ -7,9 +7,10 @@ interface HeaderProps {
   visitedCount?: number
   unvisitedCount?: number
   nearbyCount?: number
+  onNavigateToProfile?: () => void
 }
 
-export default function Header({ visitedCount = 0, unvisitedCount = 0, nearbyCount = 0 }: HeaderProps) {
+export default function Header({ visitedCount = 0, unvisitedCount = 0, nearbyCount = 0, onNavigateToProfile }: HeaderProps) {
   const router = useRouter()
   const supabase = createClient()
 
@@ -19,23 +20,27 @@ export default function Header({ visitedCount = 0, unvisitedCount = 0, nearbyCou
     router.refresh()
   }
 
+  const handleProfileClick = () => {
+    // Navigate to profile screen if handler provided, otherwise do nothing
+    if (onNavigateToProfile) {
+      onNavigateToProfile()
+    }
+  }
+
   return (
     <header 
       className="relative w-full bg-cover bg-center bg-no-repeat"
       style={{
         backgroundImage: 'url(/header_sin_iconos.png)',
         height: 'auto',
-        aspectRatio: '375 / 100', // Adjusted for better mobile fit
+        aspectRatio: '375 / 100',
         minHeight: '100px',
         maxHeight: '180px'
       }}
     >
       {/* Transparent avatar button positioned over the left avatar figure */}
       <button
-        onClick={() => {
-          // TODO: Navigate to profile or settings page
-          console.log('Avatar clicked - navigate to profile')
-        }}
+        onClick={handleProfileClick}
         className="absolute bg-transparent hover:bg-white/10 transition-all duration-300 rounded-full"
         style={{
           left: '15px',
@@ -43,7 +48,6 @@ export default function Header({ visitedCount = 0, unvisitedCount = 0, nearbyCou
           transform: 'translateY(-50%)',
           width: '45px',
           height: '45px',
-          // Visual debugging border (remove after positioning is confirmed)
           border: '2px solid rgba(255, 255, 255, 0.3)'
         }}
         title="Perfil"

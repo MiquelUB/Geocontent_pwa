@@ -37,9 +37,7 @@ export function PallarsMapScreen({ onNavigate, focusLegend, userLocation }: Pall
 
   useEffect(() => {
     async function fetchData() {
-        console.log('Fetching legends from server...');
         const data = await getLegends();
-        console.log('Received legends:', data);
         if (data) {
              const mapped = data.map((l) => ({
                 id: l.id,
@@ -157,7 +155,6 @@ export function PallarsMapScreen({ onNavigate, focusLegend, userLocation }: Pall
                 className="relative cursor-pointer hover:scale-110 transition-transform"
                 onClick={(e) => {
                   e.stopPropagation();
-                  console.log("Marker CLICKED:", legend.title);
                   setSelectedLegend(legend);
                 }}
               >
@@ -198,7 +195,6 @@ export function PallarsMapScreen({ onNavigate, focusLegend, userLocation }: Pall
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             className="absolute bottom-4 left-4 right-4 z-50"
-            onLayoutAnimationComplete={() => console.log("Popup rendered for:", selectedLegend.title)}
           >
             <div className="bg-white rounded-lg p-4 shadow-xl border border-gray-200">
               <div className="flex gap-3">

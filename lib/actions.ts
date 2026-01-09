@@ -19,7 +19,6 @@ export async function getLegends() {
     return []
   }
 
-  console.log('SERVER getLegends found:', data?.length)
   return data
 }
 
@@ -285,7 +284,7 @@ export async function loginOrRegister(name: string, email: string) {
                             (authError as any).status === 422;
 
         if (isDuplicate) {
-             console.log("User exists in Auth but not Profiles. Attempting recovery...");
+             // User exists in Auth but not Profiles - attempting recovery
              
              const { data: { users }, error: listError } = await supabaseAdmin.auth.admin.listUsers();
              
@@ -298,9 +297,8 @@ export async function loginOrRegister(name: string, email: string) {
              const existingAuthUser = users?.find(u => u.email?.toLowerCase() === email.toLowerCase());
              
              if (existingAuthUser) {
-                 console.log("Recovered user ID:", existingAuthUser.id);
+                 // Found existing auth user - ensuring profile exists
                  
-                 // Found the ghost user! Let's ensure their profile exists.
                  const { error: upsertError } = await supabaseAdmin.from('profiles').upsert({
                     id: existingAuthUser.id,
                     username: name,
@@ -311,11 +309,8 @@ export async function loginOrRegister(name: string, email: string) {
                  });
                  
                  if (upsertError) {
-                    // CRITICAL DEBUG LOG
-                    console.error("CRITICAL: Recovery upsert failed!", JSON.stringify(upsertError));
+                    console.error("Recovery upsert failed:", JSON.stringify(upsertError));
                     return { success: false, error: "Profile creation failed: " + upsertError.message };
-                 } else {
-                    console.log("CRITICAL: Upsert success for recovery.");
                  }
 
                  

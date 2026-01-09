@@ -65,12 +65,11 @@ export function LegendDetailScreen({ legend, onNavigate, userLocation, currentUs
   // Record visit when unlocked
   useEffect(() => {
     if (isUnlocked && currentUser?.id && safeLegend.id) {
-       // Fire and forget
+       // Fire and forget - record visit in background
        recordVisit(currentUser.id, safeLegend.id)
          .then(res => {
             if (res.success && res.newLevel) {
-                // Optional: Show level up toast/notification
-                console.log("Leveled up!", res.newLevel);
+                // User leveled up - could show notification in future
             }
          });
     }
