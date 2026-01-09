@@ -1,6 +1,6 @@
 # 📊 Auditoría Completa del Repositorio GeoContent PWA
 
-**Fecha de Auditoría:** 9 de enero de 2026  
+**Fecha de Auditoría:** 9 de enero de 2025  
 **Repositorio:** MiquelUB/Geocontent_pwa  
 **Versión Analizada:** Rama `copilot/conduct-full-repository-audit`
 
@@ -699,4 +699,4 @@ Para preguntas o clarificaciones sobre esta auditoría, contactar al equipo de d
 
 **Documento generado automáticamente**  
 **Versión:** 1.0  
-**Fecha:** 9 de enero de 2026
+**Fecha:** 9 de enero de 2025

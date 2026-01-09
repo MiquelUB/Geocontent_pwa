@@ -348,5 +348,5 @@ Este documento contiene una lista de tareas priorizadas basadas en la auditoría
 
 ---
 
-**Última actualización:** 9 de enero de 2026  
+**Última actualización:** 9 de enero de 2025  
 **Versión:** 1.0

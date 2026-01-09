@@ -1,6 +1,6 @@
 # 📊 Resumen Ejecutivo - Auditoría GeoContent PWA
 
-**Fecha:** 9 de enero de 2026  
+**Fecha:** 9 de enero de 2025  
 **Estado:** ⚠️ REQUIERE ATENCIÓN INMEDIATA
 
 ---
@@ -208,4 +208,4 @@ Para más detalles, consultar el documento completo: **[AUDIT_REPORT.md](./AUDIT
 
 **Auditoría realizada por:** GitHub Copilot Agent  
 **Versión del informe:** 1.0  
-**Fecha de generación:** 9 de enero de 2026
+**Fecha de generación:** 9 de enero de 2025
