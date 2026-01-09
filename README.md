@@ -155,5 +155,20 @@ Desarrollado con ❤️ para crear experiencias de contenido basadas en ubicaci�
 
 ---
 
+## 🔍 Auditoría del Repositorio
+
+Se ha realizado una **auditoría completa del repositorio** (9 de enero de 2025). Los resultados están disponibles en:
+
+- 📄 **[AUDIT_INDEX.md](./AUDIT_INDEX.md)** - Índice y guía de navegación ⭐ **EMPEZAR AQUÍ**
+- 📄 **[AUDIT_SUMMARY.md](./AUDIT_SUMMARY.md)** - Resumen ejecutivo (5 min)
+- 📄 **[AUDIT_REPORT.md](./AUDIT_REPORT.md)** - Informe completo (30 min)
+- 📄 **[ACTION_ITEMS.md](./ACTION_ITEMS.md)** - 43 tareas priorizadas
+
+**Calificación:** ⭐⭐⭐☆☆ (3/5) | **Estado:** ⚠️ Requiere atención antes de producción
+
+**Tiempo estimado hasta production-ready:** 3-4 semanas
+
+---
+
 **Estado del Proyecto:** ✅ Fase 1 Completada - Listo para desarrollo de base de
 datos
