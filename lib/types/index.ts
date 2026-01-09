@@ -5,8 +5,8 @@ export interface Legend {
   title: string;
   category: string;
   location_name?: string;
-  latitude: number;
-  longitude: number;
+  latitude?: number;
+  longitude?: number;
   image_url?: string;
   hero_image_url?: string;
   audio_url?: string;
@@ -25,10 +25,11 @@ export interface Legend {
   video?: string;
   // Additional properties used by screens
   rating?: number;
-  distance?: number;
+  distance?: number | string;
   date?: string;
   categoryLabel?: string;
   featured?: boolean;
+  visited_at?: string;
 }
 
 export interface User {

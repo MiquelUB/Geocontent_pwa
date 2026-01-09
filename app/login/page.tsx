@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import { Legend } from '@/lib/types'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')

@@ -141,12 +141,12 @@ export function PallarsMapScreen({ onNavigate, focusLegend, userLocation }: Pall
       {/* Mapa principal */}
       <div className="relative w-full h-full bg-gray-100">
         <MapboxMap
-          center={legends.length > 0 ? [legends[0].coordinates.lng, legends[0].coordinates.lat] : [0.95, 42.4]} 
+          center={legends.length > 0 && legends[0].coordinates ? [legends[0].coordinates.lng, legends[0].coordinates.lat] : [0.95, 42.4]} 
           zoom={legends.length > 0 ? 12 : 10}
           userLocation={userLocation}
         >
 
-          {filteredLegends.map((legend, index) => (
+          {filteredLegends.map((legend, index) => legend.coordinates && (
             <Marker
               key={legend.id}
               longitude={legend.coordinates.lng}

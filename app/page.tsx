@@ -11,7 +11,7 @@ import { ErrorScreen } from "../components/screens/ErrorScreen";
 import { PallarsBottomNavigation } from "../components/PallarsBottomNavigation";
 import { useGeolocation } from "../hooks/useGeolocation";
 import { SimpleLogin } from "../components/auth/SimpleLogin";
-
+import { Legend } from "@/lib/types";
 
 
 export default function Home() {

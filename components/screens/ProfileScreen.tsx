@@ -25,6 +25,7 @@ interface UserProfile extends User {
   level?: number;
   total_points?: number;
   visited_count?: number;
+  xp?: number;
 }
 
 interface ProfileScreenProps {
@@ -66,10 +67,11 @@ export function ProfileScreen({ onNavigate, currentUser }: ProfileScreenProps) {
   }, [currentUser]);
   
   const handleUpdateAvatar = async (url: string) => {
+      if (!currentUser?.id) return;
       setUpdatingAvatar(true);
       const res = await updateProfileAvatar(currentUser.id, url);
       if (res.success) {
-          setUserProfile((prev: any) => ({ ...prev, avatar_url: url }));
+          setUserProfile((prev) => prev ? ({ ...prev, avatar_url: url }) : null);
           setIsAvatarModalOpen(false);
       }
       setUpdatingAvatar(false);
@@ -362,7 +364,7 @@ export function ProfileScreen({ onNavigate, currentUser }: ProfileScreenProps) {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-1 text-xs text-muted-foreground">
                         <Calendar className="w-3 h-3" />
-                        <span>{new Date(legend.visited_at).toLocaleDateString()}</span>
+                        <span>{legend.visited_at ? new Date(legend.visited_at).toLocaleDateString() : 'Unknown'}</span>
                       </div>
                     </div>
                   </div>

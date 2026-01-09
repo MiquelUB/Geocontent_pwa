@@ -78,7 +78,7 @@ export function LegendDetailScreen({ legend, onNavigate, userLocation, currentUs
 
   // Generate summary logic
 
-  const getSummary = (text: string) => {
+  const getSummary = (text: string | undefined) => {
     if (!text) return "";
     return text.length > 150 ? text.substring(0, 150) + "..." : text;
   };

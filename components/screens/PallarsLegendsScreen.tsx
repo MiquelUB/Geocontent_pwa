@@ -53,7 +53,7 @@ export function PallarsLegendsScreen({ onNavigate }: PallarsLegendsScreenProps) 
 
   const filteredLegends = legends.filter(legend => {
     const matchesSearch = legend.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         legend.location.toLowerCase().includes(searchQuery.toLowerCase());
+                         (legend.location || "").toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === "totes" || legend.category === selectedCategory;
     return matchesSearch && matchesCategory;
   }).sort((a, b) => a.title.localeCompare(b.title));
