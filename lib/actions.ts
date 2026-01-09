@@ -359,6 +359,21 @@ export async function loginOrRegister(name: string, email: string) {
     return { success: true, user: { id: authUser.user.id, username: name, email } };
 }
 
+export async function getAllProfiles() {
+    noStore();
+    const { data, error } = await supabaseAdmin
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+    
+    if (error) {
+        console.error('Error fetching profiles:', error);
+        return [];
+    }
+    
+    return data;
+}
+
 export async function getUserProfile(userId: string) {
     noStore();
     const { data, error } = await supabaseAdmin

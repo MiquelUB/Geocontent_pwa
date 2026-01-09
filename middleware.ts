@@ -3,11 +3,6 @@ import { cookies } from 'next/headers'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  const response = NextResponse.next()
-  
-  // TEMPORALMENTE DESHABILITADO PARA TESTING
-  // Descomentar para habilitar autenticación
-  /*
   const cookieStore = await cookies()
 
   const supabase = createServerClient(
@@ -41,9 +36,8 @@ export async function middleware(request: NextRequest) {
   if (user && request.nextUrl.pathname.startsWith('/login')) {
     return NextResponse.redirect(new URL('/', request.url))
   }
-  */
 
-  return response
+  return NextResponse.next()
 }
 
 export const config = {
