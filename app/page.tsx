@@ -18,6 +18,7 @@ export default function Home() {
   const [currentScreen, setCurrentScreen] = useState("splash");
   const [navigationData, setNavigationData] = useState<{ screen: string; data?: unknown } | null>(null);
   const [currentUser, setCurrentUser] = useState<{ id: string; email?: string } | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   const [errorType, setErrorType] = useState<"no-connection" | "gps-denied" | "general" | null>(null);
   

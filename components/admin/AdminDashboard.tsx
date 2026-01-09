@@ -18,7 +18,11 @@ interface Legend {
   location_name: string;
   latitude: number;
   longitude: number;
-  [key: string]: unknown;
+  image_url?: string;
+  hero_image_url?: string;
+  audio_url?: string;
+  video_url?: string;
+  description?: string;
 }
 
 interface Profile {
@@ -26,7 +30,6 @@ interface Profile {
   username?: string;
   role: string;
   level: number;
-  [key: string]: unknown;
 }
 
 export default function AdminDashboard({ legends, profiles }: { legends: Legend[], profiles: Profile[] }) {

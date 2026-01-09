@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
-import { MapPin, Navigation, Info, X, ArrowLeft, Filter } from 'lucide-react';
+import { MapPin, ArrowLeft, Filter } from 'lucide-react';
 import { ImageWithFallback } from "../figma/ImageWithFallback";
 import { motion } from "motion/react";
 import MapboxMap from "../map/MapboxMap";
 import { Marker } from "react-map-gl/mapbox";
+import Image from 'next/image';
 
 import { getLegends } from "@/lib/actions";
 
@@ -160,10 +161,12 @@ export function PallarsMapScreen({ onNavigate, focusLegend, userLocation }: Pall
                 }}
               >
                 {/* Debug: {legend.coordinates.lat},{legend.coordinates.lng} */}
-                <img 
+                <Image 
                     src="/medieval_map_pin.png" 
                     alt="Map Pin" 
-                    className="w-8 h-8 drop-shadow-md"
+                    width={32}
+                    height={32}
+                    className="drop-shadow-md"
                 />
               </div>
             </Marker>

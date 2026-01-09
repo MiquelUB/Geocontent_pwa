@@ -1,6 +1,7 @@
 'use client'
 
 import { X } from 'lucide-react'
+import Image from 'next/image'
 
 interface Content {
   id: string
@@ -49,11 +50,14 @@ export default function ContentModal({ content, onClose }: ContentModalProps) {
           )}
 
           {content.content_type === 'image' && content.content_url && (
-            <img
-              src={content.content_url}
-              alt={content.title}
-              className="w-full rounded-lg"
-            />
+            <div className="relative w-full aspect-video">
+              <Image
+                src={content.content_url}
+                alt={content.title}
+                fill
+                className="rounded-lg object-contain"
+              />
+            </div>
           )}
 
           {content.content_type === 'text' && content.content_text && (

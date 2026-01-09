@@ -4,8 +4,9 @@ import { Progress } from "../ui/progress";
 import { Share2, Settings, Star, MapPin, Calendar, Heart, Eye } from "lucide-react";
 import { ImageWithFallback } from "../figma/ImageWithFallback";
 import { motion } from "motion/react";
+import Image from 'next/image';
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { getUserProfile, getVisitedLegends, updateProfileAvatar, getLegends } from "@/lib/actions";
 import { Camera, X } from "lucide-react";
 
@@ -412,7 +413,7 @@ export function ProfileScreen({ onNavigate, currentUser }: ProfileScreenProps) {
                                     : 'border-transparent hover:border-pallars-green/50'
                             }`}
                         >
-                            <img src={url} className="w-full h-full object-cover" alt={`Avatar ${i+1}`} />
+                            <Image src={url} fill className="object-cover" alt={`Avatar ${i+1}`} />
                         </button>
                     ))}
                 </div>

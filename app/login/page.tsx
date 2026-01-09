@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -34,10 +35,12 @@ export default function LoginPage() {
       
       {/* Background Image - login_campesina.png */}
       <div className="absolute inset-0">
-        <img 
+        <Image 
           src="/login.jpg" 
           alt="Login"
-          className="w-full h-full object-cover object-center"
+          fill
+          className="object-cover object-center"
+          priority
         />
       </div>
 
@@ -117,10 +120,12 @@ function SuccessScreen({ email }: { email: string }) {
       
       {/* Background Image - login_succes.jpg (new background) */}
       <div className="absolute inset-0">
-        <img 
+        <Image 
           src="/login_succes.jpg" 
           alt="Success"
-          className="w-full h-full object-cover object-center"
+          fill
+          className="object-cover object-center"
+          priority
         />
       </div>
 
