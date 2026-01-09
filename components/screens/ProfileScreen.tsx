@@ -5,6 +5,7 @@ import { Share2, Settings, Star, MapPin, Calendar, Heart, Eye } from "lucide-rea
 import { ImageWithFallback } from "../figma/ImageWithFallback";
 import { motion } from "motion/react";
 import Image from 'next/image';
+import { Legend, User, NavigateFunction } from "@/lib/types";
 
 import { useEffect, useState } from "react";
 import { getUserProfile, getVisitedLegends, updateProfileAvatar, getLegends } from "@/lib/actions";
@@ -20,14 +21,20 @@ const PRESET_AVATARS = [
   "/avatars/avatar_viajero.png",
 ];
 
+interface UserProfile extends User {
+  level?: number;
+  total_points?: number;
+  visited_count?: number;
+}
+
 interface ProfileScreenProps {
-  onNavigate: (screen: string, data?: any) => void;
-  currentUser?: any; // Add user prop
+  onNavigate: NavigateFunction;
+  currentUser?: User;
 }
 
 export function ProfileScreen({ onNavigate, currentUser }: ProfileScreenProps) {
-  const [userProfile, setUserProfile] = useState<any>(null);
-  const [visitedLegends, setVisitedLegends] = useState<any[]>([]);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [visitedLegends, setVisitedLegends] = useState<Legend[]>([]);
   const [totalLegendsCount, setTotalLegendsCount] = useState(0);
   const [loading, setLoading] = useState(true);
   

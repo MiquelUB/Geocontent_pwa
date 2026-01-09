@@ -3,15 +3,16 @@ import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { ArrowLeft, Play, Pause, Heart, Star, Share2, MapPin, Calendar, Volume2, BookOpen, Lock, Info } from "lucide-react";
 import { ImageWithFallback } from "../figma/ImageWithFallback";
+import { Legend, User, NavigateFunction } from "@/lib/types";
 
 import { motion } from "motion/react";
 import { recordVisit } from "@/lib/actions";
 
 interface LegendDetailScreenProps {
-  legend: any;
-  onNavigate: (screen: string, data?: any) => void;
+  legend: Legend;
+  onNavigate: NavigateFunction;
   userLocation?: { latitude: number; longitude: number } | null;
-  currentUser?: any;
+  currentUser?: User;
 }
 
 export function LegendDetailScreen({ legend, onNavigate, userLocation, currentUser }: LegendDetailScreenProps) {

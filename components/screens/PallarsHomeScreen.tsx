@@ -7,20 +7,21 @@ import MapboxMap from "../map/MapboxMap";
 import { Marker } from "react-map-gl/mapbox";
 import { getLegends } from "@/lib/actions";
 import { calculateDistance } from "@/lib/location";
+import { Legend, NavigateFunction } from "@/lib/types";
 
 interface PallarsHomeScreenProps {
-  onNavigate: (screen: string, data?: any) => void;
+  onNavigate: NavigateFunction;
 }
 
 export function PallarsHomeScreen({ onNavigate }: PallarsHomeScreenProps) {
   const [userLocation] = useState({ lat: 42.4140, lng: 0.9870 }); // Centre Pallars
-  const [nearbyLegends, setNearbyLegends] = useState<any[]>([]);
+  const [nearbyLegends, setNearbyLegends] = useState<Legend[]>([]);
 
   useEffect(() => {
     async function fetchData() {
         const data = await getLegends();
         if (data) {
-             const mapped = data.map((l: any) => ({
+             const mapped = data.map((l) => ({
                 id: l.id,
                 title: l.title,
                 location: l.location_name || "Pallars",
@@ -36,9 +37,11 @@ export function PallarsHomeScreen({ onNavigate }: PallarsHomeScreenProps) {
                 audio: l.audio_url,
                 video: l.video_url,
                 description: l.description,
-                rating: l.rating || 4.5,
-                coordinates: { lat: l.latitude, lng: l.longitude }
-            }));
+                rating: 4.5,
+                coordinates: { lat: l.latitude, lng: l.longitude },
+                latitude: l.latitude,
+                longitude: l.longitude
+            } as Legend));
             setNearbyLegends(mapped);
         }
     }
@@ -88,7 +91,7 @@ export function PallarsHomeScreen({ onNavigate }: PallarsHomeScreenProps) {
           className="w-full h-full pointer-events-none" // Desactivar interacció per ser un preview
         >
              {/* Pins de llegendes properes */}
-            {nearbyLegends.map((legend) => (
+            {nearbyLegends.map((legend) => legend.coordinates && (
             <Marker
                 key={legend.id}
                 longitude={legend.coordinates.lng}
@@ -165,15 +168,15 @@ export function PallarsHomeScreen({ onNavigate }: PallarsHomeScreenProps) {
                     </h3>
                     <div className="flex items-center space-x-1 ml-2">
                       <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                      <span className="text-xs text-muted-foreground">{legend.rating}</span>
+                      <span className="text-xs text-muted-foreground">{legend.rating || 4.5}</span>
                     </div>
                   </div>
                   
                   <div className="flex items-center space-x-1 text-sm text-muted-foreground mb-2">
                     <MapPin className="w-3 h-3" />
-                    <span className="truncate">{legend.location}</span>
+                    <span className="truncate">{legend.location || "Pallars"}</span>
                     <span>•</span>
-                    <span>{legend.distance}</span>
+                    <span>{legend.distance || 0}km</span>
                   </div>
                   
                   <p className="text-sm text-foreground/80 line-clamp-2 mb-2">

@@ -7,12 +7,13 @@ import { motion } from "motion/react";
 import MapboxMap from "../map/MapboxMap";
 import { Marker } from "react-map-gl/mapbox";
 import Image from 'next/image';
+import { Legend, NavigateFunction } from "@/lib/types";
 
 import { getLegends } from "@/lib/actions";
 
 interface PallarsMapScreenProps {
-  onNavigate: (screen: string, data?: any) => void;
-  focusLegend?: any;
+  onNavigate: NavigateFunction;
+  focusLegend?: Legend;
   userLocation: { latitude: number; longitude: number } | null;
 }
 
@@ -22,7 +23,7 @@ export function PallarsMapScreen({ onNavigate, focusLegend, userLocation }: Pall
   const [selectedLegend, setSelectedLegend] = useState(focusLegend || null);
   const [showFilters, setShowFilters] = useState(false);
   const [activeCategory, setActiveCategory] = useState("totes");
-  const [legends, setLegends] = useState<any[]>([]);
+  const [legends, setLegends] = useState<Legend[]>([]);
 
   const getColorByCategory = (category: string) => {
     switch (category) {
@@ -40,7 +41,7 @@ export function PallarsMapScreen({ onNavigate, focusLegend, userLocation }: Pall
         const data = await getLegends();
         console.log('Received legends:', data);
         if (data) {
-             const mapped = data.map((l: any) => ({
+             const mapped = data.map((l) => ({
                 id: l.id,
                 title: l.title,
                 location: l.location_name || "Pallars",

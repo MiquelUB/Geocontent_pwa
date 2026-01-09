@@ -134,12 +134,12 @@ export default function Home() {
       case "legends":
         return <PallarsLegendsScreen onNavigate={handleNavigate} />;
       case "legend-detail":
-        return <LegendDetailScreen legend={navigationData} onNavigate={handleNavigate} userLocation={location} />;
+        return <LegendDetailScreen legend={(navigationData?.data || navigationData) as Legend} onNavigate={handleNavigate} userLocation={location} />;
       case "map":
-        return <PallarsMapScreen onNavigate={handleNavigate} focusLegend={navigationData} userLocation={location} />;
+        return <PallarsMapScreen onNavigate={handleNavigate} focusLegend={(navigationData?.data || navigationData) as Legend | undefined} userLocation={location} />;
 
       case "profile":
-        return <ProfileScreen onNavigate={handleNavigate} currentUser={currentUser} />
+        return <ProfileScreen onNavigate={handleNavigate} currentUser={currentUser || undefined} />
 ;
       case "error":
         return (

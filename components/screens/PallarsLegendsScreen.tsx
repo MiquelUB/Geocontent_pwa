@@ -6,9 +6,10 @@ import { Search, Filter, MapPin, Star, Calendar, ArrowLeft } from "lucide-react"
 import { ImageWithFallback } from "../figma/ImageWithFallback";
 import { motion } from "motion/react";
 import { getLegends } from "@/lib/actions";
+import { Legend, NavigateFunction } from "@/lib/types";
 
 interface PallarsLegendsScreenProps {
-  onNavigate: (screen: string, data?: any) => void;
+  onNavigate: NavigateFunction;
 }
 
 export function PallarsLegendsScreen({ onNavigate }: PallarsLegendsScreenProps) {
@@ -23,13 +24,13 @@ export function PallarsLegendsScreen({ onNavigate }: PallarsLegendsScreenProps) 
     { id: "magia", label: "Màgia" }
   ];
 
-  const [legends, setLegends] = useState<any[]>([]);
+  const [legends, setLegends] = useState<Legend[]>([]);
 
   useEffect(() => {
     async function fetchData() {
         const data = await getLegends();
         if (data) {
-             const mapped = data.map((l: any) => ({
+             const mapped = data.map((l) => ({
                 id: l.id,
                 title: l.title,
                 description: l.description,
