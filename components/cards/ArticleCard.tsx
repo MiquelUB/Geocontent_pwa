@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Card from './Card'
 import { Music, Image as ImageIcon, Video, FileText, Maximize2 } from 'lucide-react'
@@ -24,12 +24,8 @@ export default function ArticleCard({ locationId, onExpand }: ArticleCardProps) 
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
 
-  useEffect(() => {
-    loadContents()
-  }, [locationId])
-
-  const loadContents = async () => {
-    const { data, error } = await supabase
+  const loadContents = useCallback(async () => {
+    const { data } = await supabase
       .from('content')
       .select('*')
       .eq('location_id', locationId)
@@ -39,7 +35,11 @@ export default function ArticleCard({ locationId, onExpand }: ArticleCardProps) 
       setContents(data)
     }
     setLoading(false)
-  }
+  }, [locationId, supabase])
+
+  useEffect(() => {
+    loadContents()
+  }, [loadContents])
 
   const getIcon = (type: string) => {
     switch (type) {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Location } from '@/lib/services/geofencing-service'
 import { MapPin, X } from 'lucide-react'
 
@@ -12,6 +12,11 @@ interface GeofenceNotificationProps {
 export default function GeofenceNotification({ location, onClose }: GeofenceNotificationProps) {
   const [isVisible, setIsVisible] = useState(false)
 
+  const handleClose = useCallback(() => {
+    setIsVisible(false)
+    setTimeout(onClose, 300) // Esperar animación de salida
+  }, [onClose])
+
   useEffect(() => {
     // Animación de entrada
     setIsVisible(true)
@@ -22,12 +27,7 @@ export default function GeofenceNotification({ location, onClose }: GeofenceNoti
     }, 5000)
 
     return () => clearTimeout(timer)
-  }, [])
-
-  const handleClose = () => {
-    setIsVisible(false)
-    setTimeout(onClose, 300) // Esperar animación de salida
-  }
+  }, [handleClose])
 
   return (
     <div

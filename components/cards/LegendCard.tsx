@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Card from './Card'
-import { MapPin, CheckCircle, Circle, Navigation } from 'lucide-react'
+import { MapPin, Circle } from 'lucide-react'
 
 interface Location {
   id: string
@@ -17,12 +17,8 @@ export default function LegendCard() {
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
 
-  useEffect(() => {
-    loadLocations()
-  }, [])
-
-  const loadLocations = async () => {
-    const { data, error } = await supabase
+  const loadLocations = useCallback(async () => {
+    const { data } = await supabase
       .from('locations')
       .select('id, name, description, active')
       .eq('active', true)
@@ -32,7 +28,11 @@ export default function LegendCard() {
       setLocations(data)
     }
     setLoading(false)
-  }
+  }, [supabase])
+
+  useEffect(() => {
+    loadLocations()
+  }, [loadLocations])
 
   if (loading) {
     return (
