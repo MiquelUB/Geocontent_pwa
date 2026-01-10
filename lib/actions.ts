@@ -113,6 +113,7 @@ export async function updateLegend(id: string, formData: FormData) {
   const hero_image_url = formData.get('hero_image_url') as string
   const audio_url = formData.get('audio_url') as string
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updates: any = {
     title: formData.get('title'),
     description: formData.get('description'),
@@ -182,6 +183,7 @@ export async function loginOrRegister(name: string, email: string) {
         // Broaden the check: Check message OR status 422 OR known strings
         const isDuplicate = authError.message?.toLowerCase().includes('already registered') || 
                             authError.message?.toLowerCase().includes('unique constraint') ||
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             (authError as any).status === 422;
 
         if (isDuplicate) {
@@ -346,6 +348,7 @@ export async function getVisitedLegends(userId: string) {
         console.error('Error fetching visited:', error);
         return [];
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return data.map((item: any) => ({
         ...item.legend,
         visited_at: item.visited_at

@@ -2,6 +2,7 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const createClient = (cookieStore: any) => {
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
