@@ -23,6 +23,16 @@ export function PallarsMapScreen({ onNavigate, focusLegend, userLocation }: Pall
   const [activeCategory, setActiveCategory] = useState("totes");
   const [legends, setLegends] = useState<any[]>([]);
 
+  function getColorByCategory(category: string) {
+    switch (category) {
+        case 'Criatures': return "#8B5A3C";
+        case 'Fantasmes': return "#6B7280";
+        case 'Tresors': return "#D97706";
+        case 'Màgia': return "#7C3AED";
+        default: return "#3E4E3F";
+    }
+  }
+
   useEffect(() => {
     async function fetchData() {
         console.log('Fetching legends from server...');
@@ -47,16 +57,6 @@ export function PallarsMapScreen({ onNavigate, focusLegend, userLocation }: Pall
     }
     fetchData();
   }, []);
-
-  function getColorByCategory(category: string) {
-    switch (category) {
-        case 'Criatures': return "#8B5A3C";
-        case 'Fantasmes': return "#6B7280";
-        case 'Tresors': return "#D97706";
-        case 'Màgia': return "#7C3AED";
-        default: return "#3E4E3F";
-    }
-  }
 
   const categories = [
     { id: "totes", label: "Totes", color: "#3E4E3F" },

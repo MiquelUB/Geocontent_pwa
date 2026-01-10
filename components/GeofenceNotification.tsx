@@ -12,6 +12,11 @@ interface GeofenceNotificationProps {
 export default function GeofenceNotification({ location, onClose }: GeofenceNotificationProps) {
   const [isVisible, setIsVisible] = useState(false)
 
+  const handleClose = () => {
+    setIsVisible(false)
+    setTimeout(onClose, 300) // Esperar animación de salida
+  }
+
   useEffect(() => {
     // Animación de entrada
     setIsVisible(true)
@@ -23,11 +28,6 @@ export default function GeofenceNotification({ location, onClose }: GeofenceNoti
 
     return () => clearTimeout(timer)
   }, [])
-
-  const handleClose = () => {
-    setIsVisible(false)
-    setTimeout(onClose, 300) // Esperar animación de salida
-  }
 
   return (
     <div

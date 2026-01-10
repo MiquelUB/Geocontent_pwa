@@ -17,10 +17,6 @@ export default function LegendCard() {
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
 
-  useEffect(() => {
-    loadLocations()
-  }, [])
-
   const loadLocations = async () => {
     const { data, error } = await supabase
       .from('locations')
@@ -33,6 +29,10 @@ export default function LegendCard() {
     }
     setLoading(false)
   }
+
+  useEffect(() => {
+    loadLocations()
+  }, [])
 
   if (loading) {
     return (

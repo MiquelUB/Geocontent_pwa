@@ -8,7 +8,7 @@ interface DashboardButtonProps {
 }
 
 export default function DashboardButton({ config, onClick }: DashboardButtonProps) {
-  const Icon = config.iconName ? getIconByName(config.iconName) : null;
+  const IconComponent = config.iconName ? getIconByName(config.iconName) : null;
   
   // Estilos base Art Nouveau
   const baseStyles = "relative flex flex-col items-center justify-center p-4 rounded-xl transition-all duration-300 group overflow-hidden";
@@ -32,8 +32,8 @@ export default function DashboardButton({ config, onClick }: DashboardButtonProp
 
       {/* Icono */}
       <div className="mb-3 transform group-hover:scale-110 transition-transform duration-300">
-        {Icon ? (
-           <Icon 
+        {IconComponent ? (
+           <IconComponent 
              className={`w-10 h-10 ${config.designVariant === 'gold' ? 'text-white' : 'text-[#8b7355]'}`} 
              strokeWidth={1.5}
            />
