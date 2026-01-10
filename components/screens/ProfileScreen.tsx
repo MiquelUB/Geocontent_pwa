@@ -212,7 +212,7 @@ export function ProfileScreen({ onNavigate, currentUser }: ProfileScreenProps) {
                   </span>
                 </div>
                 <Progress value={progressPercent} className="h-2" />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground text-right">
                   {nextLevelXp - xp} XP per al següent nivell
                 </p>
               </div>
@@ -273,30 +273,34 @@ export function ProfileScreen({ onNavigate, currentUser }: ProfileScreenProps) {
                 key={achievement.id}
                 className={`pallars-card border-0 p-3 h-auto`}
               >
-                  <div className="flex justify-between items-start mb-2">
-                     <div className="text-2xl mr-3">{achievement.icon}</div>
-                     <div className="flex-1">
-                        <h4 className={`font-medium text-sm leading-tight mb-1 ${
-                            achievement.completed ? 'text-pallars-green' : 'text-gray-600'
-                        }`}>
-                            {achievement.title}
-                        </h4>
-                        <p className="text-[10px] text-muted-foreground mb-2">
-                            {achievement.description}
-                        </p>
+                  <div className="flex items-start">
+                     <div className="text-2xl mr-3 flex-shrink-0">{achievement.icon}</div>
+                     <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-start mb-2">
+                           <div className="flex-1">
+                              <h4 className={`font-medium text-sm leading-tight mb-1 ${
+                                  achievement.completed ? 'text-pallars-green' : 'text-gray-600'
+                              }`}>
+                                  {achievement.title}
+                              </h4>
+                              <p className="text-[10px] text-muted-foreground mb-2">
+                                  {achievement.description}
+                              </p>
+                           </div>
+                           {achievement.completed && (
+                               <Badge className="bg-green-500 text-[10px] h-5 px-1.5 ml-1">Fet!</Badge>
+                           )}
+                        </div>
+                        
+                        {/* Progress Bar */}
+                        <div className="space-y-1">
+                            <div className="flex justify-between text-[10px] text-muted-foreground">
+                                <span>Progrés</span>
+                                <span>{achievement.current}/{achievement.target}</span>
+                            </div>
+                            <Progress value={(achievement.current / achievement.target) * 100} className="h-1.5" />
+                        </div>
                      </div>
-                     {achievement.completed && (
-                         <Badge className="bg-green-500 text-[10px] h-5 px-1.5">Fet!</Badge>
-                     )}
-                  </div>
-                  
-                  {/* Progress Bar */}
-                  <div className="space-y-1">
-                      <div className="flex justify-between text-[10px] text-muted-foreground">
-                          <span>Progrés</span>
-                          <span>{achievement.current}/{achievement.target}</span>
-                      </div>
-                      <Progress value={(achievement.current / achievement.target) * 100} className="h-1.5" />
                   </div>
               </div>
             ))}
