@@ -265,44 +265,59 @@ export function ProfileScreen({ onNavigate, currentUser }: ProfileScreenProps) {
             Assoliments
           </h3>
           
-          <div className="grid grid-cols-2 gap-2">
+          <div className="space-y-3">
             {achievements.map((achievement) => (
-              <div
+              <motion.div
                 key={achievement.id}
-                className={`pallars-card border-0 p-2.5 h-auto`}
+                initial={{ x: -10, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ delay: 0.4 + (achievement.id * 0.1) }}
+                className={`pallars-card border-0 p-4 ${
+                  achievement.completed ? 'bg-gradient-to-br from-green-50 to-green-100/50' : ''
+                }`}
               >
-                  <div className="flex items-start gap-2">
-                     <div className="text-xl flex-shrink-0">{achievement.icon}</div>
-                     <div className="flex-1 min-w-0">
-                        <div className="flex justify-between items-start mb-1.5 gap-1">
-                           <div className="flex-1 min-w-0">
-                              <h4 className={`font-medium text-xs leading-tight mb-1 break-words ${
-                                  achievement.completed ? 'text-pallars-green' : 'text-gray-600'
-                              }`}>
-                                  {achievement.title}
-                              </h4>
-                              <p className="text-[9px] leading-tight text-muted-foreground mb-1.5 break-words">
-                                  {achievement.description}
-                              </p>
-                           </div>
-                           {achievement.completed && (
-                               <Badge className="bg-green-500 text-[9px] h-4 px-1 flex-shrink-0">Fet!</Badge>
-                           )}
-                        </div>
-                        
-                        {/* Progress Bar */}
-                        <div className="space-y-0.5">
-                            <div className="flex justify-between text-[9px] text-muted-foreground">
-                                <span>Progrés</span>
-                                <span>{achievement.current}/{achievement.target}</span>
-                            </div>
-                            <Progress value={(achievement.current / achievement.target) * 100} className="h-1" />
-                        </div>
-                     </div>
+                <div className="flex items-start gap-3">
+                  {/* Icon */}
+                  <div className="text-3xl flex-shrink-0 mt-0.5">{achievement.icon}</div>
+                  
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    {/* Title and Badge */}
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <h4 className={`font-semibold text-sm leading-snug ${
+                        achievement.completed ? 'text-pallars-green' : 'text-gray-700'
+                      }`}>
+                        {achievement.title}
+                      </h4>
+                      {achievement.completed && (
+                        <Badge className="bg-green-500 text-white text-[10px] h-5 px-2 flex-shrink-0 border-0">
+                          Fet!
+                        </Badge>
+                      )}
+                    </div>
+                    
+                    {/* Description */}
+                    <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+                      {achievement.description}
+                    </p>
+                    
+                    {/* Progress */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground font-medium">Progrés</span>
+                        <span className="text-pallars-green font-semibold">
+                          {achievement.current}/{achievement.target}
+                        </span>
+                      </div>
+                      <Progress 
+                        value={(achievement.current / achievement.target) * 100} 
+                        className="h-2"
+                      />
+                    </div>
                   </div>
-              </div>
+                </div>
+              </motion.div>
             ))}
-
           </div>
         </motion.div>
 
