@@ -183,7 +183,7 @@ export function LegendDetailScreen({ legend, onNavigate, userLocation, currentUs
       </motion.div>
 
       {/* Content */}
-      <div className="p-4">
+      <div className="p-4 pb-24">
         {/* Rating */}
         <motion.div 
           initial={{ y: 20, opacity: 0 }}
@@ -303,7 +303,6 @@ export function LegendDetailScreen({ legend, onNavigate, userLocation, currentUs
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="mb-6"
         >
           <Button 
             onClick={handleViewOnMap}
