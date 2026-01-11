@@ -333,16 +333,29 @@ export default function AdminDashboard({ legends, profiles }: { legends: any[], 
                   <thead className="bg-muted/50">
                     <tr className="text-left border-b">
                       <th className="p-4 font-medium">Username</th>
+                      <th className="p-4 font-medium">Email</th>
                       <th className="p-4 font-medium">Role</th>
                       <th className="p-4 font-medium">Nivell</th>
+                      <th className="p-4 font-medium">Fecha de Alta</th>
                     </tr>
                   </thead>
                   <tbody>
                     {profiles?.map((profile: any) => (
                       <tr key={profile.id} className="border-b last:border-0">
                         <td className="p-4 font-medium">{profile.username || 'Anonymous'}</td>
+                        <td className="p-4 text-muted-foreground">{profile.email || '-'}</td>
                         <td className="p-4">{profile.role}</td>
                         <td className="p-4">Lvl {profile.level}</td>
+                        <td className="p-4 text-muted-foreground">
+                          {profile.created_at 
+                            ? new Date(profile.created_at).toLocaleDateString('es-ES', {
+                                day: '2-digit',
+                                month: '2-digit',
+                                year: 'numeric'
+                              })
+                            : '-'
+                          }
+                        </td>
                       </tr>
                     ))}
                   </tbody>
