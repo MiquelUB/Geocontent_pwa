@@ -20,7 +20,7 @@ export function PallarsLegendsScreen({ onNavigate }: PallarsLegendsScreenProps) 
     { id: "criatures", label: "Criatures" },
     { id: "fantasmes", label: "Fantasmes" },
     { id: "tresors", label: "Tresors" },
-    { id: "magia", label: "Màgia" }
+    { id: "màgia", label: "Màgia" }
   ];
 
   const [legends, setLegends] = useState<any[]>([]);
@@ -107,7 +107,7 @@ export function PallarsLegendsScreen({ onNavigate }: PallarsLegendsScreenProps) 
               className={`whitespace-nowrap flex-shrink-0 ${
                 selectedCategory === category.id 
                   ? "bg-pallars-cream text-pallars-green" 
-                  : "border-pallars-cream text-pallars-cream hover:bg-pallars-cream/10"
+                  : "border-pallars-cream text-black hover:bg-pallars-cream/10"
               }`}
             >
               {category.label}
