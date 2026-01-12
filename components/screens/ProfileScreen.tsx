@@ -1,7 +1,7 @@
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { Progress } from "../ui/progress";
-import { Share2, Settings, Star, MapPin, Calendar, Heart, Eye } from "lucide-react";
+import { Share2, Star, MapPin, Calendar, Heart, Eye } from "lucide-react";
 import { ImageWithFallback } from "../figma/ImageWithFallback";
 import { motion } from "motion/react";
 
@@ -128,8 +128,26 @@ export function ProfileScreen({ onNavigate, currentUser }: ProfileScreenProps) {
   const achievements = calculateAchievements();
 
 
-  const handleShare = () => {
-    alert("Perfil compartit! 'Descobreix les llegendes del Pallars amb Mistic Pallars!'");
+  const handleShare = async () => {
+    const shareData = {
+      title: 'Mistic Pallars',
+      text: `Descobreix les llegendes del Pallars amb ${userProfile?.username || 'mi'}! 🏔️`,
+      url: window.location.origin
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        // Fallback: copy to clipboard
+        await navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
+        alert('Enllaç copiat al portapapers!');
+      }
+    } catch (err) {
+      if ((err as Error).name !== 'AbortError') {
+        console.error('Error sharing:', err);
+      }
+    }
   };
 
   return (
@@ -157,13 +175,6 @@ export function ProfileScreen({ onNavigate, currentUser }: ProfileScreenProps) {
               className="text-pallars-cream hover:bg-pallars-cream/10"
             >
               <Share2 className="w-5 h-5" />
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              className="text-pallars-cream hover:bg-pallars-cream/10"
-            >
-              <Settings className="w-5 h-5" />
             </Button>
           </div>
         </div>
