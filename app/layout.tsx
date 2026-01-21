@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   // Basic Meta Tags
-  title: "🗺️ Geocontent - Descubre las Leyendas del Pallars",
+  title: "🗺️ Geocontent - Mistic Pallars",
   description: "Explora misterios ancestrales del Pallars. Dragones, fantasmas y tesoros ocultos te esperan. ¿Te atreves a descubrir qué leyendas esconde tu tierra? 🏔️✨",
   
   // Keywords for SEO
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
   
   // Open Graph (Facebook, WhatsApp, LinkedIn)
   openGraph: {
-    title: "🗺️ Geocontent - Leyendas Vivas del Pallars",
+    title: "🗺️ Geocontent - Mistic Pallars",
     description: "Cada rincón del Pallars esconde una historia. Descubre dragones, fantasmas y tesoros a través de una experiencia interactiva única.",
     url: "https://projectexinoxano.cat",
     siteName: "Geocontent Pallars",
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "Geocontent - Descubre las Leyendas del Pallars",
+        alt: "Geocontent - Mistic Pallars",
       },
     ],
     locale: "ca_ES",
@@ -58,7 +58,7 @@ export const metadata: Metadata = {
   // Twitter Card
   twitter: {
     card: "summary_large_image",
-    title: "🗺️ Geocontent - Descubre las Leyendas del Pallars",
+    title: "🗺️ Geocontent - Mistic Pallars",
     description: "Explora misterios ancestrales del Pallars. Dragones, fantasmas y tesoros ocultos te esperan. 🏔️✨",
     images: ["/og-image.jpg"],
     creator: "@geocontent",
