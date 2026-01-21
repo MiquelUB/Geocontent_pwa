@@ -1,11 +1,11 @@
 {
-    "name": "GeoContent",
-    "short_name": "GeoContent",
-    "description": "Descubre contenido multimedia basado en tu ubicación",
+    "name": "Geocontent - Leyendas del Pallars",
+    "short_name": "Geocontent",
+    "description": "Explora misterios ancestrales del Pallars. Dragones, fantasmas y tesoros ocultos te esperan.",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#ffffff",
-    "theme_color": "#3b82f6",
+    "theme_color": "#1a1a1a",
     "orientation": "portrait-primary",
     "icons": [
         {
