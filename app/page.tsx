@@ -11,6 +11,9 @@ import { ErrorScreen } from "../components/screens/ErrorScreen";
 import { PallarsBottomNavigation } from "../components/PallarsBottomNavigation";
 import { useGeolocation } from "../hooks/useGeolocation";
 import { SimpleLogin } from "../components/auth/SimpleLogin";
+import { OnboardingModal } from "../components/OnboardingModal";
+import { useOnboarding } from "../hooks/useOnboarding";
+import { HelpButton } from "../components/HelpButton";
 
 
 
@@ -23,6 +26,7 @@ export default function Home() {
   const [errorType, setErrorType] = useState<"no-connection" | "gps-denied" | "general" | null>(null);
   
   const { location, error: geoError } = useGeolocation();
+  const { isOpen: isOnboardingOpen, completeOnboarding, skipOnboarding, reopenOnboarding } = useOnboarding();
 
 
 
@@ -171,6 +175,18 @@ export default function Home() {
           currentScreen={currentScreen} 
           onScreenChange={handleNavigate} 
         />
+      )}
+
+      {/* Onboarding Modal */}
+      <OnboardingModal
+        isOpen={isOnboardingOpen}
+        onComplete={completeOnboarding}
+        onSkip={skipOnboarding}
+      />
+
+      {/* Help Button - Only show when logged in */}
+      {showBottomNav && (
+        <HelpButton onOpenOnboarding={reopenOnboarding} />
       )}
     </div>
   );
