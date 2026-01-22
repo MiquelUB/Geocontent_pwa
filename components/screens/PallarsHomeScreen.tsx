@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "../ui/button";
-import { Navigation, Star, Clock, MapPin } from "lucide-react";
+import { Navigation, Star, Clock, MapPin, HelpCircle } from "lucide-react";
 import { ImageWithFallback } from "../figma/ImageWithFallback";
 import { motion } from "motion/react";
 import MapboxMap from "../map/MapboxMap";
@@ -10,9 +10,10 @@ import { calculateDistance } from "@/lib/location";
 
 interface PallarsHomeScreenProps {
   onNavigate: (screen: string, data?: any) => void;
+  onOpenHelp: () => void;
 }
 
-export function PallarsHomeScreen({ onNavigate }: PallarsHomeScreenProps) {
+export function PallarsHomeScreen({ onNavigate, onOpenHelp }: PallarsHomeScreenProps) {
   const [userLocation] = useState({ lat: 42.4140, lng: 0.9870 }); // Centre Pallars
   const [nearbyLegends, setNearbyLegends] = useState<any[]>([]);
 
@@ -65,13 +66,24 @@ export function PallarsHomeScreen({ onNavigate }: PallarsHomeScreenProps) {
               <p className="text-xs text-pallars-cream/80">Llegendes dels Pirineus</p>
             </div>
           </div>
-          <Button 
-            variant="ghost" 
-            size="sm"
-            className="text-pallars-cream hover:bg-pallars-cream/10"
-          >
-            <Navigation className="w-5 h-5" />
-          </Button>
+          <div className="flex items-center space-x-1">
+            <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={onOpenHelp}
+                className="text-pallars-cream hover:bg-pallars-cream/10"
+                title="Ajuda"
+            >
+                <HelpCircle className="w-5 h-5" />
+            </Button>
+            <Button 
+                variant="ghost" 
+                size="sm"
+                className="text-pallars-cream hover:bg-pallars-cream/10"
+            >
+                <Navigation className="w-5 h-5" />
+            </Button>
+          </div>
         </div>
       </motion.div>
 

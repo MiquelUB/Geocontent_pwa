@@ -17,15 +17,15 @@ export const onboardingStepsCA: OnboardingStep[] = [
     content: [
       {
         icon: '🗺️',
-        text: 'EXPLORAR MAPA\nVisualitza totes les llegendes del Pallars en un mapa interactiu'
+        text: 'EXPLORAR MAPA\nVisualitza les llegendes del Pallars en un mapa interactiu.'
       },
       {
         icon: '📍',
-        text: 'DESCOBRIR LLEGENDES\nAccedeix a històries completes amb ubicació, categoria i detalls'
+        text: 'DESCOBRIR LLEGENDES\nAccedeix a històries completes, desbloquejant arxius multimedia.'
       },
       {
         icon: '👤',
-        text: 'PERFIL PERSONAL\nConsulta el teu progrés, nivell i assoliments desbloquejats'
+        text: 'PERFIL PERSONAL\nConsulta el teu progrés, nivell i assoliments desbloquejats.'
       }
     ],
     ctaText: 'Següent'
@@ -35,16 +35,16 @@ export const onboardingStepsCA: OnboardingStep[] = [
     title: 'Com funciona el sistema de punts?',
     content: [
       {
-        icon: '✅',
-        text: 'VISITAR LLEGENDES\nMarca llegendes com a visitades per guanyar XP'
+        icon: '⭐',
+        text: 'VISITAR LLEGENDES\nDona estrelles a cada llegenda.'
       },
       {
-        icon: '⭐',
-        text: 'PUJAR DE NIVELL\nAcumula experiència per assolir nous nivells'
+        icon: '📈',
+        text: 'PUJAR DE NIVELL\nAcumula experiència per assolir nous nivells.'
       },
       {
         icon: '🏆',
-        text: 'DESBLOQUEJAR ASSOLIMENTS\nCompleta objectius especials:\n  • Visita la teva primera llegenda\n  • Descobreix 10 llegendes\n  • Explora totes les categories'
+        text: 'DESBLOQUEJAR ASSOLIMENTS\nCompleta objectius especials.'
       }
     ],
     ctaText: 'Següent'
@@ -54,39 +54,35 @@ export const onboardingStepsCA: OnboardingStep[] = [
     title: 'Com trobar llegendes properes?',
     content: [
       {
-        icon: '1️⃣',
-        text: 'ACTIVA LA TEVA UBICACIÓ\nPermet accés al GPS per veure llegendes a prop teu'
+        icon: '📍',
+        text: 'ACTIVA LA TEVA UBICACIÓ\nPermet accés al GPS per veure llegendes a prop teu.'
       },
       {
-        icon: '2️⃣',
-        text: 'EXPLORA EL MAPA\nLes llegendes més properes apareixen destacades'
+        icon: '🗺️',
+        text: 'EXPLORA EL MAPA\nLes llegendes més properes apareixen aprop de la teva ubicació.'
       },
       {
-        icon: '3️⃣',
-        text: 'VISITA UBICACIONS\nQuan estiguis a prop, marca la llegenda com a visitada'
+        icon: '💡',
+        text: 'Consell: Per desbloquejar els archius multimedia de les llegendes ha de visitar-les en persona.'
       }
     ],
     ctaText: 'Següent'
   },
   {
     id: 'achievements',
-    title: 'A què pots aspirar?',
+    title: 'Quins són els reptes?',
     content: [
       {
-        icon: '📊',
-        text: 'COL·LECCIONISTA\nDescobreix totes les llegendes del Pallars'
+        icon: '🧭',
+        text: 'Explorador Novell\nVisita la teva primera llegenda\n0/1'
       },
       {
         icon: '🗺️',
-        text: 'EXPLORADOR\nVisita llegendes a totes les comarques'
+        text: 'Rastrejador\nVisita 3 llegendes\n0/3'
       },
       {
-        icon: '⭐',
-        text: 'EXPERT\nAssoleix el nivell màxim (Nivell 10)'
-      },
-      {
-        icon: '🏅',
-        text: 'ESPECIALISTA\nCompleta totes les categories:\n  • Dracs i criatures\n  • Fantasmes i aparicions\n  • Tresors i llocs màgics\n  • Herois i personatges històrics'
+        icon: '👑',
+        text: 'Mestre del Pallars\nConqueriu totes les històries'
       }
     ],
     ctaText: 'Comença a Explorar!'

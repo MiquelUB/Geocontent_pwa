@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
-import { MapPin, Navigation, Info, X, ArrowLeft, Filter } from 'lucide-react';
+import { MapPin, Navigation, Info, X, ArrowLeft, Filter, HelpCircle } from 'lucide-react';
 import { ImageWithFallback } from "../figma/ImageWithFallback";
 import { motion } from "motion/react";
 import MapboxMap from "../map/MapboxMap";
@@ -11,12 +11,13 @@ import { getLegends } from "@/lib/actions";
 
 interface PallarsMapScreenProps {
   onNavigate: (screen: string, data?: any) => void;
+  onOpenHelp: () => void;
   focusLegend?: any;
   userLocation: { latitude: number; longitude: number } | null;
 }
 
 
-export function PallarsMapScreen({ onNavigate, focusLegend, userLocation }: PallarsMapScreenProps) {
+export function PallarsMapScreen({ onNavigate, onOpenHelp, focusLegend, userLocation }: PallarsMapScreenProps) {
 
   const [selectedLegend, setSelectedLegend] = useState(focusLegend || null);
   const [showFilters, setShowFilters] = useState(false);
@@ -94,14 +95,25 @@ export function PallarsMapScreen({ onNavigate, focusLegend, userLocation }: Pall
             </div>
           </div>
           
-          <Button 
-            variant="ghost" 
-            size="sm"
-            onClick={() => setShowFilters(!showFilters)}
-            className="text-pallars-cream hover:bg-pallars-cream/10"
-          >
-            <Filter className="w-5 h-5" />
-          </Button>
+          <div className="flex items-center space-x-1">
+            <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={onOpenHelp}
+                className="text-pallars-cream hover:bg-pallars-cream/10"
+                title="Ajuda"
+            >
+                <HelpCircle className="w-5 h-5" />
+            </Button>
+            <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setShowFilters(!showFilters)}
+                className="text-pallars-cream hover:bg-pallars-cream/10"
+            >
+                <Filter className="w-5 h-5" />
+            </Button>
+          </div>
         </div>
 
         {/* Filtres de categoria */}

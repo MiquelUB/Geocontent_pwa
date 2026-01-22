@@ -13,7 +13,6 @@ import { useGeolocation } from "../hooks/useGeolocation";
 import { SimpleLogin } from "../components/auth/SimpleLogin";
 import { OnboardingModal } from "../components/OnboardingModal";
 import { useOnboarding } from "../hooks/useOnboarding";
-import { HelpButton } from "../components/HelpButton";
 
 
 
@@ -133,14 +132,14 @@ export default function Home() {
       case "login":
         return <SimpleLogin onLoginSuccess={handleLoginSuccess} />;
       case "home":
-        return <PallarsHomeScreen onNavigate={handleNavigate} />;
+        return <PallarsHomeScreen onNavigate={handleNavigate} onOpenHelp={reopenOnboarding} />;
 
       case "legends":
         return <PallarsLegendsScreen onNavigate={handleNavigate} />;
       case "legend-detail":
         return <LegendDetailScreen legend={navigationData} onNavigate={handleNavigate} userLocation={location} currentUser={currentUser} />;
       case "map":
-        return <PallarsMapScreen onNavigate={handleNavigate} focusLegend={navigationData} userLocation={location} />;
+        return <PallarsMapScreen onNavigate={handleNavigate} focusLegend={navigationData} userLocation={location} onOpenHelp={reopenOnboarding} />;
 
       case "profile":
         return <ProfileScreen onNavigate={handleNavigate} currentUser={currentUser} />
@@ -154,7 +153,7 @@ export default function Home() {
           />
         );
       default:
-        return <PallarsHomeScreen onNavigate={handleNavigate} />;
+        return <PallarsHomeScreen onNavigate={handleNavigate} onOpenHelp={reopenOnboarding} />;
     }
   };
 
@@ -184,10 +183,6 @@ export default function Home() {
         onSkip={skipOnboarding}
       />
 
-      {/* Help Button - Only show when logged in */}
-      {showBottomNav && (
-        <HelpButton onOpenOnboarding={reopenOnboarding} />
-      )}
     </div>
   );
 }
