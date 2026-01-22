@@ -107,11 +107,11 @@ export function PallarsHomeScreen({ onNavigate, onOpenHelp }: PallarsHomeScreenP
                 latitude={legend.coordinates.lat}
                 anchor="bottom"
             >
-                <div 
-                className="w-8 h-8 bg-pallars-brown rounded-full flex items-center justify-center text-pallars-cream shadow-lg"
-                >
-                <MapPin className="w-4 h-4" />
-                </div>
+                <img 
+                    src="/medieval_map_pin.png" 
+                    alt="Map Pin" 
+                    className="w-8 h-8 drop-shadow-md"
+                />
             </Marker>
             ))}
         </MapboxMap>
