@@ -1,6 +1,6 @@
 {
-    "name": "Geocontent - Mistic Pallars",
-    "short_name": "Geocontent",
+    "name": "Mistic Pallars",
+    "short_name": "Mistic Pallars",
     "description": "Explora misterios ancestrales del Pallars. Dragones, fantasmas y tesoros ocultos te esperan.",
     "start_url": "/",
     "display": "standalone",

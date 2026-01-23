@@ -14,14 +14,14 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   // Basic Meta Tags
-  title: "Geocontent - Mistic Pallars",
+  title: "Mistic Pallars",
   description: "Explora misterios ancestrales del Pallars. Dragones, fantasmas y tesoros ocultos te esperan. ¿Te atreves a descubrir qué leyendas esconde tu tierra? 🏔️✨",
   
   // Keywords for SEO
   keywords: [
     "leyendas del Pallars",
     "turismo cultural Pallars",
-    "Geocontent Pallars",
+    "Mistic Pallars",
     "mitología catalana",
     "Drac de la Noguera",
     "leyendas catalanas",
@@ -33,22 +33,22 @@ export const metadata: Metadata = {
   ],
   
   // Authors and Creator
-  authors: [{ name: "Geocontent Pallars" }],
-  creator: "Geocontent Pallars",
-  publisher: "Geocontent Pallars",
+  authors: [{ name: "Mistic Pallars" }],
+  creator: "Mistic Pallars",
+  publisher: "Mistic Pallars",
   
   // Open Graph (Facebook, WhatsApp, LinkedIn)
   openGraph: {
-    title: "Geocontent - Mistic Pallars",
+    title: "Mistic Pallars",
     description: "Cada rincón del Pallars esconde una historia. Descubre dragones, fantasmas y tesoros a través de una experiencia interactiva única.",
     url: "https://projectexinoxano.cat",
-    siteName: "Geocontent Pallars",
+    siteName: "Mistic Pallars",
     images: [
       {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "Geocontent - Mistic Pallars",
+        alt: "Mistic Pallars",
       },
     ],
     locale: "ca_ES",
@@ -58,10 +58,10 @@ export const metadata: Metadata = {
   // Twitter Card
   twitter: {
     card: "summary_large_image",
-    title: "Geocontent - Mistic Pallars",
+    title: "Mistic Pallars",
     description: "Explora misterios ancestrales del Pallars. Dragones, fantasmas y tesoros ocultos te esperan. 🏔️✨",
     images: ["/og-image.jpg"],
-    creator: "@geocontent",
+    creator: "@misticpallars",
   },
   
   // Additional Meta Tags
@@ -83,11 +83,11 @@ export const metadata: Metadata = {
   },
   
   // App-specific
-  applicationName: "Geocontent Pallars",
+  applicationName: "Mistic Pallars",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Geocontent Pallars",
+    title: "Mistic Pallars",
   },
   
   // Manifest and Icons

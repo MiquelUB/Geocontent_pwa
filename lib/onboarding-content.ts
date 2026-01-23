@@ -21,7 +21,7 @@ export const onboardingStepsCA: OnboardingStep[] = [
       },
       {
         icon: '📍',
-        text: 'DESCOBRIR LLEGENDES\nAccedeix a històries completes, desbloquejant arxius multimedia.'
+        text: 'DESCOBRIR LLEGENDES\nAccedeix a històries completes, desbloquejant arxius multimèdia.'
       },
       {
         icon: '👤',
@@ -63,7 +63,7 @@ export const onboardingStepsCA: OnboardingStep[] = [
       },
       {
         icon: '💡',
-        text: 'Consell: Per desbloquejar els archius multimedia de les llegendes ha de visitar-les en persona.'
+        text: 'Consell: Per desbloquejar els arxius multimèdia de les llegendes ha de visitar-les en persona.'
       }
     ],
     ctaText: 'Següent'
