@@ -37,6 +37,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   return [
     ...staticPages,
-    // ...legendPages, // Uncomment when you have dynamic routes
   ]
 }

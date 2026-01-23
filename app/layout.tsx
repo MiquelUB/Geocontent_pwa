@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   // Basic Meta Tags
-  title: "Mistic Pallars",
-  description: "Explora misterios ancestrales del Pallars. Dragones, fantasmas y tesoros ocultos te esperan. ¿Te atreves a descubrir qué leyendas esconde tu tierra? 🏔️✨",
+  title: "Mistic Pallars - Descobreix les Llegenda del Pallars",
+  description: "Explora la màgia del Pallars Sobirà i Jussà a través de Mistic Pallars. Una guia interactiva amb mapa, àudios i vídeos de llegendes ancestrals, tresors ocults i misteris del Pirineu.",
   
   // Keywords for SEO
   keywords: [
@@ -39,8 +39,8 @@ export const metadata: Metadata = {
   
   // Open Graph (Facebook, WhatsApp, LinkedIn)
   openGraph: {
-    title: "Mistic Pallars",
-    description: "Cada rincón del Pallars esconde una historia. Descubre dragones, fantasmas y tesoros a través de una experiencia interactiva única.",
+    title: "Mistic Pallars - El Mapa de les Llegendes",
+    description: "Una experiència interactiva única per descobrir el folklore i patrimoni cultural del Pallars des del teu mòbil.",
     url: "https://projectexinoxano.cat",
     siteName: "Mistic Pallars",
     images: [
@@ -58,8 +58,8 @@ export const metadata: Metadata = {
   // Twitter Card
   twitter: {
     card: "summary_large_image",
-    title: "Mistic Pallars",
-    description: "Explora misterios ancestrales del Pallars. Dragones, fantasmas y tesoros ocultos te esperan. 🏔️✨",
+    title: "Mistic Pallars - La teva Guia del Pirineu",
+    description: "Àudios, vídeos i mapes interactius de les llegendes del Pallars. Explora el patrimoni mistic de la teva terra. 🏔️✨",
     images: ["/og-image.jpg"],
     creator: "@misticpallars",
   },
@@ -115,29 +115,17 @@ export default function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "WebApplication",
-              name: "Geocontent - Leyendas del Pallars",
-              description: "Aplicación interactiva para descubrir leyendas y mitos del Pallars",
+              name: "Mistic Pallars",
+              url: "https://projectexinoxano.cat",
+              description: "Una guia interactiva de les llegendes i el folklore del Pallars Sobirà i Jussà.",
               applicationCategory: "TravelApplication",
-              operatingSystem: "Web, iOS, Android",
-              offers: {
-                "@type": "Offer",
-                price: "0",
-                priceCurrency: "EUR",
-              },
-              aggregateRating: {
-                "@type": "AggregateRating",
-                ratingValue: "4.8",
-                ratingCount: "127",
-              },
-              geo: {
-                "@type": "GeoCoordinates",
-                latitude: "42.4",
-                longitude: "1.0",
-              },
-              areaServed: {
-                "@type": "Place",
-                name: "Pallars, Catalunya",
-              },
+              operatingSystem: "Android, iOS",
+              screenshot: "https://projectexinoxano.cat/og-image.jpg",
+              genre: "Folklore, Culture, Tourism",
+              about: {
+                "@type": "Thing",
+                "name": "Llegendes del Pallars"
+              }
             }),
           }}
         />
