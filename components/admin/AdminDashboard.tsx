@@ -17,6 +17,8 @@ import { Download, ExternalLink, MapPin, Star } from "lucide-react";
 export default function AdminDashboard({ legends, profiles }: { legends: any[], profiles: any[] }) {
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedVisit, setSelectedVisit] = useState<any>(null);
+  const [isVisitDetailOpen, setIsVisitDetailOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [editingLegend, setEditingLegend] = useState<any>(null);
 
@@ -137,10 +139,12 @@ export default function AdminDashboard({ legends, profiles }: { legends: any[], 
       if (profile.visited_legends?.length > 0) {
         profile.visited_legends.forEach((v: any) => {
           const rating = profile.ratings?.find((r: any) => r.legend_id === v.legend_id)?.rating || "-";
-          rows.push([...baseInfo, v.legend?.title || "Unknown", v.lat || "-", v.lng || "-", v.accuracy || "-", rating.toString()]);
+          const duration = v.duration_seconds ? `${Math.floor(v.duration_seconds / 60)}m ${v.duration_seconds % 60}s` : "0s";
+          const preciseTime = v.visited_at ? new Date(v.visited_at).toLocaleString() : "-";
+          rows.push([...baseInfo, v.legend?.title || "Unknown", v.lat || "-", v.lng || "-", v.accuracy || "-", rating.toString(), duration, preciseTime]);
         });
       } else {
-        rows.push([...baseInfo, "No visits", "-", "-", "-", "-"]);
+        rows.push([...baseInfo, "No visits", "-", "-", "-", "-", "-", "-"]);
       }
     });
 
@@ -398,7 +402,14 @@ export default function AdminDashboard({ legends, profiles }: { legends: any[], 
                                 {profile.visited_legends?.map((v: any, i: number) => {
                                     const rating = profile.ratings?.find((r: any) => r.legend_id === v.legend_id);
                                     return (
-                                        <div key={i} className="text-[10px] bg-slate-100 p-1 rounded flex flex-col gap-0.5 border border-slate-200">
+                                        <button 
+                                            key={i} 
+                                            onClick={() => {
+                                                setSelectedVisit({...v, rating: rating?.rating, username: profile.username});
+                                                setIsVisitDetailOpen(true);
+                                            }}
+                                            className="text-[10px] bg-slate-100 p-1 rounded flex flex-col gap-0.5 border border-slate-200 hover:bg-slate-200 transition-colors text-left"
+                                        >
                                             <span className="font-bold truncate max-w-[100px]">{v.legend?.title}</span>
                                             <span className="flex items-center gap-1 text-slate-500">
                                                 <MapPin className="w-2 h-2" /> {v.lat?.toFixed(4)}, {v.lng?.toFixed(4)}
@@ -408,7 +419,7 @@ export default function AdminDashboard({ legends, profiles }: { legends: any[], 
                                                 <Star className="w-2 h-2 fill-yellow-600" /> {rating.rating}
                                               </span>
                                             )}
-                                        </div>
+                                        </button>
                                     );
                                 })}
                                 {(!profile.visited_legends || profile.visited_legends.length === 0) && (
@@ -431,6 +442,70 @@ export default function AdminDashboard({ legends, profiles }: { legends: any[], 
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Dialog for Visit Details */}
+      <Dialog open={isVisitDetailOpen} onOpenChange={setIsVisitDetailOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              Detall de la Visita 🧭
+            </DialogTitle>
+            <DialogDescription>
+              Informació detallada capturada durant el desbloqueig.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedVisit && (
+            <div className="grid gap-4 py-4">
+              <div className="flex items-center justify-between border-b pb-2">
+                <span className="font-medium text-muted-foreground">Usuari</span>
+                <span className="font-bold">{selectedVisit.username || 'Anonymous'}</span>
+              </div>
+              <div className="flex items-center justify-between border-b pb-2">
+                <span className="font-medium text-muted-foreground">Llegenda</span>
+                <span className="font-bold text-pallars-green">{selectedVisit.legend?.title}</span>
+              </div>
+              <div className="flex items-center justify-between border-b pb-2">
+                <span className="font-medium text-muted-foreground">Punt d'Activació</span>
+                <div className="text-right">
+                    <div className="font-mono text-sm">{selectedVisit.lat?.toFixed(6)}, {selectedVisit.lng?.toFixed(6)}</div>
+                    <div className="text-[10px] text-muted-foreground">Precisió: ±{selectedVisit.accuracy?.toFixed(1) || '?'} m</div>
+                </div>
+              </div>
+              <div className="flex items-center justify-between border-b pb-2">
+                <span className="font-medium text-muted-foreground">Data i Hora</span>
+                <span className="text-sm">{selectedVisit.visited_at ? new Date(selectedVisit.visited_at).toLocaleString() : '-'}</span>
+              </div>
+              <div className="flex items-center justify-between border-b pb-2">
+                <span className="font-medium text-muted-foreground">Tiempo de Permanencia</span>
+                <span className="font-bold text-blue-600">
+                    {selectedVisit.duration_seconds 
+                        ? `${Math.floor(selectedVisit.duration_seconds / 60)}m ${selectedVisit.duration_seconds % 60}s` 
+                        : "0s"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="font-medium text-muted-foreground">Valoració</span>
+                <div className="flex gap-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                        <Star 
+                            key={star} 
+                            className={`w-4 h-4 ${(selectedVisit.rating && star <= selectedVisit.rating) ? 'fill-yellow-400 text-yellow-400' : 'text-slate-200'}`} 
+                        />
+                    ))}
+                </div>
+              </div>
+              
+              <Button 
+                variant="outline" 
+                className="w-full mt-4 gap-2"
+                onClick={() => window.open(`https://www.google.com/maps?q=${selectedVisit.lat},${selectedVisit.lng}`, '_blank')}
+              >
+                <ExternalLink className="w-4 h-4" /> Veure al mapa de Google
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

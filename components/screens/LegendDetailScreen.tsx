@@ -5,7 +5,7 @@ import { ArrowLeft, Play, Pause, Heart, Star, Share2, MapPin, Calendar, Volume2,
 import { ImageWithFallback } from "../figma/ImageWithFallback";
 
 import { motion } from "motion/react";
-import { recordVisit, saveRating } from "@/lib/actions";
+import { recordVisit, saveRating, updateVisitDuration } from "@/lib/actions";
 
 interface LegendDetailScreenProps {
   legend: any;
@@ -78,6 +78,19 @@ export function LegendDetailScreen({ legend, onNavigate, userLocation, currentUs
          });
     }
   }, [isUnlocked, currentUser, safeLegend.id, userLocation]);
+
+  // Duration tracking heartbeat (every 30 seconds)
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isUnlocked && currentUser?.id && safeLegend.id) {
+        interval = setInterval(() => {
+            updateVisitDuration(currentUser.id, safeLegend.id, 30);
+        }, 30000); // 30 seconds
+    }
+    return () => {
+        if (interval) clearInterval(interval);
+    };
+  }, [isUnlocked, currentUser?.id, safeLegend.id]);
 
   // Generate summary logic
 

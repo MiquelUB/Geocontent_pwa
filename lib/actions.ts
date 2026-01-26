@@ -400,6 +400,32 @@ export async function saveRating(userId: string, legendId: string, rating: numbe
     return { success: true };
 }
 
+export async function updateVisitDuration(userId: string, legendId: string, additionalSeconds: number) {
+    // Increment duration_seconds for the specific visit
+    // Using a raw RPC or a read-update for simplicity in MVP
+    const { data: visit, error: fetchError } = await supabaseAdmin
+        .from('visited_legends')
+        .select('duration_seconds')
+        .eq('user_id', userId)
+        .eq('legend_id', legendId)
+        .single();
+    
+    if (fetchError || !visit) return { success: false };
+
+    const { error: updateError } = await supabaseAdmin
+        .from('visited_legends')
+        .update({ duration_seconds: (visit.duration_seconds || 0) + additionalSeconds })
+        .eq('user_id', userId)
+        .eq('legend_id', legendId);
+
+    if (updateError) {
+        console.error('Error updating duration:', updateError);
+        return { success: false };
+    }
+
+    return { success: true };
+}
+
 export async function updateLastLogin(userId: string) {
     const { error } = await supabaseAdmin
         .from('profiles')
