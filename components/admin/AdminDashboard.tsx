@@ -498,9 +498,9 @@ export default function AdminDashboard({ legends, profiles }: { legends: any[], 
               <Button 
                 variant="outline" 
                 className="w-full mt-4 gap-2"
-                onClick={() => window.open(`https://www.google.com/maps?q=${selectedVisit.lat},${selectedVisit.lng}`, '_blank')}
+                onClick={() => window.open(`https://www.openstreetmap.org/?mlat=${selectedVisit.lat}&mlon=${selectedVisit.lng}#map=18/${selectedVisit.lat}/${selectedVisit.lng}`, '_blank')}
               >
-                <ExternalLink className="w-4 h-4" /> Veure al mapa de Google
+                <ExternalLink className="w-4 h-4" /> Veure al mapa
               </Button>
             </div>
           )}
