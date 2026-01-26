@@ -287,7 +287,7 @@ export async function updateProfileAvatar(userId: string, avatarUrl: string) {
 }
 
 
-export async function recordVisit(userId: string, legendId: string) {
+export async function recordVisit(userId: string, legendId: string, gpsData?: { lat: number; lng: number; accuracy: number }) {
     // 1. Check if already visited
     const { data: existing } = await supabaseAdmin
         .from('visited_legends')
@@ -298,10 +298,16 @@ export async function recordVisit(userId: string, legendId: string) {
 
     if (existing) return { success: true, message: 'Already visited' };
 
-    // 2. Record visit
+    // 2. Record visit with GPS data if provided
     const { error: visitError } = await supabaseAdmin
         .from('visited_legends')
-        .insert({ user_id: userId, legend_id: legendId });
+        .insert({ 
+            user_id: userId, 
+            legend_id: legendId,
+            lat: gpsData?.lat,
+            lng: gpsData?.lng,
+            accuracy: gpsData?.accuracy
+        });
 
     if (visitError) {
         console.error('Visit error:', visitError);
@@ -309,14 +315,12 @@ export async function recordVisit(userId: string, legendId: string) {
     }
 
     // 3. Award XP (50 XP)
-    // We strictly increment to avoid race conditions ideally, but simple read-update is fine for MVP
     const { data: profile } = await supabaseAdmin.from('profiles').select('xp, level').eq('id', userId).single();
     
     if (profile) {
         const newXp = (profile.xp || 0) + 50;
         let newLevel = profile.level;
         
-        // Simple Leveling: 1:0-200, 2:201-500, 3:501-1000, 4:1000+
         if (newXp >= 1000) newLevel = 4;
         else if (newXp >= 500) newLevel = 3;
         else if (newXp >= 200) newLevel = 2;
@@ -360,7 +364,15 @@ export async function getAllProfiles() {
   noStore();
   const { data, error } = await supabaseAdmin
     .from('profiles')
-    .select('*')
+    .select(`
+      *,
+      visited_legends (
+        *,
+        legend:legends(*)
+      ),
+      ratings (*)
+    `)
+    .order('created_at', { ascending: false });
     
   if (error) {
     console.error('Error fetching all profiles:', error)
@@ -368,4 +380,33 @@ export async function getAllProfiles() {
   }
 
   return data
+}
+
+export async function saveRating(userId: string, legendId: string, rating: number, comment?: string) {
+    const { error } = await supabaseAdmin
+        .from('ratings')
+        .upsert({
+            user_id: userId,
+            legend_id: legendId,
+            rating,
+            comment
+        }, { onConflict: 'user_id,legend_id' });
+
+    if (error) {
+        console.error('Error saving rating:', error);
+        return { success: false, error: error.message };
+    }
+
+    return { success: true };
+}
+
+export async function updateLastLogin(userId: string) {
+    const { error } = await supabaseAdmin
+        .from('profiles')
+        .update({ last_login: new Date().toISOString() })
+        .eq('id', userId);
+
+    if (error) {
+        console.error('Error updating last login:', error);
+    }
 }

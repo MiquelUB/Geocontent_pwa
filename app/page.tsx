@@ -132,7 +132,7 @@ export default function Home() {
       case "login":
         return <SimpleLogin onLoginSuccess={handleLoginSuccess} />;
       case "home":
-        return <PallarsHomeScreen onNavigate={handleNavigate} onOpenHelp={reopenOnboarding} />;
+        return <PallarsHomeScreen onNavigate={handleNavigate} onOpenHelp={reopenOnboarding} currentUser={currentUser} />;
 
       case "legends":
         return <PallarsLegendsScreen onNavigate={handleNavigate} />;

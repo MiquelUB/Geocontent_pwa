@@ -12,6 +12,7 @@ import { deleteLegend, createLegend, updateLegend } from "@/lib/actions";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { supabase } from "@/lib/supabase/client";
+import { Download, ExternalLink, MapPin, Star } from "lucide-react";
 
 export default function AdminDashboard({ legends, profiles }: { legends: any[], profiles: any[] }) {
   const router = useRouter();
@@ -114,6 +115,44 @@ export default function AdminDashboard({ legends, profiles }: { legends: any[], 
     } finally {
         setIsLoading(false);
     }
+  }
+
+  function exportToCSV() {
+    if (!profiles || profiles.length === 0) return;
+
+    // Prepare headers
+    const headers = ["Username", "Email", "Role", "Level", "XP", "Last Login", "Legend Title", "Visit Lat", "Visit Lng", "Accuracy", "Rating"];
+    const rows: string[][] = [];
+
+    profiles.forEach(profile => {
+      const baseInfo = [
+        profile.username || "Anonymous",
+        profile.email || "-",
+        profile.role,
+        profile.level,
+        profile.xp,
+        profile.last_login ? new Date(profile.last_login).toISOString() : "-"
+      ];
+
+      if (profile.visited_legends?.length > 0) {
+        profile.visited_legends.forEach((v: any) => {
+          const rating = profile.ratings?.find((r: any) => r.legend_id === v.legend_id)?.rating || "-";
+          rows.push([...baseInfo, v.legend?.title || "Unknown", v.lat || "-", v.lng || "-", v.accuracy || "-", rating.toString()]);
+        });
+      } else {
+        rows.push([...baseInfo, "No visits", "-", "-", "-", "-"]);
+      }
+    });
+
+    const csvContent = [headers.join(","), ...rows.map(row => row.map(cell => `"${cell}"`).join(","))].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `mistic_pallars_users_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 
   return (
@@ -324,37 +363,64 @@ export default function AdminDashboard({ legends, profiles }: { legends: any[], 
         <TabsContent value="users">
 
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Usuaris</CardTitle>
+              <Button onClick={exportToCSV} variant="outline" className="flex items-center gap-2">
+                <Download className="w-4 h-4" /> Exportar CSV
+              </Button>
             </CardHeader>
             <CardContent>
              <div className="rounded-md border">
                 <table className="w-full text-sm">
                   <thead className="bg-muted/50">
                     <tr className="text-left border-b">
-                      <th className="p-4 font-medium">Username</th>
+                      <th className="p-4 font-medium">Usuari</th>
                       <th className="p-4 font-medium">Email</th>
-                      <th className="p-4 font-medium">Role</th>
-                      <th className="p-4 font-medium">Nivell</th>
-                      <th className="p-4 font-medium">Fecha de Alta</th>
+                      <th className="p-4 font-medium">Progress</th>
+                      <th className="p-4 font-medium">Visit Details (GPS & Ratings)</th>
+                      <th className="p-4 font-medium">Activitat</th>
                     </tr>
                   </thead>
                   <tbody>
                     {profiles?.map((profile: any) => (
-                      <tr key={profile.id} className="border-b last:border-0">
-                        <td className="p-4 font-medium">{profile.username || 'Anonymous'}</td>
+                      <tr key={profile.id} className="border-b last:border-0 hover:bg-muted/5">
+                        <td className="p-4 font-medium">
+                            {profile.username || 'Anonymous'}
+                            <div className="text-[10px] text-muted-foreground font-mono">{profile.id.substring(0,8)}</div>
+                        </td>
                         <td className="p-4 text-muted-foreground">{profile.email || '-'}</td>
-                        <td className="p-4">{profile.role}</td>
-                        <td className="p-4">Lvl {profile.level}</td>
-                        <td className="p-4 text-muted-foreground">
-                          {profile.created_at 
-                            ? new Date(profile.created_at).toLocaleDateString('es-ES', {
-                                day: '2-digit',
-                                month: '2-digit',
-                                year: 'numeric'
-                              })
-                            : '-'
-                          }
+                        <td className="p-4">
+                            <span className="px-2 py-1 rounded text-[10px] bg-pallars-green/5 text-pallars-green font-bold">Lvl {profile.level}</span>
+                            <div className="text-[10px] text-muted-foreground mt-1">{profile.xp} XP</div>
+                        </td>
+                        <td className="p-4">
+                            <div className="flex flex-wrap gap-1 max-w-[250px]">
+                                {profile.visited_legends?.map((v: any, i: number) => {
+                                    const rating = profile.ratings?.find((r: any) => r.legend_id === v.legend_id);
+                                    return (
+                                        <div key={i} className="text-[10px] bg-slate-100 p-1 rounded flex flex-col gap-0.5 border border-slate-200">
+                                            <span className="font-bold truncate max-w-[100px]">{v.legend?.title}</span>
+                                            <span className="flex items-center gap-1 text-slate-500">
+                                                <MapPin className="w-2 h-2" /> {v.lat?.toFixed(4)}, {v.lng?.toFixed(4)}
+                                            </span>
+                                            {rating && (
+                                              <span className="flex items-center gap-0.5 text-yellow-600 font-bold">
+                                                <Star className="w-2 h-2 fill-yellow-600" /> {rating.rating}
+                                              </span>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                                {(!profile.visited_legends || profile.visited_legends.length === 0) && (
+                                    <span className="text-xs text-muted-foreground italic">No visits yet</span>
+                                )}
+                            </div>
+                        </td>
+                        <td className="p-4 text-muted-foreground text-xs">
+                          <div>Alta: {profile.created_at ? new Date(profile.created_at).toLocaleDateString() : '-'}</div>
+                          {profile.last_login && (
+                            <div className="text-pallars-green">Últim: {new Date(profile.last_login).toLocaleDateString()}</div>
+                          )}
                         </td>
                       </tr>
                     ))}

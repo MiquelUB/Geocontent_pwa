@@ -5,15 +5,16 @@ import { ImageWithFallback } from "../figma/ImageWithFallback";
 import { motion } from "motion/react";
 import MapboxMap from "../map/MapboxMap";
 import { Marker } from "react-map-gl/mapbox";
-import { getLegends } from "@/lib/actions";
+import { getLegends, updateLastLogin } from "@/lib/actions";
 import { calculateDistance } from "@/lib/location";
 
 interface PallarsHomeScreenProps {
   onNavigate: (screen: string, data?: any) => void;
   onOpenHelp: () => void;
+  currentUser?: any;
 }
 
-export function PallarsHomeScreen({ onNavigate, onOpenHelp }: PallarsHomeScreenProps) {
+export function PallarsHomeScreen({ onNavigate, onOpenHelp, currentUser }: PallarsHomeScreenProps) {
   const [userLocation] = useState({ lat: 42.4140, lng: 0.9870 }); // Centre Pallars
   const [nearbyLegends, setNearbyLegends] = useState<any[]>([]);
 
@@ -44,7 +45,12 @@ export function PallarsHomeScreen({ onNavigate, onOpenHelp }: PallarsHomeScreenP
         }
     }
     fetchData();
-  }, [userLocation]);
+
+    // Actualitzar últim login si hi ha usuari
+    if (currentUser?.id) {
+        updateLastLogin(currentUser.id);
+    }
+  }, [userLocation, currentUser]);
 
   return (
     <div className="screen bg-background">

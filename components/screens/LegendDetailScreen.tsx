@@ -5,7 +5,7 @@ import { ArrowLeft, Play, Pause, Heart, Star, Share2, MapPin, Calendar, Volume2,
 import { ImageWithFallback } from "../figma/ImageWithFallback";
 
 import { motion } from "motion/react";
-import { recordVisit } from "@/lib/actions";
+import { recordVisit, saveRating } from "@/lib/actions";
 
 interface LegendDetailScreenProps {
   legend: any;
@@ -63,9 +63,13 @@ export function LegendDetailScreen({ legend, onNavigate, userLocation, currentUs
 
   // Record visit when unlocked
   useEffect(() => {
-    if (isUnlocked && currentUser?.id && safeLegend.id) {
-       // Fire and forget
-       recordVisit(currentUser.id, safeLegend.id)
+    if (isUnlocked && currentUser?.id && safeLegend.id && userLocation) {
+       // Fire and forget with GPS data
+       recordVisit(currentUser.id, safeLegend.id, {
+         lat: userLocation.latitude,
+         lng: userLocation.longitude,
+         accuracy: 10 // Assumption or could be passed from parent
+       })
          .then(res => {
             if (res.success && res.newLevel) {
                 // Optional: Show level up toast/notification
@@ -73,7 +77,7 @@ export function LegendDetailScreen({ legend, onNavigate, userLocation, currentUs
             }
          });
     }
-  }, [isUnlocked, currentUser, safeLegend.id]);
+  }, [isUnlocked, currentUser, safeLegend.id, userLocation]);
 
   // Generate summary logic
 
@@ -98,8 +102,11 @@ export function LegendDetailScreen({ legend, onNavigate, userLocation, currentUs
     setIsFavorite(!isFavorite);
   };
 
-  const handleRating = (rating: number) => {
+  const handleRating = async (rating: number) => {
     setUserRating(rating);
+    if (currentUser?.id && safeLegend.id) {
+        await saveRating(currentUser.id, safeLegend.id, rating);
+    }
   };
 
   const handleShare = () => {
