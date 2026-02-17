@@ -12,6 +12,7 @@ import { deleteLegend, createLegend, updateLegend } from "@/lib/actions";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/database/supabase/client";
 import { supabase } from "@/lib/database/supabase/client";
+import AiRouteGenerator from "./AiRouteGenerator";
 
 export default function AdminDashboard({ legends, profiles }: { legends: any[], profiles: any[] }) {
   const router = useRouter();
@@ -166,6 +167,7 @@ export default function AdminDashboard({ legends, profiles }: { legends: any[], 
         <TabsList className="mb-4">
           <TabsTrigger value="legends">Llegendes</TabsTrigger>
           <TabsTrigger value="users">Usuaris</TabsTrigger>
+          <TabsTrigger value="ai-generator">Generador IA ✨</TabsTrigger>
         </TabsList>
         
         <TabsContent value="legends">
@@ -363,6 +365,10 @@ export default function AdminDashboard({ legends, profiles }: { legends: any[], 
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="ai-generator">
+            <AiRouteGenerator />
         </TabsContent>
       </Tabs>
     </div>

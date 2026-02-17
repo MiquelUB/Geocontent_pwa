@@ -92,11 +92,11 @@ export const PxxConfig = {
 
   // Chameleon Engine — 5 visual themes per route
   chameleonThemes: {
-    mountain: { primary: "#4A5D23", accent: "#BC5D36", bg: "#F9F7F2", mapStyle: "terrain-v1", icon: "⛰️", label: "Muntanya" },
-    coast:    { primary: "#1B6B93", accent: "#F4D160", bg: "#F5F5F0", mapStyle: "marine-v1", icon: "🌊", label: "Costa" },
-    city:     { primary: "#2C3E50", accent: "#E74C3C", bg: "#ECEFF1", mapStyle: "urban-v1", icon: "🏛️", label: "Ciutat" },
-    interior: { primary: "#8B6914", accent: "#A0522D", bg: "#FFF8DC", mapStyle: "rural-v1", icon: "🌾", label: "Interior" },
-    bloom:    { primary: "#C2185B", accent: "#FF6F91", bg: "#FFF0F5", mapStyle: "botanical-v1", icon: "🌸", label: "Floració" },
+    mountain: { primary: "#4A5D23", accent: "#BC5D36", bg: "#F9F7F2", icon: "⛰️", label: "Muntanya" },
+    coast:    { primary: "#1B6B93", accent: "#F4D160", bg: "#F5F5F0", icon: "🌊", label: "Costa" },
+    city:     { primary: "#2C3E50", accent: "#E74C3C", bg: "#ECEFF1", icon: "🏛️", label: "Ciutat" },
+    interior: { primary: "#8B6914", accent: "#A0522D", bg: "#FFF8DC", icon: "🌾", label: "Interior" },
+    bloom:    { primary: "#C2185B", accent: "#FF6F91", bg: "#FFF0F5", icon: "🌸", label: "Floració" },
   },
 
   vocabulary: {

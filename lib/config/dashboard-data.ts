@@ -19,6 +19,8 @@ export interface GameButtonConfig {
   width: number; // % del ancho
   height?: number; // % del alto
   imageSrc: string; // "" = Hitbox
+  iconName?: string;
+  designVariant?: 'default' | 'gold' | 'danger';
 }
 
 // ==========================================

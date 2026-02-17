@@ -4,10 +4,11 @@ import { Badge } from "../ui/badge";
 import { MapPin, Navigation, Info, X, ArrowLeft, Filter, HelpCircle } from 'lucide-react';
 import { ImageWithFallback } from "../figma/ImageWithFallback";
 import { motion } from "motion/react";
-import MapboxMap from "../map/MapboxMap";
-import { Marker } from "react-map-gl/mapbox";
+import MapLibreMap from "../map/MapLibreMap";
+import { Marker, Popup } from "react-map-gl/maplibre";
 
 import { getLegends } from "@/lib/actions";
+import { PxxConfig } from "@/projects/active/config";
 
 interface MapScreenProps {
   onNavigate: (screen: string, data?: any) => void;
@@ -19,10 +20,15 @@ interface MapScreenProps {
 
 export function MapScreen({ onNavigate, onOpenHelp, focusLegend, userLocation }: MapScreenProps) {
 
-  const [selectedLegend, setSelectedLegend] = useState(focusLegend || null);
+  const [selectedLegend, setSelectedLegend] = useState<any>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [activeCategory, setActiveCategory] = useState("totes");
   const [legends, setLegends] = useState<any[]>([]);
+  const [viewState, setViewState] = useState({
+     longitude: 0.9870,
+     latitude: 42.4140,
+     zoom: 11
+  });
 
   function getColorByCategory(category: string) {
     switch (category) {
@@ -58,6 +64,24 @@ export function MapScreen({ onNavigate, onOpenHelp, focusLegend, userLocation }:
     }
     fetchData();
   }, []);
+
+  // If focusLegend provided, center map on it
+  useEffect(() => {
+    if (focusLegend) {
+       setViewState({
+          longitude: focusLegend.coordinates.lng,
+          latitude: focusLegend.coordinates.lat,
+          zoom: 14
+       });
+       setSelectedLegend(focusLegend);
+    } else if (userLocation) {
+        setViewState({
+            longitude: userLocation.longitude,
+            latitude: userLocation.latitude,
+            zoom: 12 
+        });
+    }
+  }, [focusLegend, userLocation]);
 
   const categories = [
     { id: "totes", label: "Todas", color: "#3E4E3F" },
@@ -150,7 +174,7 @@ export function MapScreen({ onNavigate, onOpenHelp, focusLegend, userLocation }:
 
       {/* Mapa principal */}
       <div className="relative w-full h-full bg-gray-100">
-        <MapboxMap
+        <MapLibreMap
           center={
             selectedLegend 
               ? [
@@ -185,7 +209,7 @@ export function MapScreen({ onNavigate, onOpenHelp, focusLegend, userLocation }:
               </div>
             </Marker>
           ))}
-        </MapboxMap>
+        </MapLibreMap>
 
 
 

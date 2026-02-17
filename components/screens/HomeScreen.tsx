@@ -3,8 +3,7 @@ import { Button } from "../ui/button";
 import { Navigation, Star, Clock, MapPin, HelpCircle } from "lucide-react";
 import { ImageWithFallback } from "../figma/ImageWithFallback";
 import { motion } from "motion/react";
-import MapboxMap from "../map/MapboxMap";
-import { Marker } from "react-map-gl/mapbox";
+import MapLibreMap from '@/components/map/MapLibreMap';
 import { getLegends } from "@/lib/actions";
 import { calculateDistance } from "@/lib/location";
 
@@ -96,25 +95,9 @@ export function HomeScreen({ onNavigate, onOpenHelp }: HomeScreenProps) {
         transition={{ delay: 0.2 }}
         className="relative h-64 mx-4 mt-4 rounded-lg overflow-hidden bg-gradient-to-br from-green-100 to-blue-100 shadow-md"
       >
-        <MapboxMap
-          center={[0.95, 42.4]} 
-          zoom={9}
-          className="w-full h-full pointer-events-none" // Desactivar interacció per ser un preview
-        >
-             {/* Pins de llegendes properes */}
-            {nearbyLegends.map((legend) => (
-            <Marker
-                key={legend.id}
-                longitude={legend.coordinates.lng}
-                latitude={legend.coordinates.lat}
-                anchor="bottom"
-            >
-                <Navigation 
-                    className="w-8 h-8 text-primary drop-shadow-md"
-                />
-            </Marker>
-            ))}
-        </MapboxMap>
+        <div className="absolute inset-0 z-0">
+            <MapLibreMap />
+        </div>
 
         {/* Overlay per fer-lo clicable cap al mapa full */}
         <div 

@@ -2,24 +2,27 @@
 
 import { useState } from 'react'
 import Card from './Card'
-import MapboxMap from '../map/MapboxMap'
+import MapLibreMap from '../map/MapLibreMap'
 import { Maximize2 } from 'lucide-react'
 
 interface MapCardProps {
-  userLocation: { latitude: number; longitude: number } | null
+  location: {
+    lat: number
+    lng: number
+    label: string
+  }
 }
 
-export default function MapCard({ userLocation }: MapCardProps) {
+export default function MapCard({ location }: MapCardProps) {
   const [isExpanded, setIsExpanded] = useState(false)
 
   if (isExpanded) {
     return (
       <div className="fixed inset-0 z-50 bg-black">
-        <MapboxMap
-          center={userLocation ? [userLocation.longitude, userLocation.latitude] : [1.5, 42.4]}
+        <MapLibreMap
+          center={[location.lng, location.lat]}
           zoom={13}
           className="h-full w-full"
-          userLocation={userLocation}
         />
         <button
           onClick={() => setIsExpanded(false)}
@@ -32,12 +35,11 @@ export default function MapCard({ userLocation }: MapCardProps) {
   }
 
   return (
-    <Card className="relative overflow-hidden h-96">
-      <MapboxMap
-        center={userLocation ? [userLocation.longitude, userLocation.latitude] : [1.5, 42.4]}
+    <Card className="relative overflow-hidden h-64">
+      <MapLibreMap
+        center={[location.lng, location.lat]}
         zoom={13}
         className="h-full w-full"
-        userLocation={userLocation}
       />
       <button
         onClick={() => setIsExpanded(true)}
