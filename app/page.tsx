@@ -1,0 +1,189 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { HomeScreen } from "../components/screens/HomeScreen";
+import { LegendsScreen } from "../components/screens/LegendsScreen";
+import { LegendDetailScreen } from "../components/screens/LegendDetailScreen";
+import { MapScreen } from "../components/screens/MapScreen";
+import { ProfileScreen } from "../components/screens/ProfileScreen";
+import { SplashScreen } from "../components/screens/SplashScreen";
+import { ErrorScreen } from "../components/screens/ErrorScreen";
+import { BottomNavigation } from "../components/BottomNavigation";
+import { useGeolocation } from "../hooks/useGeolocation";
+import { SimpleLogin } from "../components/auth/SimpleLogin";
+import { OnboardingModal } from "../components/OnboardingModal";
+import { useOnboarding } from "../hooks/useOnboarding";
+
+
+
+
+export default function Home() {
+  const [currentScreen, setCurrentScreen] = useState("splash");
+  const [navigationData, setNavigationData] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [errorType, setErrorType] = useState<"no-connection" | "gps-denied" | "general" | null>(null);
+  
+  const { location, error: geoError } = useGeolocation();
+  const { isOpen: isOnboardingOpen, completeOnboarding, skipOnboarding, reopenOnboarding } = useOnboarding();
+
+
+
+    useEffect(() => {
+        if (geoError) {
+          console.log("Geolocation error:", geoError); 
+          // Optional: handle GPS error state here if strict dependency
+        }
+    }, [geoError]);
+
+  // Simulació de càrrega inicial i comprovacions
+  useEffect(() => {
+    // Aquí es farien les comprovacions reals de xarxa, GPS, etc.
+    const checkStatus = async () => {
+      try {
+        // Simular un retard de xarxa o càrrega
+        // await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Simular check de connexió
+        const isOnline = navigator.onLine;
+        if (!isOnline) {
+          setErrorType("no-connection");
+          return;
+        }
+
+        // Check for persisted user session with VALIDATION
+        const savedUserSting = localStorage.getItem("core_user");
+        if (savedUserSting) {
+           try {
+             // Dynamic import to ensuring we call the server action from client safely
+             const { getUserProfile } = await import("@/lib/actions");
+             
+             const savedUser = JSON.parse(savedUserSting);
+             
+             if (savedUser?.id) {
+               console.log("Validating session for:", savedUser.id);
+               const profile = await getUserProfile(savedUser.id);
+               
+               if (profile) {
+                 console.log("Session valid.");
+                 setCurrentUser(profile);
+               } else {
+                 console.warn("Invalid session found (User local but not in DB). Clearing.");
+                 localStorage.removeItem("core_user");
+                 setCurrentUser(null);
+               }
+             } else {
+                localStorage.removeItem("pallars_user");
+                setCurrentUser(null);
+             }
+           } catch (err) {
+             console.error("Error parsing/validating user session:", err);
+             localStorage.removeItem("pallars_user");
+             setCurrentUser(null);
+           }
+        }
+
+
+        setIsLoaded(true);
+      } catch (e) {
+
+        console.error("Error en inicialitzar:", e);
+        setErrorType("general");
+      }
+    };
+
+    checkStatus();
+  }, []);
+
+
+  const handleNavigate = (screen: string, data?: any) => {
+    setNavigationData(data);
+    setCurrentScreen(screen);
+  };
+
+  const handleSplashComplete = () => {
+    if (errorType) {
+      setCurrentScreen("error");
+    } else if (currentUser) {
+      setCurrentScreen("home");
+    } else {
+      setCurrentScreen("login"); // Require login if no user
+    }
+  };
+
+  const handleLoginSuccess = (user: any) => {
+    setCurrentUser(user);
+    setCurrentScreen("home");
+  };
+
+  const handleRetry = () => {
+
+    setErrorType(null);
+    setCurrentScreen("splash");
+    // Tornar a executar la lògica de càrrega
+    window.location.reload();
+  };
+
+  // Renderitzat condicionals de pantalles
+  const renderScreen = () => {
+    switch (currentScreen) {
+      case "splash":
+        return <SplashScreen onComplete={handleSplashComplete} />;
+      case "login":
+        return <SimpleLogin onLoginSuccess={handleLoginSuccess} />;
+      case "home":
+        return <HomeScreen onNavigate={handleNavigate} onOpenHelp={reopenOnboarding} />;
+
+      case "legends":
+        return <LegendsScreen onNavigate={handleNavigate} />;
+      case "legend-detail":
+        return <LegendDetailScreen legend={navigationData} onNavigate={handleNavigate} userLocation={location} currentUser={currentUser} />;
+      case "map":
+        return <MapScreen onNavigate={handleNavigate} focusLegend={navigationData} userLocation={location} onOpenHelp={reopenOnboarding} />;
+
+      case "profile":
+        return <ProfileScreen onNavigate={handleNavigate} currentUser={currentUser} />
+;
+      case "error":
+        return (
+          <ErrorScreen 
+            type={errorType || "general"} 
+            onRetry={handleRetry} 
+            onNavigate={handleNavigate}
+          />
+        );
+      default:
+        return <HomeScreen onNavigate={handleNavigate} onOpenHelp={reopenOnboarding} />;
+    }
+  };
+
+  // Determinar si cal mostrar la navegació inferior
+  // Show on all screens EXCEPT splash and error
+  const showBottomNav = !["splash", "error", "login"].includes(currentScreen);
+
+
+
+  return (
+    <div className="mobile-app bg-background text-foreground h-screen w-full overflow-hidden flex flex-col">
+      <main className="flex-1 relative overflow-auto scrollbar-hide">
+        {renderScreen()}
+      </main>
+      
+      {showBottomNav && (
+        <BottomNavigation 
+          currentScreen={currentScreen} 
+          onScreenChange={handleNavigate} 
+        />
+      )}
+
+      {/* Onboarding Modal */}
+      <OnboardingModal
+        isOpen={isOnboardingOpen}
+        onComplete={completeOnboarding}
+        onSkip={skipOnboarding}
+      />
+
+    </div>
+  );
+}

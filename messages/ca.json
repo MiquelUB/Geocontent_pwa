@@ -1,0 +1,81 @@
+{
+  "common": {
+    "appName": "Projecte Xino Xano",
+    "loading": "Carregant...",
+    "error": "S'ha produït un error",
+    "retry": "Torna-ho a provar",
+    "save": "Desar",
+    "cancel": "Cancel·lar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "create": "Crear",
+    "back": "Tornar",
+    "next": "Següent",
+    "search": "Cercar"
+  },
+  "auth": {
+    "login": "Entrar",
+    "logout": "Sortir",
+    "magicLinkSent": "T'hem enviat un enllaç màgic al correu!",
+    "emailPlaceholder": "El teu correu electrònic",
+    "displayNameLabel": "Com et dius?",
+    "displayNamePlaceholder": "Ex: Jordi",
+    "createPassport": "Crear el meu Passaport",
+    "welcome": "Benvingut/da, {name}!"
+  },
+  "map": {
+    "title": "Mapa",
+    "myLocation": "La meva ubicació",
+    "downloadOffline": "Descarregar per usar offline",
+    "downloading": "Descarregant mapa...",
+    "offlineReady": "Mapa disponible offline!"
+  },
+  "routes": {
+    "title": "Rutes",
+    "explore": "Explorar",
+    "permanent": "Permanent",
+    "temporal": "Temporal",
+    "event": "Esdeveniment",
+    "expired": "Arxivada",
+    "upcoming": "Programada",
+    "premium": "Premium",
+    "distance": "{km} km",
+    "duration": "{hours}h {minutes}m",
+    "pois": "{count} punts d'interès"
+  },
+  "passport": {
+    "title": "Passaport Digital",
+    "stamps": "Segells",
+    "locked": "Bloquejat",
+    "unlocked": "Desbloquejat!",
+    "xp": "{points} XP",
+    "level": "Nivell {level}",
+    "progress": "{current}/{total} descoberts"
+  },
+  "quiz": {
+    "title": "Repte del Territori",
+    "question": "Pregunta",
+    "correct": "Correcte! +{xp} XP",
+    "incorrect": "No és correcte. Torna-ho a provar!",
+    "answerChallenge": "Respon el Repte ({xp} XP)"
+  },
+  "profile": {
+    "title": "Perfil de l'Explorador",
+    "totalXp": "XP Total",
+    "routesCompleted": "Rutes completades",
+    "stampsCollected": "Segells col·leccionats",
+    "memberSince": "Membre des de {date}",
+    "settings": "Configuració",
+    "language": "Idioma"
+  },
+  "admin": {
+    "dashboard": "Panell d'Administració",
+    "manageRoutes": "Gestionar Rutes",
+    "managePois": "Gestionar Punts d'Interès",
+    "uploadPdf": "Pujar PDF",
+    "themeSelector": "Tema Visual",
+    "temporalConfig": "Configuració Temporal",
+    "startDate": "Data d'inici",
+    "endDate": "Data de finalització"
+  }
+}

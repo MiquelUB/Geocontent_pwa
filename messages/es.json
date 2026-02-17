@@ -1,0 +1,81 @@
+{
+  "common": {
+    "appName": "Proyecto Xino Xano",
+    "loading": "Cargando...",
+    "error": "Se ha producido un error",
+    "retry": "Reintentar",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "create": "Crear",
+    "back": "Volver",
+    "next": "Siguiente",
+    "search": "Buscar"
+  },
+  "auth": {
+    "login": "Entrar",
+    "logout": "Salir",
+    "magicLinkSent": "¡Te hemos enviado un enlace mágico al correo!",
+    "emailPlaceholder": "Tu correo electrónico",
+    "displayNameLabel": "¿Cómo te llamas?",
+    "displayNamePlaceholder": "Ej: Jordi",
+    "createPassport": "Crear mi Pasaporte",
+    "welcome": "¡Bienvenido/a, {name}!"
+  },
+  "map": {
+    "title": "Mapa",
+    "myLocation": "Mi ubicación",
+    "downloadOffline": "Descargar para usar offline",
+    "downloading": "Descargando mapa...",
+    "offlineReady": "¡Mapa disponible offline!"
+  },
+  "routes": {
+    "title": "Rutas",
+    "explore": "Explorar",
+    "permanent": "Permanente",
+    "temporal": "Temporal",
+    "event": "Evento",
+    "expired": "Archivada",
+    "upcoming": "Programada",
+    "premium": "Premium",
+    "distance": "{km} km",
+    "duration": "{hours}h {minutes}m",
+    "pois": "{count} puntos de interés"
+  },
+  "passport": {
+    "title": "Pasaporte Digital",
+    "stamps": "Sellos",
+    "locked": "Bloqueado",
+    "unlocked": "¡Desbloqueado!",
+    "xp": "{points} XP",
+    "level": "Nivel {level}",
+    "progress": "{current}/{total} descubiertos"
+  },
+  "quiz": {
+    "title": "Reto del Territorio",
+    "question": "Pregunta",
+    "correct": "¡Correcto! +{xp} XP",
+    "incorrect": "No es correcto. ¡Inténtalo de nuevo!",
+    "answerChallenge": "Responde al Reto ({xp} XP)"
+  },
+  "profile": {
+    "title": "Perfil del Explorador",
+    "totalXp": "XP Total",
+    "routesCompleted": "Rutas completadas",
+    "stampsCollected": "Sellos coleccionados",
+    "memberSince": "Miembro desde {date}",
+    "settings": "Configuración",
+    "language": "Idioma"
+  },
+  "admin": {
+    "dashboard": "Panel de Administración",
+    "manageRoutes": "Gestionar Rutas",
+    "managePois": "Gestionar Puntos de Interés",
+    "uploadPdf": "Subir PDF",
+    "themeSelector": "Tema Visual",
+    "temporalConfig": "Configuración Temporal",
+    "startDate": "Fecha de inicio",
+    "endDate": "Fecha de finalización"
+  }
+}

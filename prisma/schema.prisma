@@ -1,0 +1,190 @@
+// PXX — Projecte Xino Xano
+// Brain & Muscle Architecture — Database Schema
+// PostgreSQL 16 + PostGIS 3.4
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  extensions = [postgis, uuid_ossp(map: "uuid-ossp")]
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum UserRole {
+  tourist
+  municipal_admin
+  super_admin
+}
+
+enum RouteAvailability {
+  permanent
+  temporal
+  event
+}
+
+enum ThemeId {
+  mountain
+  coast
+  city
+  interior
+  bloom
+}
+
+enum VideoType {
+  snack
+  dinner
+}
+
+// ============================================
+// 1. MUNICIPALITIES (Tenants)
+// ============================================
+
+model Municipality {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String
+  slug      String   @unique
+  nameTranslations Json @default("{}") @map("name_translations")
+  logoUrl   String?  @map("logo_url")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  routes Route[]
+  admins User[]  @relation("MunicipalityAdmins")
+
+  @@map("municipalities")
+}
+
+// ============================================
+// 2. USERS (Humanitzats)
+// ============================================
+
+model User {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email       String   @unique
+  displayName String   @map("display_name")
+  avatarUrl   String?  @map("avatar_url")
+  xpPoints    Int      @default(0) @map("xp_points")
+  role        UserRole @default(tourist)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  // Relations
+  municipalityId String?       @map("municipality_id") @db.Uuid
+  municipality   Municipality? @relation("MunicipalityAdmins", fields: [municipalityId], references: [id])
+  unlocks        UserUnlock[]
+
+  @@map("users")
+}
+
+// ============================================
+// 3. ROUTES (Amb Chameleon Engine + Temporal)
+// ============================================
+
+model Route {
+  id               String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  municipalityId   String            @map("municipality_id") @db.Uuid
+  title            String
+  slug             String            @unique
+  description      String?
+
+  // i18n
+  titleTranslations       Json @default("{}") @map("title_translations")
+  descriptionTranslations Json @default("{}") @map("description_translations")
+
+  // Chameleon Engine — Visual Theme
+  themeId          ThemeId           @default(mountain) @map("theme_id")
+
+  // Temporal Routes
+  availabilityType RouteAvailability @default(permanent) @map("availability_type")
+  startDate        DateTime?         @map("start_date") @db.Timestamptz
+  endDate          DateTime?         @map("end_date") @db.Timestamptz
+
+  isPremium        Boolean           @default(false) @map("is_premium")
+
+  // PostGIS — Bounding box for fast map centering
+  // NOTE: PostGIS geometry fields must be managed via raw SQL migrations
+  // bbox GEOMETRY(POLYGON, 4326)
+
+  createdAt        DateTime          @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime          @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  municipality     Municipality      @relation(fields: [municipalityId], references: [id])
+  pois             Poi[]
+
+  @@index([startDate, endDate], map: "idx_routes_dates")
+  @@index([municipalityId])
+  @@map("routes")
+}
+
+// ============================================
+// 4. POINTS OF INTEREST (POIs)
+// ============================================
+
+model Poi {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  routeId  String @map("route_id") @db.Uuid
+  title    String
+  description String?
+
+  // i18n
+  titleTranslations       Json @default("{}") @map("title_translations")
+  descriptionTranslations Json @default("{}") @map("description_translations")
+
+  // PostGIS — Point location
+  // NOTE: PostGIS geometry fields must be managed via raw SQL migrations
+  // location GEOMETRY(POINT, 4326)
+  latitude  Float?
+  longitude Float?
+
+  // Multimedia
+  audioUrl       String? @map("audio_url")
+  videoUrl       String? @map("video_url")
+  imageBeforeUrl String? @map("image_before_url")
+  imageAfterUrl  String? @map("image_after_url")
+  videoType      VideoType? @map("video_type")
+
+  // Gamification — Quiz
+  quizQuestion     String?  @map("quiz_question")
+  quizOptions      Json?    @map("quiz_options")
+  quizCorrectIndex Int?     @map("quiz_correct_index")
+  quizXpReward     Int      @default(100) @map("quiz_xp_reward")
+
+  // i18n for quiz
+  quizQuestionTranslations Json @default("{}") @map("quiz_question_translations")
+
+  sortOrder Int @default(0) @map("sort_order")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  route   Route        @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  unlocks UserUnlock[]
+
+  @@index([routeId])
+  @@map("pois")
+}
+
+// ============================================
+// 5. PASSPORT — User Unlocks
+// ============================================
+
+model UserUnlock {
+  userId     String   @map("user_id") @db.Uuid
+  poiId      String   @map("poi_id") @db.Uuid
+  unlockedAt DateTime @default(now()) @map("unlocked_at") @db.Timestamptz
+  earnedXp   Int      @map("earned_xp")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  poi  Poi  @relation(fields: [poiId], references: [id], onDelete: Cascade)
+
+  @@id([userId, poiId])
+  @@map("user_unlocks")
+}
