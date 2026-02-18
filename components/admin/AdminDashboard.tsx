@@ -119,7 +119,7 @@ export default function AdminDashboard({ legends, profiles }: { legends: any[], 
 
   return (
     <div className="container mx-auto p-6 bg-background min-h-screen">
-      <h1 className="text-3xl font-serif font-bold text-pallars-green mb-8">
+      <h1 className="text-3xl font-serif font-bold text-primary mb-8">
         Panell d'Administració
       </h1>
 
@@ -131,7 +131,7 @@ export default function AdminDashboard({ legends, profiles }: { legends: any[], 
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold font-serif text-pallars-green">
+            <div className="text-3xl font-bold font-serif text-primary">
               {legends?.length || 0}
             </div>
           </CardContent>
@@ -143,7 +143,7 @@ export default function AdminDashboard({ legends, profiles }: { legends: any[], 
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold font-serif text-pallars-brown">
+            <div className="text-3xl font-bold font-serif text-secondary">
               {profiles?.length || 0}
             </div>
           </CardContent>
@@ -174,7 +174,7 @@ export default function AdminDashboard({ legends, profiles }: { legends: any[], 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Gestió de Llegendes</CardTitle>
-              <Button onClick={handleCreateClick} className="bg-pallars-green text-pallars-cream hover:bg-pallars-green/90">
+              <Button onClick={handleCreateClick} className="bg-primary text-primary-foreground hover:bg-primary/90">
                 Nova Llegenda +
               </Button>
             </CardHeader>
@@ -194,7 +194,7 @@ export default function AdminDashboard({ legends, profiles }: { legends: any[], 
                       <tr key={legend.id} className="border-b last:border-0 hover:bg-muted/10">
                         <td className="p-4 font-medium">{legend.title}</td>
                         <td className="p-4">
-                            <span className="px-2 py-1 rounded-full text-xs bg-pallars-green/10 text-pallars-green">
+                            <span className="px-2 py-1 rounded-full text-xs bg-primary/10 text-primary">
                                 {legend.category}
                             </span>
                         </td>

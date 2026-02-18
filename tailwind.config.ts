@@ -77,9 +77,9 @@ const config: Config = {
   			'mono': [PxxConfig.theme.fonts.mono, 'monospace'],
   		},
   		borderRadius: {
-  			lg: 'var(--radius)',
-  			md: 'calc(var(--radius) - 2px)',
-  			sm: 'calc(var(--radius) - 4px)'
+  			lg: '1rem', // ROUND_FOUR (16px) - Surgical Standard
+  			md: '0.75rem', // 12px
+  			sm: '0.5rem'   // 8px
   		},
   		backgroundImage: {
   			'paper-texture': "url('https://www.transparenttextures.com/patterns/cream-paper.png')",

@@ -70,7 +70,7 @@ export default function AiRouteGenerator() {
           <Button 
             onClick={handleGenerate} 
             disabled={isLoading || !prompt.trim()}
-            className="w-full bg-pallars-green hover:bg-pallars-green/90 text-white"
+            className="w-full bg-primary hover:bg-primary/90 text-white"
           >
             {isLoading ? (
               <>
@@ -103,7 +103,7 @@ export default function AiRouteGenerator() {
           {result ? (
             <div className="space-y-4">
                <div className="bg-white p-4 rounded-md border shadow-sm">
-                  <h3 className="font-bold text-lg text-pallars-green">{result.title}</h3>
+                  <h3 className="font-bold text-lg text-primary">{result.title}</h3>
                   <p className="text-sm text-gray-600 mb-2">{result.description}</p>
                   <div className="flex gap-2 mb-4">
                     <Badge variant="outline">{result.theme}</Badge>
@@ -114,7 +114,7 @@ export default function AiRouteGenerator() {
                   <h4 className="font-semibold mb-2 text-sm uppercase text-gray-500">Punts d'Interès ({result.pois?.length || 0})</h4>
                   <ul className="space-y-3">
                     {result.pois?.map((poi: any, idx: number) => (
-                        <li key={idx} className="text-sm border-l-2 border-pallars-green pl-3">
+                        <li key={idx} className="text-sm border-l-2 border-primary pl-3">
                             <span className="font-bold block">{poi.title}</span>
                             <span className="text-gray-600">{poi.description}</span>
                         </li>

@@ -5,74 +5,74 @@
 
 @layer base {
   :root {
-    --background: 40 17% 97%;
-    --foreground: 124 11% 27%;
+    /* Mountain Theme - Surgical Execution */
+    /* Primary: #578e6a -> 141 24% 45% */
+    /* Background: #F9F7F2 -> 45 27% 96% */
+    /* Foreground: #1A1C19 -> 120 5% 11% */
+
+    --background: 45 27% 96%; /* Cream */
+    --foreground: 120 5% 11%; /* Ink */
 
     --card: 0 0% 100%;
-    --card-foreground: 124 11% 27%;
- 
+    --card-foreground: 120 5% 11%;
+
     --popover: 0 0% 100%;
-    --popover-foreground: 124 11% 27%;
- 
-    --primary: 124 11% 27%;
-    --primary-foreground: 40 17% 97%;
- 
-    --secondary: 21 29% 33%;
-    --secondary-foreground: 40 17% 97%;
- 
-    --muted: 40 17% 95%;
-    --muted-foreground: 215 16% 47%;
- 
-    --accent: 21 29% 33%;
-    --accent-foreground: 40 17% 97%;
- 
+    --popover-foreground: 120 5% 11%;
+
+    --primary: 141 24% 45%; /* Stitch Green */
+    --primary-foreground: 45 27% 96%;
+
+    --secondary: 25 76% 31%; /* Saddle Brown (#8B4513) */
+    --secondary-foreground: 45 27% 96%;
+
+    --muted: 45 10% 90%;
+    --muted-foreground: 45 5% 40%;
+
+    --accent: 25 76% 31%;
+    --accent-foreground: 45 27% 96%;
+
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 124 11% 27%;
-    --input: 124 11% 27%;
-    --ring: 124 11% 27%;
- 
-    --radius: 0.5rem;
+    --border: 141 24% 45%; /* Green border for harmony */
+    --input: 141 24% 45%;
+    --ring: 141 24% 45%;
 
-    /* Custom Pallars Colors */
-    --pallars-green: 120, 20%, 35%;
-    --pallars-brown: 30, 40%, 40%;
-    --pallars-cream: 45, 30%, 90%;
-    --pallars-dark: 220, 15%, 20%;
+    --radius: 1rem;
   }
- 
+
   .dark {
-    --background: 124 9% 11%;
-    --foreground: 40 17% 97%;
- 
-    --card: 124 9% 14%;
-    --card-foreground: 40 17% 97%;
- 
-    --popover: 124 9% 14%;
-    --popover-foreground: 40 17% 97%;
- 
-    --primary: 124 25% 60%;
-    --primary-foreground: 124 9% 11%;
- 
-    --secondary: 21 29% 33%;
-    --secondary-foreground: 40 17% 97%;
- 
-    --muted: 124 13% 20%;
-    --muted-foreground: 215 20% 65%;
- 
-    --accent: 124 13% 20%;
-    --accent-foreground: 40 17% 97%;
- 
+    /* Dark Mode - Inverted Logic */
+    --background: 120 5% 11%;
+    --foreground: 45 27% 96%;
+
+    --card: 120 5% 14%;
+    --card-foreground: 45 27% 96%;
+
+    --popover: 120 5% 14%;
+    --popover-foreground: 45 27% 96%;
+
+    --primary: 141 24% 55%; /* Lighter Green */
+    --primary-foreground: 120 5% 11%;
+
+    --secondary: 25 76% 41%;
+    --secondary-foreground: 45 27% 96%;
+
+    --muted: 120 5% 20%;
+    --muted-foreground: 45 5% 65%;
+
+    --accent: 120 5% 20%;
+    --accent-foreground: 45 27% 96%;
+
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
- 
-    --border: 124 11% 27%;
-    --input: 124 11% 27%;
-    --ring: 124 11% 27%;
+
+    --border: 141 24% 30%;
+    --input: 141 24% 30%;
+    --ring: 141 24% 45%;
   }
 }
- 
+
 @layer base {
   * {
     @apply border-border;
@@ -80,27 +80,14 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Typography Injection */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display text-primary;
+  }
 }
 
-/* Helpers from Figma */
-.bg-pallars-green {
-  @apply bg-primary;
-}
-.bg-pallars-brown {
-  @apply bg-secondary;
-}
-.bg-pallars-cream {
-  @apply bg-background;
-}
-.text-pallars-green {
-  @apply text-primary;
-}
-.text-pallars-brown {
-  @apply text-secondary;
-}
-.text-pallars-cream {
-  @apply text-primary-foreground;
-}
-.pallars-card {
-  @apply bg-card rounded-xl p-4 m-4 shadow-lg border border-border;
+/* Helpers from Figma - CLEANED */
+.design-card {
+  @apply bg-card rounded-lg p-4 m-4 shadow-lg border border-border;
 }

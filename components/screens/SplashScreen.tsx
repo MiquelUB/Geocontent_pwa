@@ -16,12 +16,12 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
   }, [onComplete]);
 
   return (
-    <div className="h-full flex flex-col items-center justify-center bg-pallars-green relative overflow-hidden">
+    <div className="h-full flex flex-col items-center justify-center bg-primary relative overflow-hidden">
       {/* Background pattern */}
       <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-10 left-10 w-32 h-32 rounded-full bg-pallars-cream"></div>
-        <div className="absolute bottom-20 right-8 w-24 h-24 rounded-full bg-pallars-brown"></div>
-        <div className="absolute top-1/3 right-16 w-16 h-16 rounded-full bg-pallars-cream"></div>
+        <div className="absolute top-10 left-10 w-32 h-32 rounded-full bg-background"></div>
+        <div className="absolute bottom-20 right-8 w-24 h-24 rounded-full bg-secondary"></div>
+        <div className="absolute top-1/3 right-16 w-16 h-16 rounded-full bg-background"></div>
       </div>
 
       <div className="flex flex-col items-center space-y-8 z-10">
@@ -44,9 +44,9 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
                 delay: 0.2,
                 ease: "easeOut"
               }}
-              className="w-24 h-24 mx-auto mb-6 bg-pallars-cream rounded-full flex items-center justify-center shadow-lg"
+              className="w-24 h-24 mx-auto mb-6 bg-background rounded-full flex items-center justify-center shadow-lg"
             >
-              <span className="text-3xl font-serif font-bold text-pallars-green">M</span>
+              <span className="text-3xl font-serif font-bold text-primary">M</span>
             </motion.div>
           </div>
 
@@ -57,7 +57,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
               duration: 0.8,
               delay: 0.5
             }}
-            className="text-4xl font-serif font-bold text-pallars-cream mb-2"
+            className="text-4xl font-serif font-bold text-primary-foreground mb-2"
           >
             {PxxConfig.appName}
           </motion.h1>
@@ -69,7 +69,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
               duration: 0.8,
               delay: 0.7
             }}
-            className="text-lg text-pallars-cream/80"
+            className="text-lg text-primary-foreground/80"
           >
             {PxxConfig.appDescription}
           </motion.p>
@@ -89,7 +89,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
             {[0, 1, 2].map((index) => (
               <motion.div
                 key={index}
-                className="w-3 h-3 bg-pallars-cream rounded-full"
+                className="w-3 h-3 bg-background rounded-full"
                 animate={{
                   scale: [1, 1.5, 1],
                   opacity: [0.5, 1, 0.5],
@@ -102,7 +102,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
               />
             ))}
           </div>
-          <p className="text-sm text-pallars-cream/60">Cargando...</p>
+          <p className="text-sm text-primary-foreground/60">Cargando...</p>
         </motion.div>
       </div>
 
@@ -116,7 +116,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
           delay: 2
         }}
       >
-        <div className="flex items-center space-x-2 text-pallars-cream/60 text-xs">
+        <div className="flex items-center space-x-2 text-primary-foreground/60 text-xs">
           <span>{PxxConfig.appName} Core Engine</span>
         </div>
       </motion.div>

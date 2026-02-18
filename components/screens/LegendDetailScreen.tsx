@@ -1,10 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
-import { ArrowLeft, Play, Pause, Heart, Star, Share2, MapPin, Calendar, Volume2, BookOpen, Lock, Info } from "lucide-react";
+import { ArrowLeft, Play, Pause, Heart, Star, Share2, MapPin, Calendar, Volume2, Lock } from "lucide-react";
 import { ImageWithFallback } from "../figma/ImageWithFallback";
-
-import { motion } from "motion/react";
+import { motion, useScroll, useTransform } from "motion/react";
 import { recordVisit } from "@/lib/actions";
 
 interface LegendDetailScreenProps {
@@ -18,8 +17,12 @@ export function LegendDetailScreen({ legend, onNavigate, userLocation, currentUs
   const [isPlaying, setIsPlaying] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [userRating, setUserRating] = useState(0);
-  const [showFullText, setShowFullText] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
+  
+  // Parallax effect for hero
+  const { scrollY } = useScroll();
+  const y = useTransform(scrollY, [0, 500], [0, 150]);
+  const opacity = useTransform(scrollY, [0, 300], [1, 0]);
 
   // Fallback for missing legend data
   const safeLegend = legend || {
@@ -68,19 +71,11 @@ export function LegendDetailScreen({ legend, onNavigate, userLocation, currentUs
        recordVisit(currentUser.id, safeLegend.id)
          .then(res => {
             if (res.success && res.newLevel) {
-                // Optional: Show level up toast/notification
                 console.log("Leveled up!", res.newLevel);
             }
          });
     }
   }, [isUnlocked, currentUser, safeLegend.id]);
-
-  // Generate summary logic
-
-  const getSummary = (text: string) => {
-    if (!text) return "";
-    return text.length > 150 ? text.substring(0, 150) + "..." : text;
-  };
 
 
   const handlePlayAudio = () => {
@@ -94,16 +89,8 @@ export function LegendDetailScreen({ legend, onNavigate, userLocation, currentUs
     }
   };
 
-  const handleFavorite = () => {
-    setIsFavorite(!isFavorite);
-  };
-
   const handleRating = (rating: number) => {
     setUserRating(rating);
-  };
-
-  const handleShare = () => {
-    alert("¡Contenido compartido!");
   };
 
   const handleViewOnMap = () => {
@@ -111,210 +98,178 @@ export function LegendDetailScreen({ legend, onNavigate, userLocation, currentUs
   };
 
   return (
-    <div className="screen bg-background">
-      {/* Header image */}
-      <motion.div 
-        initial={{ scale: 1.1, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        className="relative h-64 overflow-hidden"
-      >
-        <ImageWithFallback
-          src={safeLegend.hero || safeLegend.image} // Use hero if available
-          alt={safeLegend.title}
-          className="w-full h-full object-cover"
-        />
-        
-        {/* Overlay gradient */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30"></div>
-        
-        {/* Header controls */}
-        <div className="absolute top-0 left-0 right-0 p-4 flex items-center justify-between">
-          <Button 
-            variant="ghost" 
-            size="sm"
-            onClick={() => onNavigate('legends')}
-            className="bg-black/20 text-white hover:bg-black/40 backdrop-blur-sm"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          
-          <div className="flex items-center space-x-2">
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={handleFavorite}
-              className={`bg-black/20 backdrop-blur-sm ${
-                isFavorite ? 'text-red-400' : 'text-white'
-              } hover:bg-black/40`}
-            >
-              <Heart className={`w-5 h-5 ${isFavorite ? 'fill-current' : ''}`} />
-            </Button>
-            
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={handleShare}
-              className="bg-black/20 text-white hover:bg-black/40 backdrop-blur-sm"
-            >
-              <Share2 className="w-5 h-5" />
-            </Button>
-          </div>
-        </div>
-
-        {/* Title overlay */}
-        <div className="absolute bottom-4 left-4 right-4">
-          <Badge className="bg-pallars-brown text-pallars-cream border-0 mb-2">
-            {safeLegend.categoryLabel}
-          </Badge>
-          <h1 className="text-2xl font-serif font-bold text-white mb-2">
-            {safeLegend.title}
-          </h1>
-          <div className="flex items-center space-x-4 text-white/80 text-sm">
-            <div className="flex items-center space-x-1">
-              <MapPin className="w-4 h-4" />
-              <span>{safeLegend.location}</span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <Calendar className="w-4 h-4" />
-              <span>{safeLegend.date}</span>
-            </div>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Content */}
-      <div className="p-4 pb-24">
-        {/* Rating */}
+    <div className="screen bg-background min-h-screen">
+      {/* Editorial Hero Image with Parallax */}
+      <div className="relative h-[60vh] w-full overflow-hidden">
         <motion.div 
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="flex items-center justify-between mb-6"
+            style={{ y }}
+            className="absolute inset-0 w-full h-full"
         >
-          <div className="flex items-center space-x-2">
-            <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-            <span className="font-medium">{safeLegend.rating}</span>
-            <span className="text-muted-foreground text-sm">(127 valoraciones)</span>
-          </div>
-          
-          {/* User rating */}
-          <div className="flex items-center space-x-1">
-            <span className="text-sm text-muted-foreground mr-2">Valora:</span>
-            {[1, 2, 3, 4, 5].map((rating) => (
-              <button
-                key={rating}
-                onClick={() => handleRating(rating)}
-                className="p-1"
-              >
-                <Star 
-                  className={`w-4 h-4 ${
-                    rating <= userRating 
-                      ? 'fill-yellow-400 text-yellow-400' 
-                      : 'text-gray-300'
-                  }`} 
-                />
-              </button>
-            ))}
-          </div>
+             <ImageWithFallback
+                src={safeLegend.hero || safeLegend.image} 
+                alt={safeLegend.title}
+                className="w-full h-full object-cover"
+            />
+             <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-background"></div>
         </motion.div>
 
-        {/* Action buttons */}
-        <motion.div 
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="grid grid-cols-2 gap-3 mb-6"
-        >
-          {/* Distance Indicator */}
-           <div className="col-span-2 mb-2">
-             {distance !== null ? (
-               <div className={`text-center p-2 rounded-lg text-sm font-medium ${isUnlocked ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}`}>
-                 {isUnlocked ? (
-                   <span className="flex items-center justify-center gap-2">
-                     <Lock className="w-4 h-4 text-green-600" /> Contenido desbloqueado (a {Math.round(distance)}m)
-                   </span>
-                 ) : (
-                   <span className="flex items-center justify-center gap-2">
-                     <Lock className="w-4 h-4 text-orange-600" /> Acércate {Math.round(distance - UNLOCK_DISTANCE)}m más para desbloquear
-                   </span>
-                 )}
-               </div>
-             ) : (
-                <div className="bg-gray-100 p-2 rounded-lg text-sm text-center text-gray-600">
-                    Accede a la ubicación para desbloquear el contenido
-                </div>
-             )}
-
-           </div>
-
-          {safeLegend.audio && (
-              <>
-                <audio ref={audioRef} src={safeLegend.audio} onEnded={() => setIsPlaying(false)} />
+        {/* Navigation Bar */}
+        <div className="absolute top-0 left-0 right-0 p-6 flex items-center justify-between z-10">
+           <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => onNavigate('legends')}
+                className="bg-white/10 text-white hover:bg-white/20 backdrop-blur-md rounded-full"
+            >
+                <ArrowLeft className="w-6 h-6" />
+            </Button>
+            <div className="flex gap-2">
                 <Button 
+                    variant="ghost" 
+                    size="icon"
+                    onClick={() => setIsFavorite(!isFavorite)}
+                    className="bg-white/10 text-white hover:bg-white/20 backdrop-blur-md rounded-full"
+                >
+                     <Heart className={`w-5 h-5 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
+                </Button>
+                <Button 
+                    variant="ghost" 
+                    size="icon"
+                    onClick={() => alert('Shared')}
+                    className="bg-white/10 text-white hover:bg-white/20 backdrop-blur-md rounded-full"
+                >
+                     <Share2 className="w-5 h-5" />
+                </Button>
+            </div>
+        </div>
+        
+        {/* Title Overlay (Fades out on scroll) */}
+        <motion.div 
+            style={{ opacity }}
+            className="absolute bottom-12 left-6 right-6 z-10"
+        >
+             <div className="flex items-center text-white/80 font-medium tracking-widest uppercase text-xs mb-2">
+                <MapPin className="w-3 h-3 mr-2" />
+                {safeLegend.location}
+            </div>
+            <h1 className="text-5xl md:text-6xl font-serif font-bold text-white mb-4 leading-none drop-shadow-md">
+                {safeLegend.title}
+            </h1>
+            <div className="flex gap-2">
+                 <Badge className="bg-white/20 hover:bg-white/30 text-white border-0 px-3 py-1 text-xs backdrop-blur-md">
+                    {safeLegend.categoryLabel}
+                </Badge>
+                 <Badge className="bg-primary/80 hover:bg-primary/90 text-white border-0 px-3 py-1 text-xs backdrop-blur-md">
+                    National Monument
+                </Badge>
+            </div>
+        </motion.div>
+      </div>
+
+      {/* Content "Paper" Sheet */}
+      <div className="relative -mt-10 bg-background rounded-t-[2.5rem] z-20 px-8 py-10 min-h-[50vh] shadow-[0_-10px_40px_rgba(0,0,0,0.2)]">
+        
+        {/* Romanesque Metadata Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 border-b border-primary/10 pb-8 mb-8">
+            <div className="text-center">
+                 <div className="text-2xl font-serif font-bold text-primary">{safeLegend.date || '1066 AD'}</div>
+                 <div className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium mt-1">Year</div>
+            </div>
+             <div className="text-center md:border-l border-primary/10">
+                 <div className="text-xl font-serif font-bold text-primary">Romanesque</div>
+                 <div className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium mt-1">Style</div>
+            </div>
+             <div className="text-center md:border-l border-primary/10">
+                 <div className="text-xl font-serif font-bold text-primary">Doña Mayor</div>
+                 <div className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium mt-1">Founder</div>
+            </div>
+             <div className="text-center md:border-l border-primary/10">
+                 <div className="text-xl font-serif font-bold text-primary">{Math.round(distance || 0)}m</div>
+                 <div className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium mt-1">Distance</div>
+            </div>
+        </div>
+
+        {/* Content Body with "Historical Notes" visual style */}
+        <div className="mb-12">
+            <h3 className="font-serif font-bold text-lg text-primary mb-4 flex items-center">
+                <span className="w-8 h-px bg-primary/40 mr-3"></span>
+                Historical Notes
+            </h3>
+            <div className="prose prose-lg prose-stone max-w-none text-foreground/80 leading-relaxed font-serif">
+                <p className="first-letter:text-5xl first-letter:font-serif first-letter:font-bold first-letter:text-primary first-letter:float-left first-letter:mr-3 first-letter:mt-[-8px]">
+                    {safeLegend.description}
+                </p>
+                <p>
+                    Considered one of the purest examples of Romanesque architecture in the world, San Martín stands as a testament to the 11th-century pilgrimage route to Santiago.
+                </p>
+            </div>
+        </div>
+
+        {/* Interaction Zone */}
+        <div className="bg-muted/30 rounded-2xl p-6 space-y-4">
+            <h3 className="font-serif font-bold text-primary text-xl mb-4">Experience</h3>
+            
+            {/* Audio Player */}
+            {safeLegend.audio && (
+            <div className={`p-4 rounded-xl flex items-center justify-between transition-colors ${
+                isUnlocked 
+                ? 'bg-primary text-primary-foreground' 
+                : 'bg-stone-200 text-stone-500 cursor-not-allowed'
+            }`}>
+                 <div className="flex items-center gap-4">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isUnlocked ? 'bg-white/20' : 'bg-black/10'}`}>
+                         <Volume2 className="w-5 h-5" />
+                    </div>
+                    <div>
+                        <div className="font-bold text-sm">Audio Guide</div>
+                        <div className="text-xs opacity-80">{isPlaying ? 'Playing...' : 'Tap to listen'}</div>
+                    </div>
+                 </div>
+                 
+                 <Button 
+                    variant="ghost" 
+                    size="icon"
                     onClick={handlePlayAudio}
                     disabled={!isUnlocked}
-                    className={`pallars-button ${isPlaying ? 'secondary' : ''} flex items-center justify-center space-x-2 ${!isUnlocked && 'opacity-50 cursor-not-allowed'}`}
+                    className={`hover:bg-white/20 rounded-full h-12 w-12 ${!isUnlocked && 'opacity-50'}`}
                 >
-                    {isUnlocked ? (
-                        isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />
-                    ) : <Lock className="w-4 h-4" />}
-                    <Volume2 className="w-4 h-4" />
-                    <span>{isUnlocked ? (isPlaying ? 'Pausa' : 'Audio') : 'Bloquejat'}</span>
+                     {isUnlocked ? (
+                        isPlaying ? <Pause className="w-6 h-6 fill-current" /> : <Play className="w-6 h-6 fill-current" />
+                     ) : <Lock className="w-5 h-5" />}
                 </Button>
-              </>
-          )}
+                 <audio ref={audioRef} src={safeLegend.audio} onEnded={() => setIsPlaying(false)} />
+            </div>
+            )}
 
-          {safeLegend.video && (
-             <Button 
+             {/* Video Player Button */}
+            {safeLegend.video && (
+             <Button
+                className={`w-full py-6 text-lg font-serif ${isUnlocked ? 'bg-secondary text-white hover:bg-secondary/90' : 'bg-stone-200 text-stone-500'}`}
                 onClick={() => isUnlocked && window.open(safeLegend.video, '_blank')}
                 disabled={!isUnlocked}
-                className={`bg-red-600 text-white hover:bg-red-700 flex items-center justify-center space-x-2 ${!isUnlocked && 'opacity-50 cursor-not-allowed'}`}
-             >
-                {isUnlocked ? <Play className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
-                <span>{isUnlocked ? 'Video' : 'Bloquejat'}</span>
-             </Button>
-          )}
+            >
+                {isUnlocked ? <Play className="w-5 h-5 mr-2 fill-current" /> : <Lock className="w-5 h-5 mr-2" />}
+                Watch Video
+            </Button>
+            )}
 
-        </motion.div>
+             {/* Map Button */}
+             <Button 
+                variant="outline"
+                className="w-full py-6 border-primary text-primary hover:bg-primary/5 font-serif text-lg"
+                onClick={handleViewOnMap}
+            >
+                <MapPin className="w-5 h-5 mr-2" />
+                View on Map
+            </Button>
 
-
-        {/* Text content */}
-        <motion.div 
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="mb-6"
-        >
-          <h2 className="text-lg font-serif font-semibold text-pallars-green mb-3">
-            Detalles
-          </h2>
-          
-          <div className="prose prose-sm max-w-none">
-            <p className="text-foreground leading-relaxed">
-              {isUnlocked ? safeLegend.description : getSummary(safeLegend.description)}
-            </p>
-
-          </div>
-        </motion.div>
-
-
-        {/* Map location button */}
-        <motion.div 
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.5 }}
-        >
-          <Button 
-            onClick={handleViewOnMap}
-            variant="outline"
-            className="w-full border-pallars-brown text-pallars-brown hover:bg-pallars-brown/10 flex items-center justify-center space-x-2"
-          >
-            <MapPin className="w-4 h-4" />
-            <span>Ver ubicación en el mapa</span>
-          </Button>
-        </motion.div>
-
-
+            {/* Locked State Message */}
+            {!isUnlocked && distance !== null && (
+                 <div className="text-center text-sm text-stone-500 mt-4 italic font-serif">
+                    Move {Math.round(distance - UNLOCK_DISTANCE)}m closer to unlock full experience
+                 </div>
+            )}
+        </div>
       </div>
     </div>
   );

@@ -39,12 +39,12 @@ export function ErrorScreen({ type, onRetry, onNavigate }: ErrorScreenProps) {
   return (
     <div className="screen bg-background flex flex-col items-center justify-center p-6 text-center">
       {/* Header amb logo */}
-      <div className="absolute top-0 left-0 right-0 bg-pallars-green p-4">
+      <div className="absolute top-0 left-0 right-0 bg-primary p-4">
         <div className="flex items-center justify-center space-x-2">
-          <div className="w-8 h-8 bg-pallars-cream rounded-full flex items-center justify-center">
-            <span className="text-sm font-serif font-bold text-pallars-green">M</span>
+          <div className="w-8 h-8 bg-background rounded-full flex items-center justify-center">
+            <span className="text-sm font-serif font-bold text-primary">M</span>
           </div>
-          <h1 className="text-lg font-serif font-bold text-pallars-cream">
+          <h1 className="text-lg font-serif font-bold text-primary-foreground">
             Mistic Pallars
           </h1>
         </div>
@@ -76,7 +76,7 @@ export function ErrorScreen({ type, onRetry, onNavigate }: ErrorScreenProps) {
           transition={{ delay: 0.2 }}
           className="space-y-4"
         >
-          <h2 className="text-2xl font-serif font-bold text-pallars-green">
+          <h2 className="text-2xl font-serif font-bold text-primary">
             {config.title}
           </h2>
           <p className="text-muted-foreground leading-relaxed">
@@ -102,7 +102,7 @@ export function ErrorScreen({ type, onRetry, onNavigate }: ErrorScreenProps) {
           <Button 
             variant="outline"
             onClick={() => onNavigate('home')}
-            className="w-full border-pallars-green text-pallars-green hover:bg-pallars-green/10"
+            className="w-full border-pallars-green text-primary hover:bg-primary/10"
           >
             Tornar a l'inici
           </Button>

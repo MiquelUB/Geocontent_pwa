@@ -9,20 +9,20 @@
 
 // Theme Strategy: Define 4 Design Tokens (Pells)
 const ThemePresets = {
-  // 1. Muntanya (Default - "Quadern de Camp")
+  // 1. Muntanya (Verified Mountain Design - "Stitch Green")
   muntanya: {
     colors: {
-      base:  "#F9F7F2",  // Crema/Paper
-      dark:  "#1A1C19",  // Tinta/Negre suau
-      terra: "#BC5D36",  // Terracota
-      olive: "#4A5D23",  // Verd Oliva
-      gold:  "#D4AF37",  // Daurat
-      stone: "#44403c",  // Gris Pedra
+      base:  "#F9F7F2",  // Cream (No pure white)
+      dark:  "#1A1C19",  // Ink
+      terra: "#8B4513",  // Saddle Brown (Secondary/Accent)
+      olive: "#578e6a",  // Stitch Green (Primary Action)
+      gold:  "#D4AF37",  // Gold
+      stone: "#44403c",  // Stone Gray
     },
     fonts: {
-      display: "Playfair Display",
-      body: "Inter",
-      mono: "Roboto Mono", 
+      display: "var(--font-newsreader)", // Serif for "Editorial/Institutional" feel
+      body: "var(--font-geist-sans)",    // Sans for UI readability
+      mono: "var(--font-geist-mono)", 
     }
   },
 

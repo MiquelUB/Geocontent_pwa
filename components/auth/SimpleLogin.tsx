@@ -45,14 +45,14 @@ export function SimpleLogin({ onLoginSuccess }: SimpleLoginProps) {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-pallars-green p-6 text-center">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-primary p-6 text-center">
       <motion.div
          initial={{ scale: 0.9, opacity: 0 }}
          animate={{ scale: 1, opacity: 1 }}
          className="bg-white rounded-xl p-8 w-full max-w-sm shadow-2xl"
       >
         <div className="mb-6">
-            <h1 className="text-2xl font-serif font-bold text-pallars-green mb-2">Bienvenido/a</h1>
+            <h1 className="text-2xl font-serif font-bold text-primary mb-2">Bienvenido/a</h1>
             <p className="text-gray-500 text-sm">Introduce tus datos para comenzar</p>
         </div>
 

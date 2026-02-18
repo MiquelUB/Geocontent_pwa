@@ -98,22 +98,22 @@ export function MapScreen({ onNavigate, onOpenHelp, focusLegend, userLocation }:
   return (
     <div className="screen-full bg-background flex flex-col h-full">
       {/* Header */}
-      <div className="absolute top-0 left-0 right-0 z-20 bg-pallars-green/95 backdrop-blur-sm p-4">
+      <div className="absolute top-0 left-0 right-0 z-20 bg-primary/95 backdrop-blur-sm p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Button 
               variant="ghost" 
               size="sm"
               onClick={() => onNavigate('home')}
-              className="text-pallars-cream hover:bg-pallars-cream/10 p-2"
+              className="text-primary-foreground hover:bg-background/10 p-2"
             >
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <div>
-              <h1 className="text-lg font-serif font-bold text-pallars-cream">
+              <h1 className="text-lg font-serif font-bold text-primary-foreground">
                 Explorar Mapa
               </h1>
-              <p className="text-xs text-pallars-cream/80">
+              <p className="text-xs text-primary-foreground/80">
                 {filteredLegends.length} lugares encontrados
               </p>
             </div>
@@ -124,7 +124,7 @@ export function MapScreen({ onNavigate, onOpenHelp, focusLegend, userLocation }:
                 variant="ghost" 
                 size="sm"
                 onClick={onOpenHelp}
-                className="text-pallars-cream hover:bg-pallars-cream/10"
+                className="text-primary-foreground hover:bg-background/10"
                 title="Ayuda"
             >
                 <HelpCircle className="w-5 h-5" />
@@ -133,7 +133,7 @@ export function MapScreen({ onNavigate, onOpenHelp, focusLegend, userLocation }:
                 variant="ghost" 
                 size="sm"
                 onClick={() => setShowFilters(!showFilters)}
-                className="text-pallars-cream hover:bg-pallars-cream/10"
+                className="text-primary-foreground hover:bg-background/10"
             >
                 <Filter className="w-5 h-5" />
             </Button>
@@ -156,8 +156,8 @@ export function MapScreen({ onNavigate, onOpenHelp, focusLegend, userLocation }:
                   onClick={() => setActiveCategory(category.id)}
                   className={`whitespace-nowrap flex-shrink-0 ${
                     activeCategory === category.id 
-                      ? "bg-pallars-cream text-pallars-green" 
-                      : "border-pallars-cream text-pallars-cream hover:bg-pallars-cream/10"
+                      ? "bg-background text-primary" 
+                      : "border-primary-foreground text-primary-foreground hover:bg-background/10"
                   }`}
                 >
                   <div 
@@ -234,7 +234,7 @@ export function MapScreen({ onNavigate, onOpenHelp, focusLegend, userLocation }:
                   />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-serif font-medium text-pallars-green mb-1">
+                  <h3 className="font-serif font-medium text-primary mb-1">
                     {selectedLegend.title}
                   </h3>
                   <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
@@ -268,7 +268,7 @@ export function MapScreen({ onNavigate, onOpenHelp, focusLegend, userLocation }:
                       </Button>
                       <Button 
                         size="sm"
-                        className="text-xs bg-pallars-green text-pallars-cream pointer-events-none" // Pointer events none because the parent clicks
+                        className="text-xs bg-primary text-primary-foreground pointer-events-none" // Pointer events none because the parent clicks
                       >
                         Ver detalle
                       </Button>

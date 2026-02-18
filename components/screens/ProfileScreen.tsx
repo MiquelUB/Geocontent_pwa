@@ -1,424 +1,100 @@
 import { Button } from "../ui/button";
-import { Badge } from "../ui/badge";
-import { Progress } from "../ui/progress";
-import { Share2, Star, MapPin, Calendar, Heart, Eye } from "lucide-react";
-import { ImageWithFallback } from "../figma/ImageWithFallback";
+import { ArrowLeft, Settings, Edit, Trophy, ChevronRight } from "lucide-react";
 import { motion } from "motion/react";
-
-import { useEffect, useState, useRef } from "react";
-import { getUserProfile, getVisitedLegends, updateProfileAvatar, getLegends } from "@/lib/actions";
-import { Camera, X } from "lucide-react";
-
-
-
-
-const PRESET_AVATARS: string[] = [];
+import { PassportGrid } from "@/components/passport/PassportGrid";
 
 interface ProfileScreenProps {
   onNavigate: (screen: string, data?: any) => void;
-  currentUser?: any; // Add user prop
+  currentUser?: any;
 }
 
 export function ProfileScreen({ onNavigate, currentUser }: ProfileScreenProps) {
-  const [userProfile, setUserProfile] = useState<any>(null);
-  const [visitedLegends, setVisitedLegends] = useState<any[]>([]);
-  const [totalLegendsCount, setTotalLegendsCount] = useState(0);
-  const [loading, setLoading] = useState(true);
   
-  // Avatar state
-  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
-  const [updatingAvatar, setUpdatingAvatar] = useState(false);
-
-  useEffect(() => {
-    async function fetchProfileData() {
-        if (!currentUser?.id) return;
-        
-        try {
-            const [profile, visited, allLegends] = await Promise.all([
-                getUserProfile(currentUser.id),
-                getVisitedLegends(currentUser.id),
-                getLegends()
-            ]);
-            
-            setUserProfile(profile);
-            setVisitedLegends(visited || []);
-            setTotalLegendsCount(allLegends ? allLegends.length : 10); // Default to 10 if fail
-        } catch (error) {
-            console.error("Error loading profile:", error);
-        } finally {
-            setLoading(false);
-        }
-    }
-    fetchProfileData();
-  }, [currentUser]);
-  
-  const handleUpdateAvatar = async (url: string) => {
-      setUpdatingAvatar(true);
-      const res = await updateProfileAvatar(currentUser.id, url);
-      if (res.success) {
-          setUserProfile((prev: any) => ({ ...prev, avatar_url: url }));
-          setIsAvatarModalOpen(false);
-      }
-      setUpdatingAvatar(false);
-  };
-
-
-  // Derived state from real data
-  const level = userProfile?.level || 1;
-  const xp = userProfile?.xp || 0;
-  
-  // XP Thresholds: 1:0-200, 2:201-500, 3:501-1000, 4:1000+
-  const getNextLevelXp = (lvl: number) => {
-    if (lvl === 1) return 200;
-    if (lvl === 2) return 500;
-    if (lvl === 3) return 1000;
-    return 2000; // Cap
-  };
-  
-  const nextLevelXp = getNextLevelXp(level);
-  const prevLevelXp = level === 1 ? 0 : getNextLevelXp(level - 1);
-  const progressPercent = Math.min(100, Math.max(0, ((xp - prevLevelXp) / (nextLevelXp - prevLevelXp)) * 100));
-
-  if (loading) return <div className="p-10 text-center">Cargando perfil...</div>;
-  if (!userProfile) return <div className="p-10 text-center">No se ha encontrado el usuario.</div>;
-
-
-
-  // Calculate Achievements dynamically
-  const calculateAchievements = () => {
-      const visitedCount = visitedLegends.length;
-      const level = userProfile?.level || 1;
-      
-      return [] as any[];
-  };
-
-  const achievements = calculateAchievements();
-
-
-  const handleShare = async () => {
-    const shareData = {
-      title: 'GeoContent Core',
-      text: `¡Mira mi progreso en ${userProfile?.username || 'esta aplicación'}!`,
-      url: window.location.origin
-    };
-
-    try {
-      if (navigator.share) {
-        await navigator.share(shareData);
-      } else {
-        // Fallback: copy to clipboard
-        await navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
-        alert('¡Enlace copiado al portapapeles!');
-      }
-    } catch (err) {
-      if ((err as Error).name !== 'AbortError') {
-        console.error('Error sharing:', err);
-      }
-    }
-  };
-
   return (
-    <div className="screen bg-background">
-      {/* Header */}
-      <motion.div 
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className="bg-pallars-green p-4"
-      >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-pallars-cream rounded-full flex items-center justify-center">
-              <span className="text-sm font-serif font-bold text-pallars-green">M</span>
-            </div>
-            <h1 className="text-xl font-serif font-bold text-pallars-cream">
-              Mi Perfil
-            </h1>
-          </div>
-          <div className="flex space-x-2">
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={handleShare}
-              className="text-pallars-cream hover:bg-pallars-cream/10"
-            >
-              <Share2 className="w-5 h-5" />
-            </Button>
-          </div>
-        </div>
-      </motion.div>
-
-      <div className="p-4">
-        {/* Perfil usuari */}
-        <motion.div 
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.1 }}
-          className="pallars-card mb-6 p-4"
-        >
-          <div className="flex items-start space-x-3">
-            <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0 relative group">
-              <ImageWithFallback
-                src={userProfile.avatar_url || "https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80"}
-                alt={userProfile.username}
-                className="w-full h-full object-cover"
-              />
-              <button 
-                onClick={() => setIsAvatarModalOpen(true)}
-                className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-              >
-                <Camera className="w-5 h-5 text-white" />
-              </button>
-            </div>
-
-            
-            <div className="flex-1 min-w-0">
-              <h2 className="text-lg font-serif font-semibold text-pallars-green mb-0.5 truncate">
-                {userProfile.username}
-              </h2>
-              <p className="text-xs text-muted-foreground mb-2 truncate">
-                {userProfile.email}
-              </p>
-              
-              {/* Nivell i progressió */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between gap-2">
-                  <Badge className="bg-pallars-brown text-pallars-cream border-0 text-xs px-2 py-0.5">
-                    Nivel {level}
-                  </Badge>
-                  <span className="text-xs text-muted-foreground whitespace-nowrap">
-                    {xp}/{nextLevelXp} XP
-                  </span>
-                </div>
-                <Progress value={progressPercent} className="h-1.5" />
-                <p className="text-[10px] leading-tight text-muted-foreground text-right break-words">
-                  {nextLevelXp - xp} XP para el siguiente nivel
-                </p>
-              </div>
-            </div>
-          </div>
-
-        </motion.div>
-
-        {/* Estadístiques */}
-        <motion.div 
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="grid grid-cols-3 gap-2 mb-6"
-        >
-          <div className="pallars-card text-center border-0 bg-gradient-to-br from-pallars-green/5 to-pallars-green/10 p-3">
-            <div className="w-8 h-8 bg-pallars-green rounded-full flex items-center justify-center mx-auto mb-1.5">
-              <Eye className="w-4 h-4 text-pallars-cream" />
-            </div>
-            <p className="text-xl font-bold text-pallars-green mb-0.5">{visitedLegends.length}</p>
-            <p className="text-[10px] leading-tight text-muted-foreground break-words px-1">Visitados</p>
-          </div>
-
-          
-          <div className="pallars-card text-center border-0 bg-gradient-to-br from-red-50 to-red-100 p-3">
-            <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-1.5">
-              <Heart className="w-4 h-4 text-white" />
-            </div>
-            <p className="text-xl font-bold text-red-600 mb-0.5">--</p>
-            <p className="text-[10px] leading-tight text-muted-foreground break-words px-1">Favorites</p>
-          </div>
-          
-          <div className="pallars-card text-center border-0 bg-gradient-to-br from-yellow-50 to-yellow-100 p-3">
-            <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center mx-auto mb-1.5">
-              <Star className="w-4 h-4 text-white" />
-            </div>
-            <p className="text-xl font-bold text-yellow-600 mb-0.5">--</p>
-            <p className="text-[10px] leading-tight text-muted-foreground break-words px-1">Valoraciones</p>
-          </div>
-        </motion.div>
-
-        {/* Assoliments */}
-        <motion.div 
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="mb-6"
-        >
-          <h3 className="text-lg font-serif font-semibold text-pallars-green mb-3">
-            Logros
-          </h3>
-          
-          <div className="space-y-3">
-            {achievements.map((achievement) => (
-              <motion.div
-                key={achievement.id}
-                initial={{ x: -10, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ delay: 0.4 + (achievement.id * 0.1) }}
-                className={`pallars-card border-0 p-4 ${
-                  achievement.completed ? 'bg-gradient-to-br from-green-50 to-green-100/50' : ''
-                }`}
-              >
-                <div className="flex items-start gap-3">
-                  {/* Icon */}
-                  <div className="text-3xl flex-shrink-0 mt-0.5">{achievement.icon}</div>
-                  
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    {/* Title and Badge */}
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <h4 className={`font-semibold text-sm leading-snug ${
-                        achievement.completed ? 'text-pallars-green' : 'text-gray-700'
-                      }`}>
-                        {achievement.title}
-                      </h4>
-                      {achievement.completed && (
-                        <Badge className="bg-green-500 text-white text-[10px] h-5 px-2 flex-shrink-0 border-0">
-                          ¡Hecho!
-                        </Badge>
-                      )}
-                    </div>
-                    
-                    {/* Description */}
-                    <p className="text-xs text-muted-foreground leading-relaxed mb-3">
-                      {achievement.description}
-                    </p>
-                    
-                    {/* Progress */}
-                    <div className="space-y-1.5">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-muted-foreground font-medium">Progreso</span>
-                        <span className="text-pallars-green font-semibold">
-                          {achievement.current}/{achievement.target}
-                        </span>
-                      </div>
-                      <Progress 
-                        value={(achievement.current / achievement.target) * 100} 
-                        className="h-2"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Historial recent */}
-        <motion.div 
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.4 }}
-        >
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-lg font-serif font-semibold text-pallars-green">
-              Visitados recientemente
-            </h3>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => onNavigate('legends')}
-              className="text-pallars-brown hover:bg-pallars-brown/10"
-            >
-              Veure tot
-            </Button>
-          </div>
-          
-          <div className="space-y-3">
-            {visitedLegends.map((legend, index) => (
-              <motion.div
-                key={legend.id}
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ delay: 0.5 + (index * 0.1) }}
-                onClick={() => onNavigate('legend-detail', legend)}
-                className="pallars-card cursor-pointer hover:shadow-lg transition-all"
-              >
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
-                    <ImageWithFallback
-                      src={legend.image_url}
-                      alt={legend.title}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-pallars-green truncate">
-                      {legend.title}
-                    </h4>
-                    <div className="flex items-center space-x-1 text-sm text-muted-foreground mb-1">
-                      <MapPin className="w-3 h-3" />
-                      <span className="truncate">{legend.location_name}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-1 text-xs text-muted-foreground">
-                        <Calendar className="w-3 h-3" />
-                        <span>{new Date(legend.visited_at).toLocaleDateString()}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-            {visitedLegends.length === 0 && (
-                <div className="text-center p-4 text-gray-500 text-sm">Aún no has visitado ningún lugar. ¡Acércate para desbloquearlos!</div>
-            )}
-
-          </div>
-        </motion.div>
-
-        {/* Botó compartir app */}
-        <motion.div 
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.6 }}
-          className="mt-6"
-        >
-          <Button 
-            onClick={handleShare}
-            className="w-full pallars-button secondary flex items-center justify-center space-x-2"
-          >
-            <Share2 className="w-4 h-4" />
-            <span>Compartir aplicación</span>
-          </Button>
-        </motion.div>
+    <div className="bg-[#F9F7F2] dark:bg-[#1a211e] min-h-screen flex flex-col relative overflow-x-hidden text-[#1e2b25] dark:text-gray-100 font-sans pb-32">
+      
+      {/* Header Navigation */}
+      <div className="sticky top-0 z-50 bg-[#F9F7F2]/95 dark:bg-[#1a211e]/95 backdrop-blur-sm border-b border-primary/10 px-4 py-3 flex items-center justify-between">
+        <button onClick={() => onNavigate('home')} className="text-[#1e2b25] dark:text-white p-2 rounded-full hover:bg-primary/10 transition-colors">
+            <ArrowLeft className="w-6 h-6" />
+        </button>
+        <h2 className="font-serif text-xl font-medium tracking-wide text-[#1e2b25] dark:text-white">El Meu Quadern</h2>
+        <button className="text-[#1e2b25] dark:text-white p-2 rounded-full hover:bg-primary/10 transition-colors">
+            <Settings className="w-6 h-6" />
+        </button>
       </div>
 
-      {/* Avatar Selection Dialog */}
-      {isAvatarModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-            <motion.div 
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="bg-white rounded-xl w-full max-w-sm p-4"
-            >
-                <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-serif font-bold text-pallars-green">Elige tu avatar</h3>
-                    <Button variant="ghost" size="sm" onClick={() => setIsAvatarModalOpen(false)}>
-                        <X className="w-5 h-5" />
-                    </Button>
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col gap-6 pb-24">
+        
+        {/* User Profile Section */}
+        <div className="flex flex-col items-center pt-6 px-4">
+            <div className="relative group">
+                <div className="w-32 h-32 rounded-full p-1 border-[3px] border-primary bg-white shadow-sm">
+                    <img 
+                        alt="Profile picture" 
+                        className="w-full h-full object-cover rounded-full" 
+                        src={currentUser?.avatarUrl || "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=250&auto=format&fit=crop"} // Fallback image similar to HTML ref
+                    />
                 </div>
-                
-                <div className="grid grid-cols-3 gap-3 mb-4">
-                    {PRESET_AVATARS.map((url, i) => (
-                        <button 
-                            key={i}
-                            onClick={() => handleUpdateAvatar(url)}
-                            disabled={updatingAvatar}
-                            className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
-                                userProfile?.avatar_url === url 
-                                    ? 'border-pallars-green ring-2 ring-pallars-green/20' 
-                                    : 'border-transparent hover:border-pallars-green/50'
-                            }`}
-                        >
-                            <img src={url} className="w-full h-full object-cover" alt={`Avatar ${i+1}`} />
-                        </button>
-                    ))}
+                <div className="absolute bottom-0 right-0 bg-primary text-white p-1.5 rounded-full border-2 border-[#F9F7F2] dark:border-[#1a211e] shadow-sm">
+                    <Edit className="w-4 h-4" />
                 </div>
-                
-                <p className="text-xs text-muted-foreground text-center">
-                    Selecciona una imagen para actualizar tu perfil.
+            </div>
+            <div className="mt-4 text-center">
+                <h1 className="font-serif text-3xl font-bold text-[#1e2b25] dark:text-white leading-tight">
+                    {currentUser?.username || "Explorador Anònim"}
+                </h1>
+                <p className="font-serif italic text-primary text-lg mt-1">
+                    {currentUser?.level >= 3 ? "Naturalista Expert" : "Explorador Novell"}
                 </p>
-            </motion.div>
+            </div>
         </div>
-      )}
 
+        {/* Stats Dashboard */}
+        <div className="px-4">
+            <div className="bg-white dark:bg-white/5 rounded-2xl p-6 shadow-[0_2px_8px_-2px_rgba(86,143,114,0.15)] border border-primary/10 flex justify-between divide-x divide-primary/10">
+                <div className="flex-1 flex flex-col items-center justify-center gap-1 px-2">
+                    <span className="font-serif text-3xl font-bold text-primary">{currentUser?.visitedCount || 12}</span>
+                    <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider text-center">Llocs Visitats</span>
+                </div>
+                <div className="flex-1 flex flex-col items-center justify-center gap-1 px-2">
+                    <span className="font-serif text-3xl font-bold text-primary">{currentUser?.xp || 450}</span>
+                    <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider text-center">Punts Totals</span>
+                </div>
+                <div className="flex-1 flex flex-col items-center justify-center gap-1 px-2">
+                    <span className="font-serif text-3xl font-bold text-primary">#42</span>
+                    <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider text-center">Ranquing</span>
+                </div>
+            </div>
+        </div>
+
+        {/* Passport Section */}
+        <div className="px-4 mt-2">
+            <div className="flex items-center justify-between mb-4">
+                <h3 className="font-serif text-2xl font-bold text-[#1e2b25] dark:text-white italic">El Teu Passaport</h3>
+                <span className="text-xs font-medium text-primary bg-primary/10 px-3 py-1 rounded-full">Recent</span>
+            </div>
+            
+            {/* Stamps Grid Container */}
+            <PassportGrid />
+        </div>
+
+        {/* Latest Achievement Banner */}
+        <div className="px-4">
+            <div className="bg-primary/5 dark:bg-primary/10 border border-primary/20 rounded-xl p-4 flex items-center gap-4">
+                <div className="bg-white dark:bg-white/10 p-2 rounded-full shadow-sm">
+                    <Trophy className="w-6 h-6 text-primary" />
+                </div>
+                <div className="flex-1">
+                    <h4 className="font-serif font-bold text-[#1e2b25] dark:text-white">Explorador de Cims</h4>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">Has visitat 5 cims diferents aquest mes!</p>
+                </div>
+                <ChevronRight className="w-5 h-5 text-gray-400" />
+            </div>
+        </div>
+
+      </main>
     </div>
   );
 }

@@ -53,18 +53,18 @@ export function HomeScreen({ onNavigate, onOpenHelp }: HomeScreenProps) {
       <motion.div 
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="bg-pallars-green p-4 pb-2"
+        className="bg-primary p-4 pb-2"
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-pallars-cream rounded-full flex items-center justify-center">
-              <span className="text-lg font-serif font-bold text-pallars-green">M</span>
+            <div className="w-10 h-10 bg-background rounded-full flex items-center justify-center">
+              <span className="text-lg font-serif font-bold text-primary">M</span>
             </div>
             <div>
-              <h1 className="text-lg font-serif font-bold text-pallars-cream">
+              <h1 className="text-lg font-serif font-bold text-primary-foreground">
                 {PxxConfig.appName}
               </h1>
-              <p className="text-xs text-pallars-cream/80">{PxxConfig.appDescription}</p>
+              <p className="text-xs text-primary-foreground/80">{PxxConfig.appDescription}</p>
             </div>
           </div>
           <div className="flex items-center space-x-1">
@@ -72,7 +72,7 @@ export function HomeScreen({ onNavigate, onOpenHelp }: HomeScreenProps) {
                 variant="ghost" 
                 size="sm"
                 onClick={onOpenHelp}
-                className="text-pallars-cream hover:bg-pallars-cream/10"
+                className="text-primary-foreground hover:bg-background/10"
                 title="Ajuda"
             >
                 <HelpCircle className="w-5 h-5" />
@@ -80,7 +80,7 @@ export function HomeScreen({ onNavigate, onOpenHelp }: HomeScreenProps) {
             <Button 
                 variant="ghost" 
                 size="sm"
-                className="text-pallars-cream hover:bg-pallars-cream/10"
+                className="text-primary-foreground hover:bg-background/10"
             >
                 <Navigation className="w-5 h-5" />
             </Button>
@@ -106,8 +106,8 @@ export function HomeScreen({ onNavigate, onOpenHelp }: HomeScreenProps) {
         ></div>
 
         {/* Etiqueta zona */}
-        <div className="absolute bottom-4 left-4 bg-pallars-green/90 backdrop-blur-sm rounded-lg px-3 py-2 z-20">
-          <p className="text-xs font-medium text-pallars-cream">
+        <div className="absolute bottom-4 left-4 bg-primary/90 backdrop-blur-sm rounded-lg px-3 py-2 z-20">
+          <p className="text-xs font-medium text-primary-foreground">
             Radio 10 km · Áreas cercanas
           </p>
         </div>
@@ -121,14 +121,14 @@ export function HomeScreen({ onNavigate, onOpenHelp }: HomeScreenProps) {
           transition={{ delay: 0.4 }}
           className="flex items-center justify-between mb-4"
         >
-          <h2 className="text-xl font-serif font-semibold text-pallars-green">
+          <h2 className="text-xl font-serif font-semibold text-primary">
             Lugares cercanos
           </h2>
           <Button 
             variant="ghost" 
             size="sm"
             onClick={() => onNavigate('legends')}
-            className="text-pallars-brown hover:bg-pallars-brown/10"
+            className="text-secondary hover:bg-secondary/10"
           >
             Veure tot
           </Button>
@@ -155,7 +155,7 @@ export function HomeScreen({ onNavigate, onOpenHelp }: HomeScreenProps) {
                 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between mb-1">
-                    <h3 className="font-serif font-medium text-pallars-green truncate">
+                    <h3 className="font-serif font-medium text-primary truncate">
                       {legend.title}
                     </h3>
                     <div className="flex items-center space-x-1 ml-2">
@@ -176,7 +176,7 @@ export function HomeScreen({ onNavigate, onOpenHelp }: HomeScreenProps) {
                   </p>
                   
                   <div className="flex items-center justify-between">
-                    <span className="text-xs bg-pallars-brown/10 text-pallars-brown px-2 py-1 rounded-full">
+                    <span className="text-xs bg-secondary/10 text-secondary px-2 py-1 rounded-full">
                       {legend.category}
                     </span>
                     <div className="flex items-center space-x-1 text-xs text-muted-foreground">
