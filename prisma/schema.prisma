@@ -7,8 +7,6 @@ generator client {
 
 datasource db {
   provider   = "postgresql"
-  url        = env("DATABASE_URL")
-  directUrl  = env("DIRECT_URL")
   extensions = [postgis, uuid_ossp(map: "uuid-ossp")]
   schemas    = ["auth", "public"]
 }
@@ -22,6 +20,7 @@ model Municipality {
   createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt        DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   routes           Route[]
+  reports          Report[]
   admins           User[]   @relation("MunicipalityAdmins")
 
   @@map("municipalities")
@@ -41,6 +40,7 @@ model User {
   unlocks         UserUnlock[]
   municipality    Municipality?  @relation("MunicipalityAdmins", fields: [municipalityId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "users_municipality_fk")
   organizations   organizations? @relation(fields: [organization_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  visits          PoiVisits[]
 
   @@map("users")
   @@schema("public")
@@ -80,6 +80,8 @@ model Poi {
   descriptionTranslations  Json         @default("{}") @map("description_translations")
   latitude                 Float?
   longitude                Float?
+  altitude                 Float?       @map("altitude")
+  timeFromStart            Int?         @map("time_from_start")
   audioUrl                 String?      @map("audio_url")
   videoUrl                 String?      @map("video_url")
   imageBeforeUrl           String?      @map("image_before_url")
@@ -95,6 +97,7 @@ model Poi {
   updatedAt                DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   route                    Route        @relation(fields: [routeId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "pois_route_fk")
   unlocks                  UserUnlock[]
+  visits                   PoiVisits[]
 
   @@index([routeId], map: "idx_pois_route")
   @@map("pois")
@@ -697,3 +700,84 @@ model AiUsageLog {
   @@map("ai_usage_logs")
   @@schema("public")
 }
+
+// ============================================
+// 7. REPORTS (Worker)
+// ============================================
+
+model Report {
+  id             String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  municipalityId String       @map("municipality_id") @db.Uuid
+  title          String
+  status         ReportStatus @default(PENDING)
+  resultUrl      String?      @map("result_url")
+  data           Json?
+  error          String?
+  createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  municipality   Municipality @relation(fields: [municipalityId], references: [id], onDelete: Cascade)
+
+  @@index([municipalityId], map: "idx_reports_municipality")
+  @@map("reports")
+  @@schema("public")
+}
+
+enum ReportStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+
+// ... existing code ...
+
+  @@schema("public")
+}
+
+// ============================================
+// 8. TELEMETRY & ANALYTICS
+// ============================================
+
+model UserTelemetry {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String?  @map("user_id") @db.Uuid
+  routeId   String?  @map("route_id") @db.Uuid
+  latitude  Float
+  longitude Float
+  timestamp DateTime @default(now()) @db.Timestamptz(6)
+
+  @@map("user_telemetry")
+  @@schema("public")
+}
+
+model PoiVisits {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String?  @map("user_id") @db.Uuid
+  poiId           String   @map("poi_id") @db.Uuid
+  entryTime       DateTime @map("entry_time") @db.Timestamptz(6)
+  exitTime        DateTime? @map("exit_time") @db.Timestamptz(6)
+  durationSeconds Int?     @map("duration_seconds")
+  rating          Int?     @default(0) // Added for future rating support, defaults to 0
+  
+  user            User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  poi             Poi      @relation(fields: [poiId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([poiId])
+  @@map("poi_visits")
+  @@schema("public")
+}
+
+model ExecutiveReportSnapshot {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  municipalityId  String   @map("municipality_id") @db.Uuid
+  periodStart     DateTime @map("period_start") @db.Timestamptz(6)
+  periodEnd       DateTime @map("period_end") @db.Timestamptz(6)
+  totalUsers      Int      @map("total_users")
+  avgTimePerRoute Int      @map("avg_time_per_route") // In seconds
+  topPois         Json     @map("top_pois") // Array of { poiId, name, visits, avgDuration }
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@map("executive_report_snapshots")
+  @@schema("public")
+}
+

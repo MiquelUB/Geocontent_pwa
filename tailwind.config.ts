@@ -69,6 +69,13 @@ const config: Config = {
   			'chameleon-city':     '#2C3E50',
   			'chameleon-interior': '#8B6914',
   			'chameleon-bloom':    '#C2185B',
+
+			// Custom Colors
+			terracotta: {
+				500: '#E08E6D',
+				600: '#D27D56',
+				700: '#C06C45',
+			},
   		},
   		fontFamily: {
   			'display': [PxxConfig.theme.fonts.display, 'serif'],
