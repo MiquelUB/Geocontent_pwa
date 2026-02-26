@@ -13,6 +13,7 @@ import { useGeolocation } from "../hooks/useGeolocation";
 import { SimpleLogin } from "../components/auth/SimpleLogin";
 import { OnboardingModal } from "../components/OnboardingModal";
 import { useOnboarding } from "../hooks/useOnboarding";
+import { getAppBranding } from "@/lib/actions";
 
 
 
@@ -21,21 +22,22 @@ export default function Home() {
   const [currentScreen, setCurrentScreen] = useState("splash");
   const [navigationData, setNavigationData] = useState<any>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [brand, setBrand] = useState<any>(null);
 
   const [isLoaded, setIsLoaded] = useState(false);
   const [errorType, setErrorType] = useState<"no-connection" | "gps-denied" | "general" | null>(null);
-  
+
   const { location, error: geoError } = useGeolocation();
   const { isOpen: isOnboardingOpen, completeOnboarding, skipOnboarding, reopenOnboarding } = useOnboarding();
 
 
 
-    useEffect(() => {
-        if (geoError) {
-          console.log("Geolocation error:", geoError); 
-          // Optional: handle GPS error state here if strict dependency
-        }
-    }, [geoError]);
+  useEffect(() => {
+    if (geoError) {
+      console.log("Geolocation error:", geoError);
+      // Optional: handle GPS error state here if strict dependency
+    }
+  }, [geoError]);
 
   // Simulació de càrrega inicial i comprovacions
   useEffect(() => {
@@ -44,7 +46,7 @@ export default function Home() {
       try {
         // Simular un retard de xarxa o càrrega
         // await new Promise(resolve => setTimeout(resolve, 1000));
-        
+
         // Simular check de connexió
         const isOnline = navigator.onLine;
         if (!isOnline) {
@@ -55,35 +57,39 @@ export default function Home() {
         // Check for persisted user session with VALIDATION
         const savedUserSting = localStorage.getItem("core_user");
         if (savedUserSting) {
-           try {
-             // Dynamic import to ensuring we call the server action from client safely
-             const { getUserProfile } = await import("@/lib/actions");
-             
-             const savedUser = JSON.parse(savedUserSting);
-             
-             if (savedUser?.id) {
-               console.log("Validating session for:", savedUser.id);
-               const profile = await getUserProfile(savedUser.id);
-               
-               if (profile) {
-                 console.log("Session valid.");
-                 setCurrentUser(profile);
-               } else {
-                 console.warn("Invalid session found (User local but not in DB). Clearing.");
-                 localStorage.removeItem("core_user");
-                 setCurrentUser(null);
-               }
-             } else {
-                localStorage.removeItem("pallars_user");
+          try {
+            // Dynamic import to ensuring we call the server action from client safely
+            const { getUserProfile } = await import("@/lib/actions");
+
+            const savedUser = JSON.parse(savedUserSting);
+
+            if (savedUser?.id) {
+              console.log("Validating session for:", savedUser.id);
+              const profile = await getUserProfile(savedUser.id);
+
+              if (profile) {
+                console.log("Session valid.");
+                setCurrentUser(profile);
+              } else {
+                console.warn("Invalid session found (User local but not in DB). Clearing.");
+                localStorage.removeItem("core_user");
                 setCurrentUser(null);
-             }
-           } catch (err) {
-             console.error("Error parsing/validating user session:", err);
-             localStorage.removeItem("pallars_user");
-             setCurrentUser(null);
-           }
+              }
+            } else {
+              localStorage.removeItem("pallars_user");
+              setCurrentUser(null);
+            }
+          } catch (err) {
+            console.error("Error parsing/validating user session:", err);
+            localStorage.removeItem("pallars_user");
+            setCurrentUser(null);
+          }
         }
 
+
+        // Fetch branding data
+        const brands = await getAppBranding();
+        setBrand(brands);
 
         setIsLoaded(true);
       } catch (e) {
@@ -129,27 +135,26 @@ export default function Home() {
   const renderScreen = () => {
     switch (currentScreen) {
       case "splash":
-        return <SplashScreen onComplete={handleSplashComplete} />;
+        return <SplashScreen onComplete={handleSplashComplete} brand={brand} />;
       case "login":
         return <SimpleLogin onLoginSuccess={handleLoginSuccess} />;
       case "home":
-        return <HomeScreen onNavigate={handleNavigate} onOpenHelp={reopenOnboarding} />;
+        return <HomeScreen onNavigate={handleNavigate} onOpenHelp={reopenOnboarding} brand={brand} userLocation={location} error={geoError} />;
 
       case "legends":
-        return <LegendsScreen onNavigate={handleNavigate} />;
+        return <LegendsScreen onNavigate={handleNavigate} brand={brand} />;
       case "legend-detail":
         return <LegendDetailScreen legend={navigationData} onNavigate={handleNavigate} userLocation={location} currentUser={currentUser} />;
       case "map":
         return <MapScreen onNavigate={handleNavigate} focusLegend={navigationData} userLocation={location} onOpenHelp={reopenOnboarding} />;
 
       case "profile":
-        return <ProfileScreen onNavigate={handleNavigate} currentUser={currentUser} />
-;
+        return <ProfileScreen onNavigate={handleNavigate} currentUser={currentUser} />;
       case "error":
         return (
-          <ErrorScreen 
-            type={errorType || "general"} 
-            onRetry={handleRetry} 
+          <ErrorScreen
+            type={errorType || "general"}
+            onRetry={handleRetry}
             onNavigate={handleNavigate}
           />
         );
@@ -169,11 +174,11 @@ export default function Home() {
       <main className="flex-1 relative overflow-auto scrollbar-hide">
         {renderScreen()}
       </main>
-      
+
       {showBottomNav && (
-        <BottomNavigation 
-          currentScreen={currentScreen} 
-          onScreenChange={handleNavigate} 
+        <BottomNavigation
+          currentScreen={currentScreen}
+          onScreenChange={handleNavigate}
         />
       )}
 

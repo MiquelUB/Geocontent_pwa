@@ -15,52 +15,55 @@ interface MapScreenProps {
   onOpenHelp: () => void;
   focusLegend?: any;
   userLocation: { latitude: number; longitude: number } | null;
+  error?: string | null;
 }
 
 
-export function MapScreen({ onNavigate, onOpenHelp, focusLegend, userLocation }: MapScreenProps) {
+export function MapScreen({ onNavigate, onOpenHelp, focusLegend, userLocation, error: geoError }: MapScreenProps) {
 
   const [selectedLegend, setSelectedLegend] = useState<any>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [activeCategory, setActiveCategory] = useState("totes");
   const [legends, setLegends] = useState<any[]>([]);
   const [viewState, setViewState] = useState({
-     longitude: 0.9870,
-     latitude: 42.4140,
-     zoom: 11
+    longitude: 0.9870,
+    latitude: 42.4140,
+    zoom: 11
   });
 
   function getColorByCategory(category: string) {
     switch (category) {
-        case 'Criatures': return "#8B5A3C";
-        case 'Fantasmes': return "#6B7280";
-        case 'Tresors': return "#D97706";
-        case 'Màgia': return "#7C3AED";
-        default: return "#3E4E3F";
+      case 'Criatures': return "#8B5A3C";
+      case 'Fantasmes': return "#6B7280";
+      case 'Tresors': return "#D97706";
+      case 'Màgia': return "#7C3AED";
+      default: return "#3E4E3F";
     }
   }
 
   useEffect(() => {
     async function fetchData() {
-        console.log('Fetching legends from server...');
-        const data = await getLegends();
-        console.log('Received legends:', data);
-        if (data) {
-             const mapped = data.map((l: any) => ({
-                id: l.id,
-                title: l.title,
-                location: l.location_name || "Lugar",
-                category: l.category,
-                coordinates: { lat: l.latitude, lng: l.longitude },
-                image: l.image_url,
-                hero: l.hero_image_url,
-                audio: l.audio_url,
-                video: l.video_url,
-                description: l.description,
-                color: getColorByCategory(l.category)
-            }));
-            setLegends(mapped);
-        }
+      console.log('Fetching legends from server...');
+      const data = await getLegends();
+      console.log('Received legends:', data);
+      if (data) {
+        const mapped = data.map((l: any) => ({
+          id: l.id,
+          title: l.title,
+          location: l.location_name || "Lugar",
+          category: l.category,
+          latitude: l.latitude,
+          longitude: l.longitude,
+          coordinates: { lat: l.latitude, lng: l.longitude },
+          image: l.image_url,
+          hero: l.hero_image_url,
+          audio: l.audio_url,
+          video: l.video_url,
+          description: l.description,
+          color: getColorByCategory(l.category)
+        }));
+        setLegends(mapped);
+      }
     }
     fetchData();
   }, []);
@@ -68,18 +71,18 @@ export function MapScreen({ onNavigate, onOpenHelp, focusLegend, userLocation }:
   // If focusLegend provided, center map on it
   useEffect(() => {
     if (focusLegend) {
-       setViewState({
-          longitude: focusLegend.coordinates.lng,
-          latitude: focusLegend.coordinates.lat,
-          zoom: 14
-       });
-       setSelectedLegend(focusLegend);
+      setViewState({
+        longitude: focusLegend.coordinates.lng,
+        latitude: focusLegend.coordinates.lat,
+        zoom: 14
+      });
+      setSelectedLegend(focusLegend);
     } else if (userLocation) {
-        setViewState({
-            longitude: userLocation.longitude,
-            latitude: userLocation.latitude,
-            zoom: 12 
-        });
+      setViewState({
+        longitude: userLocation.longitude,
+        latitude: userLocation.latitude,
+        zoom: 12
+      });
     }
   }, [focusLegend, userLocation]);
 
@@ -91,8 +94,8 @@ export function MapScreen({ onNavigate, onOpenHelp, focusLegend, userLocation }:
     { id: "Màgia", label: "Magia", color: "#7C3AED" }
   ];
 
-  const filteredLegends = activeCategory === "totes" 
-    ? legends 
+  const filteredLegends = activeCategory === "totes"
+    ? legends
     : legends.filter(legend => legend.category === activeCategory);
 
   return (
@@ -101,8 +104,8 @@ export function MapScreen({ onNavigate, onOpenHelp, focusLegend, userLocation }:
       <div className="absolute top-0 left-0 right-0 z-20 bg-primary/95 backdrop-blur-sm p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               size="sm"
               onClick={() => onNavigate('home')}
               className="text-primary-foreground hover:bg-background/10 p-2"
@@ -118,31 +121,31 @@ export function MapScreen({ onNavigate, onOpenHelp, focusLegend, userLocation }:
               </p>
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-1">
-            <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={onOpenHelp}
-                className="text-primary-foreground hover:bg-background/10"
-                title="Ayuda"
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onOpenHelp}
+              className="text-primary-foreground hover:bg-background/10"
+              title="Ayuda"
             >
-                <HelpCircle className="w-5 h-5" />
+              <HelpCircle className="w-5 h-5" />
             </Button>
-            <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => setShowFilters(!showFilters)}
-                className="text-primary-foreground hover:bg-background/10"
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowFilters(!showFilters)}
+              className="text-primary-foreground hover:bg-background/10"
             >
-                <Filter className="w-5 h-5" />
+              <Filter className="w-5 h-5" />
             </Button>
           </div>
         </div>
 
         {/* Filtres de categoria */}
         {showFilters && (
-          <motion.div 
+          <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             className="mt-3 overflow-hidden"
@@ -154,13 +157,12 @@ export function MapScreen({ onNavigate, onOpenHelp, focusLegend, userLocation }:
                   variant={activeCategory === category.id ? "default" : "outline"}
                   size="sm"
                   onClick={() => setActiveCategory(category.id)}
-                  className={`whitespace-nowrap flex-shrink-0 ${
-                    activeCategory === category.id 
-                      ? "bg-background text-primary" 
-                      : "border-primary-foreground text-primary-foreground hover:bg-background/10"
-                  }`}
+                  className={`whitespace-nowrap flex-shrink-0 ${activeCategory === category.id
+                    ? "bg-background text-primary"
+                    : "border-primary-foreground text-primary-foreground hover:bg-background/10"
+                    }`}
                 >
-                  <div 
+                  <div
                     className="w-2 h-2 rounded-full mr-2"
                     style={{ backgroundColor: category.color }}
                   ></div>
@@ -170,19 +172,39 @@ export function MapScreen({ onNavigate, onOpenHelp, focusLegend, userLocation }:
             </div>
           </motion.div>
         )}
+
+        {/* GPS Status Badge */}
+        <div className="flex mt-2 items-center space-x-2">
+          {geoError ? (
+            <>
+              <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity }} className="w-2 h-2 rounded-full bg-red-400" />
+              <span className="text-[10px] text-red-100 uppercase font-bold tracking-wider italic">{geoError}</span>
+            </>
+          ) : !userLocation ? (
+            <>
+              <motion.div animate={{ opacity: [1, 0.4, 1] }} transition={{ repeat: Infinity, duration: 2 }} className="w-2 h-2 rounded-full bg-yellow-400" />
+              <span className="text-[10px] text-primary-foreground/70 uppercase font-bold tracking-wider italic">Buscant senyal GPS...</span>
+            </>
+          ) : (
+            <>
+              <div className="w-2 h-2 rounded-full bg-green-400" />
+              <span className="text-[10px] text-primary-foreground/70 uppercase font-bold tracking-wider">Senyal GPS actiu</span>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Mapa principal */}
       <div className="relative w-full h-full bg-gray-100">
         <MapLibreMap
           center={
-            selectedLegend 
+            selectedLegend
               ? [
-                  selectedLegend.coordinates?.lng || selectedLegend.longitude || 0.95,
-                  selectedLegend.coordinates?.lat || selectedLegend.latitude || 42.4
-                ] 
+                selectedLegend.coordinates?.lng || selectedLegend.longitude || 0.95,
+                selectedLegend.coordinates?.lat || selectedLegend.latitude || 42.4
+              ]
               : (userLocation ? [userLocation.longitude, userLocation.latitude] : [0.95, 42.4])
-          } 
+          }
           zoom={selectedLegend ? 14 : 10} // Closer zoom for specific legend
           userLocation={userLocation}
         >
@@ -194,7 +216,7 @@ export function MapScreen({ onNavigate, onOpenHelp, focusLegend, userLocation }:
               latitude={legend.coordinates.lat}
               anchor="bottom"
             >
-              <div 
+              <div
                 className="relative cursor-pointer hover:scale-110 transition-transform"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -203,8 +225,8 @@ export function MapScreen({ onNavigate, onOpenHelp, focusLegend, userLocation }:
                 }}
               >
                 {/* Debug: {legend.coordinates.lat},{legend.coordinates.lng} */}
-                <Navigation 
-                    className="w-8 h-8 text-primary drop-shadow-md"
+                <Navigation
+                  className="w-8 h-8 text-primary drop-shadow-md"
                 />
               </div>
             </Marker>
@@ -215,13 +237,13 @@ export function MapScreen({ onNavigate, onOpenHelp, focusLegend, userLocation }:
 
         {/* Popup de llegenda seleccionada */}
         {selectedLegend && (
-          <motion.div 
+          <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             className="absolute bottom-4 left-4 right-4 z-50"
             onLayoutAnimationComplete={() => console.log("Popup rendered for:", selectedLegend.title)}
           >
-            <div 
+            <div
               className="bg-white rounded-lg p-4 shadow-xl border border-gray-200 cursor-pointer active:scale-95 transition-transform"
               onClick={() => onNavigate('legend-detail', selectedLegend)}
             >
@@ -245,18 +267,18 @@ export function MapScreen({ onNavigate, onOpenHelp, focusLegend, userLocation }:
                     {selectedLegend.description}
                   </p>
                   <div className="flex items-center justify-between">
-                    <Badge 
+                    <Badge
                       className="text-xs border-0"
-                      style={{ 
+                      style={{
                         backgroundColor: `${selectedLegend.color}20`,
-                        color: selectedLegend.color 
+                        color: selectedLegend.color
                       }}
                     >
                       {selectedLegend.category}
                     </Badge>
                     <div className="flex gap-2">
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -266,7 +288,7 @@ export function MapScreen({ onNavigate, onOpenHelp, focusLegend, userLocation }:
                       >
                         Cerrar
                       </Button>
-                      <Button 
+                      <Button
                         size="sm"
                         className="text-xs bg-primary text-primary-foreground pointer-events-none" // Pointer events none because the parent clicks
                       >

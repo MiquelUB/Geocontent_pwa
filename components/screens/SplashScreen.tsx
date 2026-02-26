@@ -4,9 +4,10 @@ import { PxxConfig } from "@/projects/active/config";
 
 interface SplashScreenProps {
   onComplete: () => void;
+  brand?: any;
 }
 
-export function SplashScreen({ onComplete }: SplashScreenProps) {
+export function SplashScreen({ onComplete, brand }: SplashScreenProps) {
   useEffect(() => {
     const timer = setTimeout(() => {
       onComplete();
@@ -29,7 +30,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
         <motion.div
           initial={{ scale: 0.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ 
+          transition={{
             duration: 1,
             ease: "easeOut"
           }}
@@ -39,33 +40,39 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
             <motion.div
               initial={{ rotate: -180 }}
               animate={{ rotate: 0 }}
-              transition={{ 
+              transition={{
                 duration: 1.5,
                 delay: 0.2,
                 ease: "easeOut"
               }}
               className="w-24 h-24 mx-auto mb-6 bg-background rounded-full flex items-center justify-center shadow-lg"
             >
-              <span className="text-3xl font-serif font-bold text-primary">M</span>
+              {brand?.logoUrl ? (
+                <img src={brand.logoUrl} alt="Logo" className="w-full h-full object-contain p-4" />
+              ) : (
+                <span className="text-3xl font-serif font-bold text-primary">
+                  {brand?.name?.[0] || PxxConfig.appName[0]}
+                </span>
+              )}
             </motion.div>
           </div>
 
           <motion.h1
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ 
+            transition={{
               duration: 0.8,
               delay: 0.5
             }}
             className="text-4xl font-serif font-bold text-primary-foreground mb-2"
           >
-            {PxxConfig.appName}
+            {brand?.name || PxxConfig.appName}
           </motion.h1>
 
           <motion.p
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ 
+            transition={{
               duration: 0.8,
               delay: 0.7
             }}
@@ -79,7 +86,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ 
+          transition={{
             duration: 0.5,
             delay: 1.5
           }}
@@ -111,13 +118,13 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
         className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ 
+        transition={{
           duration: 0.8,
           delay: 2
         }}
       >
         <div className="flex items-center space-x-2 text-primary-foreground/60 text-xs">
-          <span>{PxxConfig.appName} Core Engine</span>
+          <span>{brand?.name || PxxConfig.appName} Engine</span>
         </div>
       </motion.div>
     </div>

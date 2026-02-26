@@ -21,46 +21,51 @@ const newsreader = Newsreader({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(PxxConfig.metadata.url),
-  title: PxxConfig.appName,
-  description: PxxConfig.appDescription,
-  keywords: PxxConfig.metadata.keywords,
-  authors: [{ name: PxxConfig.metadata.creator }],
-  creator: PxxConfig.metadata.creator,
-  publisher: PxxConfig.metadata.publisher,
-  openGraph: {
-    title: PxxConfig.appName,
+export async function generateMetadata(): Promise<Metadata> {
+  const brand = await getAppBranding();
+  const appName = brand?.name || PxxConfig.appName;
+
+  return {
+    metadataBase: new URL(PxxConfig.metadata.url),
+    title: appName,
     description: PxxConfig.appDescription,
-    url: PxxConfig.metadata.url,
-    siteName: PxxConfig.appName,
-    images: [
-      {
-        url: PxxConfig.metadata.ogImage,
-        width: 1200,
-        height: 630,
-        alt: PxxConfig.appName,
-      },
-    ],
-    locale: PxxConfig.metadata.locale,
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: PxxConfig.appName,
-    description: PxxConfig.appDescription,
-    images: [PxxConfig.metadata.ogImage],
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
-  manifest: "/manifest.json",
-  icons: {
-    icon: "/favicon.png",
-    apple: "/apple-touch-icon.png",
-  },
-};
+    keywords: PxxConfig.metadata.keywords,
+    authors: [{ name: PxxConfig.metadata.creator }],
+    creator: PxxConfig.metadata.creator,
+    publisher: PxxConfig.metadata.publisher,
+    openGraph: {
+      title: appName,
+      description: PxxConfig.appDescription,
+      url: PxxConfig.metadata.url,
+      siteName: appName,
+      images: [
+        {
+          url: PxxConfig.metadata.ogImage,
+          width: 1200,
+          height: 630,
+          alt: appName,
+        },
+      ],
+      locale: PxxConfig.metadata.locale,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: appName,
+      description: PxxConfig.appDescription,
+      images: [PxxConfig.metadata.ogImage],
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
+    manifest: "/manifest.json",
+    icons: {
+      icon: "/favicon.png",
+      apple: "/apple-touch-icon.png",
+    },
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: PxxConfig.theme.colors.terra,
@@ -70,10 +75,10 @@ import { getAppBranding } from "@/lib/actions";
 
 function hexToHsl(hex: string) {
   if (!hex || typeof hex !== 'string') return "0 0% 0%";
-  
+
   let r = 0, g = 0, b = 0;
   const cleanHex = hex.startsWith('#') ? hex : `#${hex}`;
-  
+
   if (cleanHex.length === 4) {
     r = parseInt(cleanHex[1] + cleanHex[1], 16);
     g = parseInt(cleanHex[2] + cleanHex[2], 16);
@@ -109,7 +114,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const brand = await getAppBranding();
-  
+
   const themeId = (brand as any)?.themeId || 'mountain';
   const theme = (PxxConfig.chameleonThemes as any)[themeId] || PxxConfig.chameleonThemes.mountain;
 

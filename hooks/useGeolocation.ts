@@ -41,6 +41,11 @@ export function useGeolocation() {
   });
 
   useEffect(() => {
+    if (typeof window !== 'undefined' && !window.isSecureContext) {
+      setState(prev => ({ ...prev, error: 'Contexto no seguro: El GPS requiere HTTPS o localhost', loading: false }));
+      return;
+    }
+
     if (!navigator.geolocation) {
       setState(prev => ({ ...prev, error: 'Geolocation not supported', loading: false }));
       return;
