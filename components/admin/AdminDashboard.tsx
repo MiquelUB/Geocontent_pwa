@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AiRouteGenerator from '@/components/admin/AiRouteGenerator';
 import { UsersTable } from '@/components/admin/UsersTable';
@@ -9,17 +9,51 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { deleteLegend, createLegend, updateLegend } from "@/lib/actions"; // Verify path
+import { Loader2, FileText, UploadCloud, AlertCircle, Plus, X, ImageIcon } from "lucide-react";
+import { deleteLegend, createLegend, updateLegend, getAdminLegends, addVideoToPoi, createRoute, createPoi, updatePoi } from "@/lib/actions";
+import { compressImage } from "@/lib/imageOptimization";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/database/supabase/client";
+import VideoUploader from "./VideoUploader";
+import ManualPoiForm from "./ManualPoiForm";
+import { updateRoute } from "@/lib/actions";
+import RoutePoiManager from "./RoutePoiManager";
+import MunicipalityManager from "./MunicipalityManager";
 
-// Import UI components for the form (reused from previous dashboard)
-// In a full refactor, we would extract LegendForm to its own component.
-// For now, we will inline it in the right column to keep it functional as requested.
+interface Legend {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  location_name: string;
+  latitude: number;
+  longitude: number;
+  image_url: string;
+  hero_image_url: string;
+  audio_url: string;
+  video_url: string;
+  routePois?: Poi[];
+}
 
-export default function AdminDashboard({ legends, profiles, reports, municipalityId }: { legends: any[], profiles: any[], reports?: any[], municipalityId?: string }) {
-  const [activeTab, setActiveTab] = useState('rutes'); // 'rutes', 'usuaris', 'executiu'
+interface Poi {
+  id: string;
+  title: string;
+  category?: string;
+  videoUrls: string[];
+}
+
+export default function AdminDashboard({ legends: initialLegends, profiles, reports, municipalityId }: { legends: any[], profiles: any[], reports?: any[], municipalityId?: string }) {
+  const [activeTab, setActiveTab] = useState('rutes'); 
   const [isLoading, setIsLoading] = useState(false);
+  const [legends, setLegends] = useState<Legend[]>(initialLegends as any[]);
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [latitude, setLatitude] = useState('');
+  const [longitude, setLongitude] = useState('');
+  const [category, setCategory] = useState('mountain');
+  const [imageUrl, setImageUrl] = useState('');
+  const [audioUrl, setAudioUrl] = useState('');
+  const [videoUrl, setVideoUrl] = useState('');
+  const [editingLegend, setEditingLegend] = useState<Legend | null>(null);
   
   // Form State
   // Note: Original code used a Dialog. Now we want it in the right column (Split Screen).
@@ -35,55 +69,100 @@ export default function AdminDashboard({ legends, profiles, reports, municipalit
   // Given "Split-Screen" emphasis for copying from AI, we prioritize the grid.
   
   const router = useRouter();
-  const supabase = createClient();
-  const [editingLegend, setEditingLegend] = useState<any>(null);
 
-  // Reusing the submit logic
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  // Route Form State
+  const [routeTitle, setRouteTitle] = useState('');
+  const [routeDescription, setRouteDescription] = useState('');
+  const [routeLocation, setRouteLocation] = useState('');
+  const [routeThumbnail, setRouteThumbnail] = useState('');
+  const [routeCategory, setRouteCategory] = useState('mountain');
+  const [editingRoute, setEditingRoute] = useState<any>(null);
+  const [managingRoute, setManagingRoute] = useState<{ id: string; name: string } | null>(null);
+  const [editingPoi, setEditingPoi] = useState<any>(null);
+  const [routeThumbFile, setRouteThumbFile] = useState<File | null>(null);
+
+  // Handle initialization/edit sync
+  useEffect(() => {
+      if (editingLegend) {
+          setEditingRoute(editingLegend);
+          setRouteTitle(editingLegend.title || '');
+          setRouteDescription(editingLegend.description || '');
+          setRouteLocation(editingLegend.location_name || '');
+          setRouteThumbnail((editingLegend as any).thumbnail1x1 || '');
+          setRouteCategory(editingLegend.category || 'mountain');
+      }
+  }, [editingLegend]);
+
+  const resetRouteForm = () => {
+    setEditingLegend(null);
+    setEditingRoute(null);
+    setEditingPoi(null);
+    setRouteTitle('');
+    setRouteDescription('');
+    setRouteLocation('');
+    setRouteThumbnail('');
+    setRouteCategory('mountain');
+    setRouteThumbFile(null);
+  };
+
+  async function handleSaveRoute() {
+    if (!routeTitle) return alert('El títol de la ruta és obligatori.');
     setIsLoading(true);
-    
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-
-    const uploadFile = async (file: File | null) => {
-        if (!file || file.size === 0) return '';
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
-        const filePath = `${fileName}`;
-        const { error: uploadError } = await supabase.storage.from('legendes').upload(filePath, file);
-        if (uploadError) throw new Error(`Error uploading ${file.name}: ${uploadError.message}`);
-        const { data: { publicUrl } } = supabase.storage.from('legendes').getPublicUrl(filePath);
-        return publicUrl;
-    };
-
     try {
-        const imageFile = formData.get('image') as File;
-        const heroImageFile = formData.get('hero_image') as File;
-        const audioFile = formData.get('audio') as File;
+        const formData = new FormData();
+        formData.append('title', routeTitle);
+        formData.append('description', routeDescription);
+        formData.append('location', routeLocation);
+        formData.append('category', routeCategory);
+        formData.append('thumbnail_1x1', routeThumbnail);
+        if (routeThumbFile) {
+            formData.append('thumbnail_file', routeThumbFile);
+        }
 
-        if (imageFile && imageFile.size > 0) formData.set('image_url', await uploadFile(imageFile));
-        if (heroImageFile && heroImageFile.size > 0) formData.set('hero_image_url', await uploadFile(heroImageFile));
-        if (audioFile && audioFile.size > 0) formData.set('audio_url', await uploadFile(audioFile));
-
-        formData.delete('image');
-        formData.delete('hero_image');
-        formData.delete('audio');
-
-        const result = editingLegend 
-            ? await updateLegend(editingLegend.id, formData) 
-            : await createLegend(formData);
-
-        if (result.success) {
-            setEditingLegend(null);
-            form.reset();
-            router.refresh(); 
-            // Optional success toast
+        let res;
+        if (editingRoute) {
+            res = await updateRoute(editingRoute.id, formData);
         } else {
-            alert("Error: " + result.error);
+            res = await createRoute(formData);
+        }
+
+        if (res.success) {
+            alert('Ruta guardada!');
+            if (!editingRoute) resetRouteForm();
+            const updated = await getAdminLegends();
+            setLegends(updated as any);
+        } else {
+            alert("Error: " + res.error);
         }
     } catch (error: any) {
-        console.error("Submission error:", error);
+        alert("Error: " + error.message);
+    } finally {
+        setIsLoading(false);
+    }
+  }
+
+  async function handleSavePoi(formData: FormData) {
+    setIsLoading(true);
+    try {
+        let res;
+        if (editingPoi) {
+            // Editar un POI existent
+            res = await updatePoi(editingPoi.id, formData);
+        } else {
+            // Crear un nou POI (amb route_id si managingRoute o editingLegend estan actius)
+            // ❌ NO cridem updateLegend — això sobreescriuria el nom de la ruta
+            res = await createPoi(formData);
+        }
+
+        if (res.success) {
+            alert(editingPoi ? 'Punt actualitzat!' : 'Punt guardat correctament!');
+            setEditingPoi(null);
+            const updated = await getAdminLegends();
+            setLegends(updated as any);
+        } else {
+            alert("Error: " + res.error);
+        }
+    } catch (error: any) {
         alert("Error: " + error.message);
     } finally {
         setIsLoading(false);
@@ -119,6 +198,12 @@ export default function AdminDashboard({ legends, profiles, reports, municipalit
           >
             Informe Executiu
           </button>
+          <button 
+            onClick={() => setActiveTab('config')}
+            className={`px-4 py-2 rounded-md transition-all duration-200 text-sm font-medium ${activeTab === 'config' ? 'bg-white text-terracotta-600 shadow-sm ring-1 ring-stone-200' : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/50'}`}
+          >
+            Configuració
+          </button>
         </nav>
       </header>
 
@@ -126,109 +211,132 @@ export default function AdminDashboard({ legends, profiles, reports, municipalit
       <main className="animate-in fade-in duration-500">
         {activeTab === 'rutes' && (
           <div className="space-y-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
               
-              {/* SPLIT SCREEN: GENERATOR + EDITOR */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-                
-                {/* COLUMNA ESQUERRA: MOTOR IA */}
-                <Card className="border-stone-200 shadow-sm bg-white h-full">
+              {/* COLUMNA ESQUERRA: MOTOR IA (NOMÉS VISTA) */}
+              <Card className="border-stone-200 shadow-sm bg-white h-full">
                 <CardHeader className="bg-stone-50/50 border-b border-stone-100 pb-4">
-                    <CardTitle className="font-serif text-xl text-stone-800 flex items-center gap-2">
-                        <span>🤖</span> 1. Analista Documental (IA)
-                    </CardTitle>
-                    <p className="text-sm text-stone-500">Puja documents PDF/TXT i obté el JSON.</p>
+                  <CardTitle className="font-serif text-xl text-stone-800 flex items-center gap-2">
+                    <span>🤖</span> 1. Analista Documental (IA)
+                  </CardTitle>
+                  <p className="text-sm text-stone-500">Puja documents per extraure informació de referència.</p>
                 </CardHeader>
                 <CardContent className="p-6">
-                    <AiRouteGenerator />
+                  <AiRouteGenerator />
                 </CardContent>
-                </Card>
+              </Card>
 
-                {/* COLUMNA DRETA: FORMULARI DE LLEGENDES (POIs) */}
-                <Card className="border-stone-200 shadow-sm bg-white h-full ring-1 ring-terracotta-100/50">
+              {/* COLUMNA DRETA: GESTOR DE CARPETA (MANUAL) */}
+              <Card className="border-stone-200 shadow-sm bg-white h-full overflow-hidden">
                 <CardHeader className="bg-stone-50/50 border-b border-stone-100 pb-4">
-                    <CardTitle className="font-serif text-xl text-stone-800 flex items-center gap-2">
-                        <span>✍️</span> 2. Editor de Rutes
-                    </CardTitle>
-                    <p className="text-sm text-stone-500">Copia el JSON generat i completa el formulari.</p>
+                  <CardTitle className="font-serif text-xl text-stone-800 flex items-center gap-2">
+                    <span>✍️</span> 2. Gestió de Carpeta i Punts
+                  </CardTitle>
+                  <p className="text-sm text-stone-500">Omple les dades manualment basant-te en la IA.</p>
                 </CardHeader>
-                <CardContent className="p-6">
-                    <form onSubmit={handleSubmit} className="grid gap-5">
-                        <div className="grid gap-2">
-                            <Label htmlFor="title" className="text-stone-600">Títol</Label>
-                            <Input id="title" name="title" defaultValue={editingLegend?.title} required className="bg-stone-50 border-stone-200 focus:border-terracotta-500 focus:ring-terracotta-500/20" />
-                        </div>
-                        
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="grid gap-2">
-                                <Label htmlFor="category" className="text-stone-600">Categoria</Label>
-                                <select 
-                                    id="category" 
-                                    name="category" 
-                                    defaultValue={editingLegend?.category || "Criatures"}
-                                    className="flex h-10 w-full rounded-md border border-stone-200 bg-stone-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-terracotta-500/20 focus:border-terracotta-500" 
-                                    required
-                                >
-                                    <option value="Criatures">Criatures</option>
-                                    <option value="Fantasmes">Fantasmes</option>
-                                    <option value="Tresors">Tresors</option>
-                                    <option value="Màgia">Màgia</option>
-                                </select>
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="location" className="text-stone-600">Ubicació</Label>
-                                <Input id="location" name="location_name" defaultValue={editingLegend?.location_name} placeholder="p.ex. Vall Fosca" className="bg-stone-50 border-stone-200 focus:border-terracotta-500" required />
-                            </div>
-                        </div>
+                <CardContent className="p-0">
+                  <div className="p-6 border-b border-stone-100 bg-stone-50/30">
+                    <h3 className="text-sm font-bold text-stone-700 uppercase tracking-wider mb-4">Metadata de la Ruta (Carpeta)</h3>
+                    <div className="grid grid-cols-1 gap-4">
+                      <div className="grid gap-2">
+                        <Label htmlFor="routeTitle">Nom de la Ruta</Label>
+                        <Input id="routeTitle" value={routeTitle} onChange={(e) => setRouteTitle(e.target.value)} placeholder="Ex: Ruta de l'Ecomuseu" />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="routeLocation">Localització (Municipi/Poble)</Label>
+                        <Input id="routeLocation" value={routeLocation} onChange={(e) => setRouteLocation(e.target.value)} placeholder="Ex: Sort" />
+                      </div>
+                      <div className="grid gap-2">
+                         <Label htmlFor="routeThumb" className="flex items-center justify-between text-stone-600">
+                           <div className="flex items-center gap-2">
+                             <ImageIcon className="w-4 h-4" />
+                             Portada de Carpeta (1x1)
+                           </div>
+                           <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 font-bold uppercase">Upload Recomanat</span>
+                         </Label>
+                         <Input 
+                           type="file" 
+                           accept="image/*" 
+                           onChange={(e) => {
+                             const file = e.target.files?.[0];
+                             if (file) {
+                               setRouteThumbFile(file);
+                             }
+                           }}
+                           className="cursor-pointer" 
+                         />
+                         <div className="flex items-center gap-2">
+                            <span className="text-[10px] text-stone-400">O URL:</span>
+                            <Input id="routeThumb" value={routeThumbnail} onChange={(e) => setRouteThumbnail(e.target.value)} placeholder="URL imatge" className="h-8 text-xs" />
+                         </div>
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="routeCategory">Pell / Estil Visual</Label>
+                        <select 
+                          id="routeCategory" 
+                          value={routeCategory} 
+                          onChange={(e) => setRouteCategory(e.target.value)}
+                          className="flex h-10 w-full rounded-md border border-stone-200 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-950 shadow-sm"
+                        >
+                          <option value="mountain">🏔️ Muntanya (Verd)</option>
+                          <option value="coast">🌊 Costa (Blau)</option>
+                          <option value="city">🏛️ Ciutat (Gris)</option>
+                          <option value="interior">🌾 Interior (Marró)</option>
+                          <option value="bloom">🌸 Floració (Rosa)</option>
+                        </select>
+                      </div>
+                      <Button onClick={handleSaveRoute} disabled={isLoading} size="sm" className="w-fit bg-stone-800 hover:bg-stone-900 text-white">
+                         {editingRoute ? 'Actualitzar Ruta' : 'Crear Ruta'}
+                      </Button>
+                    </div>
+                  </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="grid gap-2">
-                                <Label className="text-stone-600">Latitud</Label>
-                                <Input name="latitude" defaultValue={editingLegend?.latitude} placeholder="42.xxx" type="number" step="any" required className="bg-stone-50 border-stone-200" />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label className="text-stone-600">Longitud</Label>
-                                <Input name="longitude" defaultValue={editingLegend?.longitude} placeholder="0.xxx" type="number" step="any" required className="bg-stone-50 border-stone-200" />
-                            </div>
-                        </div>
-
-                        <div className="grid gap-2">
-                            <Label htmlFor="desc" className="text-stone-600">Descripció</Label>
-                            <Textarea id="desc" name="description" defaultValue={editingLegend?.description} className="min-h-[100px] bg-stone-50 border-stone-200 focus:border-terracotta-500" required />
-                        </div>
-
-                        <div className="border border-dashed border-stone-300 rounded-lg p-4 space-y-4 bg-stone-50/50">
-                            <p className="text-xs font-medium text-stone-500 uppercase tracking-wider mb-2">Multimèdia</p>
-                            <div className="grid gap-2">
-                                <Label className="text-xs">Imatge (1:1)</Label>
-                                <Input name="image" type="file" accept="image/*" className="text-xs" />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label className="text-xs">Capçalera (16:9)</Label>
-                                <Input name="hero_image" type="file" accept="image/*" className="text-xs" />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label className="text-xs">Àudio (MP3)</Label>
-                                <Input name="audio" type="file" accept="audio/*" className="text-xs" />
-                            </div>
-                             <div className="grid gap-2">
-                                <Label className="text-xs">Vídeo URL</Label>
-                                <Input name="video_url" placeholder="https://..." className="text-xs bg-white" />
-                            </div>
-                        </div>
-
-                        <Button type="submit" disabled={isLoading} className="w-full bg-terracotta-600 hover:bg-terracotta-700 text-white shadow-md hover:shadow-lg transition-all">
-                            {isLoading ? 'Guardant...' : (editingLegend ? 'Actualitzar Llegenda' : 'Crear Nova Llegenda')}
-                        </Button>
-                        
-                        {editingLegend && (
-                            <Button type="button" variant="outline" onClick={() => setEditingLegend(null)} className="w-full border-stone-200 text-stone-600">
-                                Cancel·lar Edició
-                            </Button>
-                        )}
-                    </form>
+                  <div className="p-6 space-y-6">
+                    <h3 className="text-sm font-bold text-stone-700 uppercase tracking-wider">
+                      {editingPoi ? (
+                        <span className="flex items-center gap-2">
+                          ✏️ Editant: <span className="text-terracotta-600 normal-case font-normal">{editingPoi.title}</span>
+                        </span>
+                      ) : 'Editor de Punts'}
+                      {!editingPoi && managingRoute && (
+                        <span className="ml-2 text-[10px] font-normal text-terracotta-600 normal-case">
+                          → assignant a "{managingRoute.name}"
+                        </span>
+                      )}
+                    </h3>
+                    <ManualPoiForm 
+                      key={editingPoi?.id ?? (managingRoute?.id ?? 'new')}
+                      poi={editingPoi ?? null}
+                      onSave={handleSavePoi} 
+                      onCancel={resetRouteForm} 
+                      isLoading={isLoading}
+                      routes={legends}
+                      defaultRouteId={managingRoute?.id ?? (editingLegend?.id ?? undefined)}
+                    />
+                    
+                    {editingLegend && (
+                      <div className="pt-6 border-t border-stone-100">
+                        <Label className="mb-4 block text-stone-800 font-bold">Consola de Vídeo HLS (Extra)</Label>
+                        <VideoUploader poiId={editingLegend.id} />
+                      </div>
+                    )}
+                  </div>
                 </CardContent>
-                </Card>
-              </div>
+              </Card>
+            </div>
+
+          {/* ROUTE POI MANAGER PANEL */}
+          {managingRoute && (
+            <RoutePoiManager
+              routeId={managingRoute.id}
+              routeName={managingRoute.name}
+              onClose={() => setManagingRoute(null)}
+              onEditPoi={(poi) => {
+                setEditingPoi(poi);
+                setEditingLegend(null);
+              }}
+            />
+          )}
 
               {/* LIST OF LEGENDS */}
               <Card className="border-stone-200 shadow-sm bg-white">
@@ -265,6 +373,25 @@ export default function AdminDashboard({ legends, profiles, reports, municipalit
                                   <Button 
                                     variant="ghost" 
                                     size="sm"
+                                    className={`${
+                                      managingRoute?.id === legend.id
+                                        ? 'text-terracotta-700 bg-terracotta-50'
+                                        : 'text-stone-500 hover:text-terracotta-700 hover:bg-terracotta-50'
+                                    }`}
+                                    onClick={() => {
+                                      const next = managingRoute?.id === legend.id
+                                        ? null
+                                        : { id: legend.id, name: legend.title };
+                                      setManagingRoute(next);
+                                      if (next) window.scrollTo({ top: 0, behavior: 'smooth' });
+                                      else setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100);
+                                    }}
+                                  >
+                                    {managingRoute?.id === legend.id ? '▲ Tancar Punts' : 'Punts →'}
+                                  </Button>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm"
                                     className="text-stone-400 hover:text-red-600 hover:bg-red-50"
                                     onClick={async () => {
                                         if(confirm("Segur que vols esborrar?")) {
@@ -286,6 +413,7 @@ export default function AdminDashboard({ legends, profiles, reports, municipalit
           </div>
         )}
 
+
         {activeTab === 'usuaris' && (
           <UsersTable profiles={profiles} />
         )}
@@ -293,6 +421,20 @@ export default function AdminDashboard({ legends, profiles, reports, municipalit
         {activeTab === 'executiu' && (
             // Assuming first municipality is the target for now, or pass prop
           <ExecutiveReport municipalityId={municipalityId || ''} />
+        )}
+
+        {activeTab === 'config' && (
+          <div className="max-w-2xl mx-auto space-y-8">
+            <Card className="border-stone-200 shadow-sm bg-white">
+              <CardHeader>
+                <CardTitle className="font-serif text-xl text-stone-800">Paràmetres del Municipi/Territori</CardTitle>
+                <p className="text-sm text-stone-500">Aquesta configuració afecta a com es mostren les localitzacions a l'app.</p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <MunicipalityManager municipalityId={municipalityId} />
+              </CardContent>
+            </Card>
+          </div>
         )}
       </main>
     </div>

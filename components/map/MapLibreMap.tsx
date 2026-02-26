@@ -4,7 +4,7 @@ import React, { useMemo } from 'react';
 import Map, { NavigationControl, ScaleControl, Source, Layer } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { useGeolocation } from '@/hooks/useGeolocation';
-import MapMarkers from './MapMarkers'; 
+
 
 // Estil Sobirà: CartoDB Positron (Net, ràpid i sense API Key restrictiva)
 const MAP_STYLE = "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json";
@@ -64,8 +64,6 @@ export default function MapLibreMap({
       >
         <NavigationControl position="bottom-right" showCompass={true} />
         <ScaleControl position="bottom-left" />
-
-        <MapMarkers />
 
         {heatmapGeoJSON && (
             <Source type="geojson" data={heatmapGeoJSON as any}>

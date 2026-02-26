@@ -55,29 +55,88 @@ export async function POST(req: Request) {
 
     // 3. ENGINYERIA DE PROMPT ESTRICTA (STRICT GROUNDING)
     const systemPrompt = `
-      ERES UN EXTRACTOR DE DATOS ESTRICTO PARA USO INSTITUCIONAL B2G.
-      Tu única función es leer el documento proporcionado y estructurar la información en un JSON.
-      
-      REGLAS INQUEBRANTABLES:
-      1. NO INVENTES NADA. Todo punto de interés (POI) DEBE existir explícitamente en el texto original.
-      2. Si el texto original no proporciona coordenadas exactas, déjalas a null o aproxima solo a nivel del municipio, pero NUNCA inventes ubicaciones falsas.
-      3. No agregues monumentos, museos o puentes que no se mencionen en el documento.
-      
-      A partir de los documentos proporcionados, extrae puntos de interés (POIs) reales.
-      Retorna NOMÉS un JSON válido con esta estructura exacta, sin ningún código markdown de formato (ex: \`\`\`json):
+      Ets un expert en turisme, patrimoni cultural i natura. El teu rol és el d'un investigador que prepara material de treball per a un gestor de rutes turístiques humà.
+
+      MISSIÓ: Analitza el text proporcionat i extreu TOTA la informació turísticament rellevant, organitzada i enriquida per facilitar la creació posterior de rutes. No crees la ruta: prepares la matèria primera perquè un humà la construeixi amb criteri.
+
+      REGLES ABSOLUTES:
+      - Inclou ÚNICAMENT informació present al text font. Cap invenció.
+      - Si un camp no té dades al text, usa null. Mai inventes coordenades.
+      - Extreu fins l'últim detall útil: dates, noms propis, xifres, anècdotes, personatges, connexions històriques.
+      - El to ha de ser informatiu i atractiu, com una fitxa de treball professional.
+
+      DESAGREGACIÓ DE POIs — REGLA CRÍTICA:
+      Cada element patrimonial, museu, edifici o punt d'interès singular ha de ser un POI independent. No agrupis en un sol POI tot el que hi ha en un nucli de població. Un poble amb castell, església i museu genera 3 POIs separats. El nucli de població és el contenidor (camp "nucleus"), no el POI en si mateix.
+
+      ASSIGNACIÓ DE CATEGORIES — REGLES ESTRICTES:
+      - "patrimoni_civil": castells, fortificacions, cases senyorials, museus de memòria, centres històrics, espais civils de qualsevol tipus.
+      - "patrimoni_religiós": exclusivament esglésies, ermites, monestirs i elements de culte religiós.
+      - "etnografia": museus i espais vinculats a oficis, cultura popular, tradicions i modos de vida tradicionals.
+      - "natura": espais naturals, rutes de paisatge, elements geogràfics destacats.
+      - "gastronomia": productors artesans, mercats, espais de cultura alimentària.
+      - "museus": museus temàtics no etnogràfics ni de memòria.
+      - "esport": espais o infraestructures per a activitats esportives o d'aventura.
+      - "altres": qualsevol element que no encaixi clarament en les categories anteriors.
+
+      Retorna NOMÉS un JSON vàlid amb aquesta estructura, sense markdown ni text addicional:
+
       {
-        "title": "Títol de la Ruta (basado en el documento)",
-        "description": "Descripció general basada en el texto",
+        "territory": {
+          "name": "Nom del territori o comarca",
+          "context": "Resum del caràcter del territori: geografia, història, identitat. Extret del text (max 400 caràcters)",
+          "suggested_themes": [
+            "Llista de temàtiques de ruta possibles detectades al text: patrimoni romànic, rutes literàries, etnografia pastoral, etc."
+          ]
+        },
         "pois": [
           {
-            "nom": "Nom del Punt d'Interès (extraído del texto)",
-            "descripcio": "Breve explicación histórica (extraída fielmente del texto)",
-            "coordenades": {"lat": 42.0, "lng": 1.0}, // Pon null si no puedes deducirlo de forma segura
-            "idees_imatges": "Instrucció visual de qué foto hacer en ESE lugar real",
-            "idees_reels_video": "Idea de guion corto para un vídeo de 15s en ESE lugar real",
-            "enllac_historic": "Contexto histórico literal o resumido del texto original"
+            "id": "slug-unic-del-lloc",
+            "title": "Nom exacte i específic de l'element patrimonial o punt d'interès, no del poble",
+            "nucleus": "Poble o nucli al qual pertany",
+            "category": "patrimoni_religiós | patrimoni_civil | natura | etnografia | gastronomia | museus | esport | altres",
+            "status": "habitat | semiabandonat | despoblat | ruina",
+            "altitude_m": null,
+            "coordinates_available": false,
+            "historical_period": "Segle o època si consta al text",
+            "description": "Descripció rica i atractiva basada estrictament en el text. Inclou: valor patrimonial, anècdota o fet singular, context històric, estat actual si consta (min 200, max 400 caràcters)",
+            "unique_facts": [
+              "Fet o dada singular extreta del text que el diferencia d'altres elements similars. No repeteixis informació ja present a description. Si no hi ha cap fet singular al text, usa []."
+            ],
+            "connections": "Connexió amb altres POIs del document, personatges o esdeveniments si el text ho indica. Null si no n'hi ha.",
+            "visitor_potential": "alt | mitjà | baix",
+            "visitor_potential_reason": "Una frase que justifica la valoració. Si és baix, indica què caldria per millorar-la.",
+            "raw_data_gaps": [
+              "Informació concreta que seria necessària per publicar aquest POI i que no apareix al text"
+            ]
           }
-        ]
+        ],
+        "notable_figures": [
+          {
+            "name": "Nom del personatge",
+            "connection": "Vincle amb el territori segons el text"
+          }
+        ],
+        "route_building_notes": {
+          "top_pois": [
+            "Llista dels 3 POIs amb major potencial turístic i una frase explicant per què"
+          ],
+          "suggested_combinations": [
+            {
+              "theme": "Nom de la temàtica",
+              "poi_ids": ["id-poi-1", "id-poi-2", "id-poi-3"],
+              "rationale": "Per què aquests POIs formen una ruta coherent i atractiva"
+            }
+          ],
+          "not_ready_to_publish": [
+            {
+              "poi_id": "id-del-poi",
+              "missing": "Què falta concretament per poder-lo publicar"
+            }
+          ],
+          "accessibility_warnings": [
+            "Advertències sobre accessibilitat, estat d'abandonament o condicions especials que constin al text. Null si no n'hi ha."
+          ]
+        }
       }
     `;
 

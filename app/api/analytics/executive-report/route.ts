@@ -28,12 +28,10 @@ export async function GET(req: Request) {
         // Queries might need to join Route. 
         // For simplicity, let's assume we filter by time and check if POIs belong to routes in this municipality.
         // Or if we fetch all for now and filter in logic (bad for perf).
-        // Optimally: PoiVisits -> Poi -> Route (municipalityId)
+        // Optimally: PoiVisits -> Poi -> municipalityId
         // Prisma relation query:
         poi: {
-            route: {
-                municipalityId: municipalityId
-            }
+            municipalityId: municipalityId
         },
         entryTime: { gte: currentStart }
       },
@@ -45,9 +43,7 @@ export async function GET(req: Request) {
     const previousVisits = await prisma.poiVisits.findMany({
         where: {
           poi: {
-              route: {
-                  municipalityId: municipalityId
-              }
+              municipalityId: municipalityId
           },
           entryTime: { gte: previousStart, lte: previousEnd }
         }
@@ -73,7 +69,7 @@ export async function GET(req: Request) {
 
     // Top POIs (retention)
     const poiGroups: Record<string, { count: number; duration: number; name: string }> = {};
-    currentVisits.forEach(v => {
+    currentVisits.forEach((v: any) => {
         if (!poiGroups[v.poiId]) {
             poiGroups[v.poiId] = { count: 0, duration: 0, name: v.poi.title };
         }
@@ -88,7 +84,7 @@ export async function GET(req: Request) {
 
     // Heatmap Data (UserTelemetry)
     // Fetch recent points
-    const telemetry = await prisma.userTelemetry.findMany({
+    const telemetry = await (prisma as any).user_telemetry.findMany({
         where: {
             timestamp: { gte: previousStart }, // Last 2 months data roughly
             // Link to municipality via route? 

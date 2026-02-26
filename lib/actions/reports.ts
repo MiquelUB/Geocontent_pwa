@@ -24,7 +24,7 @@ export async function generateReport(municipalityId: string) {
     return { success: true, reportId: report.id };
   } catch (error: any) {
     console.error("Error generating report:", error);
-    return { success: false, error: error.message };
+    return { success: false, error: "S'ha produït un error al processar la sol·licitud" };
   }
 }
 

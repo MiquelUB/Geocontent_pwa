@@ -7,13 +7,15 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/database/supabase-admin";
+import { createClient } from "@/lib/database/supabase/server";
+import { cookies } from "next/headers";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const lang = searchParams.get("lang") || "ca";
 
-  const { data, error } = await supabaseAdmin
+  const supabase = createClient(await cookies());
+  const { data, error } = await supabase
     .from("municipalities")
     .select(`
       *,

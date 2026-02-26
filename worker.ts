@@ -15,6 +15,7 @@ import * as path from 'path';
 // Lazy load Prisma to ensure env vars are loaded
 const { prisma } = require('./lib/database/prisma');
 const { generateExecutiveSummary } = require('./lib/services/openrouter');
+require('./lib/workers/videoWorker');
 
 const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
 const connection = new IORedis(redisUrl, { maxRetriesPerRequest: null });

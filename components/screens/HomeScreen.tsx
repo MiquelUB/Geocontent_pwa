@@ -4,10 +4,9 @@ import { Navigation, Star, Clock, MapPin, HelpCircle } from "lucide-react";
 import { ImageWithFallback } from "../figma/ImageWithFallback";
 import { motion } from "motion/react";
 import MapLibreMap from '@/components/map/MapLibreMap';
-import { getLegends } from "@/lib/actions";
-import { calculateDistance } from "@/lib/location";
-
 import { PxxConfig } from "@/projects/active/config";
+import { getLegends, getAppBranding } from "@/lib/actions";
+import { calculateDistance } from "@/lib/location";
 
 interface HomeScreenProps {
   onNavigate: (screen: string, data?: any) => void;
@@ -17,12 +16,19 @@ interface HomeScreenProps {
 export function HomeScreen({ onNavigate, onOpenHelp }: HomeScreenProps) {
   const [userLocation] = useState({ lat: 42.4140, lng: 0.9870 }); // Centre Pallars
   const [nearbyLegends, setNearbyLegends] = useState<any[]>([]);
+  const [brand, setBrand] = useState<any>(null);
 
   useEffect(() => {
     async function fetchData() {
-        const data = await getLegends();
-        if (data) {
-             const mapped = data.map((l: any) => ({
+        const [legendsData, brandData] = await Promise.all([
+          getLegends(),
+          getAppBranding()
+        ]);
+        
+        setBrand(brandData);
+
+        if (legendsData) {
+             const mapped = legendsData.map((l: any) => ({
                 id: l.id,
                 title: l.title,
                 location: l.location_name || "Lugar",
@@ -57,12 +63,18 @@ export function HomeScreen({ onNavigate, onOpenHelp }: HomeScreenProps) {
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-background rounded-full flex items-center justify-center">
-              <span className="text-lg font-serif font-bold text-primary">M</span>
+            <div className="w-10 h-10 bg-background rounded-full flex items-center justify-center overflow-hidden">
+              {brand?.logoUrl ? (
+                <img src={brand.logoUrl} alt="Logo" className="w-full h-full object-contain p-1" />
+              ) : (
+                <span className="text-lg font-serif font-bold text-primary">
+                  {brand?.name?.[0] || PxxConfig.appName[0]}
+                </span>
+              )}
             </div>
             <div>
               <h1 className="text-lg font-serif font-bold text-primary-foreground">
-                {PxxConfig.appName}
+                {brand?.name || PxxConfig.appName}
               </h1>
               <p className="text-xs text-primary-foreground/80">{PxxConfig.appDescription}</p>
             </div>

@@ -1,13 +1,46 @@
 import { Queue } from 'bullmq';
 import IORedis from 'ioredis';
 
-// Singleton for Redis connection to prevent creating too many connections in serverless env (though Next.js server actions are separate)
-// We need to ensure we don't spawn multiple connections locally in dev hot reload.
-
 const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
 
-const connection = new IORedis(redisUrl, {
-  maxRetriesPerRequest: null,
-});
+// Lazy singleton — only connects when first accessed.
+// This avoids crashing the module import if Redis is not running locally.
+let _connection: IORedis | null = null;
+let _reportQueue: Queue | null = null;
+let _videoQueue: Queue | null = null;
 
-export const reportQueue = new Queue('report-generation', { connection: connection as any });
+export function getConnection(): IORedis {
+  if (!_connection) {
+    _connection = new IORedis(redisUrl, {
+      maxRetriesPerRequest: null,
+      enableOfflineQueue: false,
+      lazyConnect: true,
+    });
+    _connection.on('error', (err) => {
+      // Suppress connection errors in dev when Redis is not running
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('[Redis] Connection error (non-fatal in dev):', err.message);
+      }
+    });
+  }
+  return _connection;
+}
+
+export function getReportQueue(): Queue {
+  if (!_reportQueue) {
+    _reportQueue = new Queue('report-generation', { connection: getConnection() as any });
+  }
+  return _reportQueue;
+}
+
+export function getVideoQueue(): Queue {
+  if (!_videoQueue) {
+    _videoQueue = new Queue('video-processing', { connection: getConnection() as any });
+  }
+  return _videoQueue;
+}
+
+// Backwards-compatible named exports for places that already import these directly
+export const reportQueue = { add: (name: string, data: any, opts?: any) => getReportQueue().add(name, data, opts) } as any;
+export const videoQueue = { add: (name: string, data: any, opts?: any) => getVideoQueue().add(name, data, opts) } as any;
+export const connection = { on: () => {} } as any; // stub — use getConnection() internally

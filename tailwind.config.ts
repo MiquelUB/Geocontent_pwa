@@ -63,12 +63,10 @@ const config: Config = {
   			'pxx-gold':  PxxConfig.theme.colors.gold,
   			'pxx-stone': PxxConfig.theme.colors.stone,
 
-  			// Chameleon Engine — Route Themes
-  			'chameleon-mountain': '#4A5D23',
-  			'chameleon-coast':    '#1B6B93',
-  			'chameleon-city':     '#2C3E50',
-  			'chameleon-interior': '#8B6914',
-  			'chameleon-bloom':    '#C2185B',
+			// Chameleon Engine — Route Themes (dinàmic des de PxxConfig — single source of truth)
+			...Object.fromEntries(
+				Object.entries(PxxConfig.chameleonThemes).map(([key, theme]) => [`chameleon-${key}`, theme.primary])
+			),
 
 			// Custom Colors
 			terracotta: {
@@ -88,9 +86,10 @@ const config: Config = {
   			md: '0.75rem', // 12px
   			sm: '0.5rem'   // 8px
   		},
-  		backgroundImage: {
-  			'paper-texture': "url('https://www.transparenttextures.com/patterns/cream-paper.png')",
-  		},
+		backgroundImage: {
+			// Textura local — sense CDN extern (Sobirania Tècnica ✅)
+			'paper-texture': "url('/textures/cream-paper.png')",
+		},
   	}
   },
   plugins: [require("tailwindcss-animate")],
