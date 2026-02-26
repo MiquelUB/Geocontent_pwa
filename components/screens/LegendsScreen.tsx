@@ -41,7 +41,7 @@ export function LegendsScreen({ onNavigate, brand: propBrand }: LegendsScreenPro
                     latitude: l.latitude,
                     longitude: l.longitude,
                     coordinates: { lat: l.latitude, lng: l.longitude },
-                    category: l.category || 'mountain',
+                    category: l.category || '',
                     image: l.image_url,
                     hero: l.hero_image_url,
                     // Deterministic values — no Math.random()
@@ -78,7 +78,7 @@ export function LegendsScreen({ onNavigate, brand: propBrand }: LegendsScreenPro
 
             {/* Header */}
             <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#171b18]/95 backdrop-blur-sm px-6 py-4 flex justify-between items-center border-b border-primary/10 dark:border-primary/5">
-                <div className="flex items-center gap-2" onClick={() => onNavigate('home')}>
+                <div className="flex items-center gap-2 cursor-pointer" onClick={() => onNavigate('home')}>
                     {/* Logo Mark */}
                     {brand?.logoUrl ? (
                         <div className="w-8 h-8 rounded overflow-hidden">
@@ -93,56 +93,13 @@ export function LegendsScreen({ onNavigate, brand: propBrand }: LegendsScreenPro
                         {brand?.name || 'PXX Guide'}
                     </h1>
                 </div>
-                <button className="relative p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors group">
-                    <SlidersHorizontal className="w-6 h-6 text-gray-600 dark:text-gray-300" />
-                    <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full border border-white dark:border-[#171b18]"></span>
-                </button>
             </header>
 
             {/* Main Content Area */}
             <main className="flex-1 overflow-y-auto pb-32 no-scrollbar">
 
-                {/* Featured / Hero Section */}
-                {featuredLegend && (
-                    <div className="px-6 pt-6 pb-4">
-                        <div className="flex justify-between items-baseline mb-4">
-                            <h2 className="text-sm font-bold uppercase tracking-widest text-primary/80">Editor's Pick</h2>
-                            <span className="text-sm text-gray-500 hover:text-primary transition-colors italic cursor-pointer">View all collections</span>
-                        </div>
-
-                        {/* Featured Card */}
-                        <div
-                            onClick={() => onNavigate('legend-detail', featuredLegend)}
-                            className="relative w-full h-80 rounded-xl overflow-hidden group shadow-lg cursor-pointer"
-                        >
-                            <ImageWithFallback
-                                src={featuredLegend.hero || featuredLegend.image}
-                                alt={featuredLegend.title}
-                                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                            />
-
-                            {/* Gradient Scrim */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-
-                            {/* Content */}
-                            <div className="absolute bottom-0 left-0 w-full p-6 text-white">
-                                <div className="flex gap-2 mb-3">
-                                    <span className="bg-[#1E5631]/90 backdrop-blur-sm px-2.5 py-1 rounded text-xs font-semibold uppercase tracking-wider text-white border border-white/10">Expert</span>
-                                </div>
-                                <h3 className="font-serif text-3xl font-bold leading-tight mb-1 drop-shadow-md">{featuredLegend.title}</h3>
-                                <p className="font-serif text-gray-200 text-lg italic opacity-90">{featuredLegend.location}</p>
-                            </div>
-
-                            {/* Like Button */}
-                            <button className="absolute top-4 right-4 bg-white/10 backdrop-blur-md p-2.5 rounded-full hover:bg-white/20 transition-all text-white border border-white/20">
-                                <Heart className="w-5 h-5" />
-                            </button>
-                        </div>
-                    </div>
-                )}
-
                 {/* Filter Chips (Horizontal Scroll) */}
-                <div className="flex gap-3 px-6 overflow-x-auto pb-6 pt-2 no-scrollbar">
+                <div className="flex gap-3 px-6 overflow-x-auto pb-6 pt-6 no-scrollbar">
                     {locations.map(loc => (
                         <button
                             key={loc.id}
@@ -200,22 +157,13 @@ export function LegendsScreen({ onNavigate, brand: propBrand }: LegendsScreenPro
                                 <div className="absolute bottom-0 left-0 w-full p-5">
                                     <h3 className="font-serif text-white text-2xl font-bold mb-3 tracking-wide drop-shadow-md">{legend.title}</h3>
 
-                                    {/* Badges Row */}
                                     <div className="flex flex-wrap gap-2 text-xs font-medium tracking-wide text-white/90">
-                                        <div className="flex items-center gap-1 bg-[#1E5631] px-3 py-1 rounded backdrop-blur-sm border border-white/10 shadow-sm">
-                                            <BarChart className="w-3.5 h-3.5 opacity-80" />
-                                            <span>{legend.difficulty}</span>
-                                        </div>
-                                        {legend.poiCount > 0 && (
+                                        {legend.location && (
                                             <div className="flex items-center gap-1 bg-[#1E5631] px-3 py-1 rounded backdrop-blur-sm border border-white/10 shadow-sm">
                                                 <MapPin className="w-3.5 h-3.5 opacity-80" />
-                                                <span>{legend.poiCount} punts</span>
+                                                <span>{legend.location}</span>
                                             </div>
                                         )}
-                                        <div className="flex items-center gap-1 bg-[#1E5631] px-3 py-1 rounded backdrop-blur-sm border border-white/10 shadow-sm">
-                                            <Mountain className="w-3.5 h-3.5 opacity-80" />
-                                            <span className="capitalize">{legend.category}</span>
-                                        </div>
                                     </div>
                                 </div>
                             </div>

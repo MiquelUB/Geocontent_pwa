@@ -225,12 +225,15 @@ function mapRoute(route: any) {
     orderIndex: rp.orderIndex ?? 0,
   })) ?? [];
 
+  const muniName = (route.municipality?.name || route.municipality_name || '').replace(/^Ajuntament de /i, '');
+  const title = route.title || route.name || route.slug || 'Sense Títol';
+
   return {
     id: route.id,
-    title: route.title || route.name || route.slug || 'Sense Títol',
+    title: title,
     description: route.description || '',
-    category: route.themeId || 'mountain',
-    location_name: route.location_name || route.name || route.municipality?.name?.replace(/^Ajuntament de /i, '') || '',
+    category: route.themeId || '',
+    location_name: muniName || route.location_name || '',
     latitude: firstPoi?.latitude ?? 0,
     longitude: firstPoi?.longitude ?? 0,
     image_url: route.thumbnail1x1 || firstPoi?.appThumbnail || firstPoi?.images?.[0] || '',
@@ -241,6 +244,7 @@ function mapRoute(route: any) {
     poiCount: pois.length,
     pois,
     thumbnail1x1: route.thumbnail1x1 || '',
+    downloadRequired: route.downloadRequired || false,
   };
 }
 
@@ -280,7 +284,8 @@ export async function createLegend(formData: FormData) {
           slug: title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '') + '-' + Date.now(),
           description,
           themeId,
-          thumbnail1x1: routeThumbnail || null
+          thumbnail1x1: routeThumbnail || null,
+          downloadRequired: formData.get('download_required') === 'true'
         }
       });
 
@@ -333,6 +338,7 @@ export async function updateRoute(id: string, formData: FormData) {
     thumbnail1x1 = await uploadFile(thumbnailFile);
   }
 
+  const downloadRequired = formData.get('download_required') === 'true';
   const municipalityId = await getOrCreateMunicipalityByName(location);
 
   try {
@@ -343,7 +349,8 @@ export async function updateRoute(id: string, formData: FormData) {
                 description = ${description}, 
                 municipality_id = ${municipalityId},
                 theme_id = ${category},
-                thumbnail1x1 = ${thumbnail1x1 || null}
+                thumbnail1x1 = ${thumbnail1x1 || null},
+                download_required = ${downloadRequired}
             WHERE id = ${id}
         `;
     revalidatePath('/admin');
@@ -368,6 +375,7 @@ export async function createRoute(formData: FormData) {
   }
 
   const location = formData.get('location') as string || 'General'
+  const downloadRequired = formData.get('download_required') === 'true';
   const municipalityId = await getOrCreateMunicipalityByName(location);
 
   try {
@@ -375,7 +383,7 @@ export async function createRoute(formData: FormData) {
     const slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '') + '-' + Date.now();
 
     await prisma.$executeRaw`
-      INSERT INTO routes (id, municipality_id, name, slug, description, theme_id, thumbnail1x1, created_at, updated_at)
+      INSERT INTO routes (id, municipality_id, name, slug, description, theme_id, thumbnail1x1, download_required, created_at, updated_at)
       VALUES (
         ${id}, 
         ${municipalityId}, 
@@ -384,6 +392,7 @@ export async function createRoute(formData: FormData) {
         ${description}, 
         ${category}, 
         ${thumbnail1x1 || null},
+        ${downloadRequired},
         NOW(),
         NOW()
       )

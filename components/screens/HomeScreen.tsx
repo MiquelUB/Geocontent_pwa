@@ -165,7 +165,7 @@ export function HomeScreen({ onNavigate, onOpenHelp, brand: propBrand, userLocat
           className="flex items-center justify-between mb-4"
         >
           <h2 className="text-xl font-serif font-semibold text-primary">
-            Lugares cercanos
+            Llocs propers
           </h2>
           <Button
             variant="ghost"
@@ -219,9 +219,11 @@ export function HomeScreen({ onNavigate, onOpenHelp, brand: propBrand, userLocat
                   </p>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-xs bg-secondary/10 text-secondary px-2 py-1 rounded-full">
-                      {legend.category}
-                    </span>
+                    {legend.category && legend.category !== 'mountain' && (
+                      <span className="text-xs bg-secondary/10 text-secondary px-2 py-1 rounded-full">
+                        {legend.category}
+                      </span>
+                    )}
                     <div className="flex items-center space-x-1 text-xs text-muted-foreground">
                       <Clock className="w-3 h-3" />
                       <span>5 min</span>

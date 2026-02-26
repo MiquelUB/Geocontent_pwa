@@ -9,7 +9,7 @@ import { motion, useScroll, useTransform } from "motion/react";
 import { recordVisit } from "@/lib/actions";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 import { downloadTerritorialPackage, isRouteCached, SyncProgress } from "@/lib/services/sync-service";
-import { CheckCircle2, Download, Loader2 } from "lucide-react";
+import { CheckCircle2, Download, Loader2, AlertCircle } from "lucide-react";
 
 import { calculateDistance } from "@/lib/location";
 
@@ -132,6 +132,30 @@ export function LegendDetailScreen({ legend, onNavigate, userLocation, currentUs
     }
   };
 
+  const handleShare = async () => {
+    const shareData = {
+      title: safeLegend.title,
+      text: `Mira aquest punt de ruta: ${safeLegend.title}`,
+      url: window.location.href,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        console.error("Error en compartir:", err);
+      }
+    } else {
+      // Fallback: Copy to clipboard
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        alert("Enllaç copiat al porta-retalls per compartir!");
+      } catch (err) {
+        console.error("Fallada al copiar:", err);
+      }
+    }
+  };
+
   return (
     <div className="screen bg-background min-h-screen">
       {/* Editorial Hero Image with Parallax */}
@@ -171,7 +195,7 @@ export function LegendDetailScreen({ legend, onNavigate, userLocation, currentUs
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => alert('Shared')}
+              onClick={handleShare}
               className="bg-white/10 text-white hover:bg-white/20 backdrop-blur-md rounded-full"
             >
               <Share2 className="w-5 h-5" />
@@ -191,39 +215,12 @@ export function LegendDetailScreen({ legend, onNavigate, userLocation, currentUs
           <h1 className="text-5xl md:text-6xl font-serif font-bold text-white mb-4 leading-none drop-shadow-md">
             {safeLegend.title}
           </h1>
-          <div className="flex gap-2">
-            <Badge className="bg-white/20 hover:bg-white/30 text-white border-0 px-3 py-1 text-xs backdrop-blur-md">
-              {safeLegend.categoryLabel}
-            </Badge>
-            <Badge className="bg-primary/80 hover:bg-primary/90 text-white border-0 px-3 py-1 text-xs backdrop-blur-md">
-              National Monument
-            </Badge>
-          </div>
         </motion.div>
       </div>
 
       {/* Content "Paper" Sheet */}
       <div className="relative -mt-10 bg-background rounded-t-[2.5rem] z-20 px-8 py-10 min-h-[50vh] shadow-[0_-10px_40px_rgba(0,0,0,0.2)]">
 
-        {/* Romanesque Metadata Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 border-b border-primary/10 pb-8 mb-8">
-          <div className="text-center">
-            <div className="text-2xl font-serif font-bold text-primary">{safeLegend.date || 'S/D'}</div>
-            <div className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium mt-1">Època</div>
-          </div>
-          <div className="text-center md:border-l border-primary/10">
-            <div className="text-xl font-serif font-bold text-primary">{safeLegend.categoryLabel || '—'}</div>
-            <div className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium mt-1">Categoria</div>
-          </div>
-          <div className="text-center md:border-l border-primary/10">
-            <div className="text-xl font-serif font-bold text-primary">{safeLegend.location || 'Territori'}</div>
-            <div className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium mt-1">Localització</div>
-          </div>
-          <div className="text-center md:border-l border-primary/10">
-            <div className="text-xl font-serif font-bold text-primary">{distanceStr || '--'}</div>
-            <div className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium mt-1">Distància</div>
-          </div>
-        </div>
 
         {/* POIs del Recorregut */}
         {safeLegend.pois && safeLegend.pois.length > 0 && (
@@ -321,215 +318,212 @@ export function LegendDetailScreen({ legend, onNavigate, userLocation, currentUs
         )}
 
 
-        {/* Notes Històriques */}
-        <div className="mb-12 relative">
-          <h3 className="font-serif font-bold text-lg text-primary mb-6 flex items-center">
-            <span className="w-8 h-px bg-primary/40 mr-3"></span>
-            Notes Històriques
-          </h3>
+        {/* Contenid Principal */}
 
-          <div className="relative group overflow-hidden rounded-3xl">
-            <div className={`prose prose-lg prose-stone max-w-none leading-relaxed font-serif transition-all duration-1000 ${isUnlocked ? 'text-foreground/90' : 'text-stone-300 blur-[8px] select-none scale-[0.98]'}`}>
-              {isUnlocked ? (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8 }}
-                >
-                  <p className="first-letter:text-5xl first-letter:font-serif first-letter:font-bold first-letter:text-primary first-letter:float-left first-letter:mr-3 first-letter:mt-[-8px]">
-                    {safeLegend.textContent || safeLegend.description}
-                  </p>
-                </motion.div>
-              ) : (
-                <div className="space-y-4 pt-4">
-                  <div className="h-6 bg-stone-100 rounded-full w-3/4"></div>
-                  <div className="h-6 bg-stone-50 rounded-full w-full"></div>
-                  <div className="h-6 bg-stone-50 rounded-full w-5/6"></div>
-                  <div className="h-6 bg-stone-50 rounded-full w-full"></div>
-                </div>
-              )}
-            </div>
-
-            {!isUnlocked && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-background/40 backdrop-blur-[2px] rounded-3xl">
-                <motion.div
-                  animate={{ y: [0, -5, 0] }}
-                  transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-                  className="w-20 h-20 bg-white/80 backdrop-blur-xl rounded-full shadow-2xl border border-white/50 flex items-center justify-center text-primary mb-6 ring-8 ring-primary/5"
-                >
-                  <Lock className="w-8 h-8" />
-                </motion.div>
-                <h4 className="font-serif text-xl font-bold text-primary mb-2">Contingut Protegit</h4>
-                <p className="text-stone-500 text-sm max-w-[200px] leading-relaxed">
-                  {distanceMeters !== null ? (
-                    <>Ets a <span className="text-primary font-bold">{distanceStr}</span> de la història. Trepitja el punt per desbloquejar-la.</>
-                  ) : (
-                    <span className="italic opacity-60">Esperant senyal GPS per obrir el cadenat...</span>
-                  )}
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Interaction Zone */}
-        <div className="bg-muted/30 rounded-2xl p-6 space-y-4">
-          <h3 className="font-serif font-bold text-primary text-xl mb-4 flex items-center justify-between">
-            <span>Experience</span>
-            <span className={`flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider px-2.5 py-1 rounded-full ${network.isOnline
-              ? (network.isSlowNetwork ? 'bg-orange-100 text-orange-600' : 'bg-emerald-100 text-emerald-600')
-              : 'bg-red-100 text-red-500'
-              }`}>
-              {network.isOnline ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
-              {network.isOnline ? (network.isSlowNetwork ? 'Lenta' : 'Connectat') : 'Offline'}
-            </span>
-          </h3>
-
-          {/* Audio Player */}
-          {safeLegend.audioUrl && (
-            <div className={`p-4 rounded-xl flex items-center justify-between transition-colors ${isUnlocked
-              ? 'bg-primary text-primary-foreground shadow-lg'
-              : 'bg-stone-200 text-stone-500 cursor-not-allowed'
-              }`}>
-              <div className="flex items-center gap-4">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isUnlocked ? 'bg-white/20' : 'bg-black/10'}`}>
-                  <Volume2 className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className="font-bold text-sm">Àudio Guia</div>
-                  <div className="text-xs opacity-80">{isPlaying ? 'Reproduint...' : 'Clica per escoltar'}</div>
-                </div>
-              </div>
-
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handlePlayAudio}
-                disabled={!isUnlocked}
-                className={`hover:bg-white/20 rounded-full h-12 w-12 ${!isUnlocked && 'opacity-50'}`}
+        <div className="relative group overflow-hidden rounded-3xl">
+          <div className={`prose prose-lg prose-stone max-w-none leading-relaxed font-serif transition-all duration-1000 ${isUnlocked ? 'text-foreground/90' : 'text-stone-300 blur-[8px] select-none scale-[0.98]'}`}>
+            {isUnlocked ? (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
               >
-                {isUnlocked ? (
-                  isPlaying ? <Pause className="w-6 h-6 fill-current" /> : <Play className="w-6 h-6 fill-current" />
-                ) : <Lock className="w-5 h-5" />}
-              </Button>
-              <audio ref={audioRef} src={safeLegend.audioUrl} onEnded={() => setIsPlaying(false)} />
-            </div>
-          )}
-
-          {/* Punt d'Or (Sync Service for Offline) */}
-          <div className="p-4 rounded-xl bg-white border border-stone-200 shadow-sm">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-3">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white ${syncStatus === 'ready' ? 'bg-emerald-500' : 'bg-primary/40'}`}>
-                  {syncStatus === 'ready' ? <CheckCircle2 className="w-4 h-4" /> : <Download className="w-4 h-4" />}
-                </div>
-                <div>
-                  <div className="font-bold text-xs uppercase tracking-tighter">Punt d'Or</div>
-                  <div className="text-[10px] text-muted-foreground">Paquet Offline</div>
-                </div>
-              </div>
-              {syncStatus !== 'ready' && (
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={handleDownload}
-                  disabled={syncStatus === 'syncing' || !network.isOnline}
-                  className="h-8 text-[10px] uppercase font-bold"
-                >
-                  {syncStatus === 'syncing' ? (
-                    <>
-                      <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                      Baixant
-                    </>
-                  ) : 'Baixar Ruta'}
-                </Button>
-              )}
-            </div>
-
-            {syncStatus === 'syncing' && syncProgress && (
-              <div className="mt-2 space-y-1">
-                <div className="h-1 w-full bg-stone-100 rounded-full overflow-hidden">
-                  <motion.div
-                    className="h-full bg-primary"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${(syncProgress.current / syncProgress.total) * 100}%` }}
-                  />
-                </div>
-                <div className="text-[9px] text-stone-400 italic">
-                  {syncProgress.label}
-                </div>
-              </div>
-            )}
-
-            {syncStatus === 'ready' && (
-              <div className="text-[10px] text-emerald-600 font-medium flex items-center gap-1 mt-1">
-                <CheckCircle2 className="w-3 h-3" />
-                Aquesta ruta està disponible sense connexió.
-              </div>
-            )}
-
-            {!network.isOnline && syncStatus !== 'ready' && (
-              <div className="text-[10px] text-red-500 italic mt-1">
-                Connecta't per baixar el paquet territorial.
+                <p className="first-letter:text-5xl first-letter:font-serif first-letter:font-bold first-letter:text-primary first-letter:float-left first-letter:mr-3 first-letter:mt-[-8px]">
+                  {safeLegend.textContent || safeLegend.description}
+                </p>
+              </motion.div>
+            ) : (
+              <div className="space-y-4 pt-4">
+                <div className="h-6 bg-stone-100 rounded-full w-3/4"></div>
+                <div className="h-6 bg-stone-50 rounded-full w-full"></div>
+                <div className="h-6 bg-stone-50 rounded-full w-5/6"></div>
+                <div className="h-6 bg-stone-50 rounded-full w-full"></div>
               </div>
             )}
           </div>
 
-          {/* Multi-Video Section */}
-          {safeLegend.videoUrls && safeLegend.videoUrls.length > 0 && (
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-stone-500 font-serif text-sm px-1">
-                <Play className="w-3 h-3" />
-                <span>Imatges en Moviment</span>
-              </div>
-              <div className="grid grid-cols-1 gap-4">
-                {safeLegend.videoUrls.map((videoUrl: string, idx: number) => {
-                  const variant = videoVariants[idx];
-                  const lowResSrc = variant?.lowResUrl || undefined;
-                  return (
-                    <div key={idx} className="relative aspect-video rounded-2xl overflow-hidden shadow-xl border border-white/20">
-                      {isUnlocked ? (
-                        <HlsVideoPlayer
-                          src={videoUrl.endsWith('.m3u8') ? videoUrl : videoUrl}
-                          lowBitrateSrc={lowResSrc}
-                          className="w-full h-full"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-stone-900/5 backdrop-blur-md rounded-xl flex flex-col items-center justify-center gap-4 text-stone-400 relative">
-                          <div className="absolute inset-0 bg-gradient-to-br from-stone-900/10 to-transparent"></div>
-                          <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-2xl flex items-center justify-center text-white ring-4 ring-white/10">
-                            <Lock className="w-5 h-5" />
-                          </div>
-                          <div className="text-center z-10 px-6">
-                            <span className="block text-[10px] uppercase tracking-[0.2em] font-black text-stone-500 mb-1">Cadenat Digital</span>
-                            <p className="text-[11px] leading-tight text-stone-400">El vídeo es revelarà quan arribis a la localització.</p>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Map Button */}
-          <Button
-            variant="outline"
-            className="w-full py-6 border-primary text-primary hover:bg-primary/5 font-serif text-lg"
-            onClick={handleViewOnMap}
-          >
-            <MapPin className="w-5 h-5 mr-2" />
-            Veure al Mapa
-          </Button>
-
-          {/* Locked State Message */}
-          {!isUnlocked && distanceMeters !== null && (
-            <div className="text-center text-sm text-stone-500 mt-4 italic font-serif">
-              Apropa't  {Math.round(distanceMeters - UNLOCK_DISTANCE)}m més per desbloquejar l'experiència completa.
+          {!isUnlocked && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-background/40 backdrop-blur-[2px] rounded-3xl">
+              <motion.div
+                animate={{ y: [0, -5, 0] }}
+                transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+                className="w-20 h-20 bg-white/80 backdrop-blur-xl rounded-full shadow-2xl border border-white/50 flex items-center justify-center text-primary mb-6 ring-8 ring-primary/5"
+              >
+                <Lock className="w-8 h-8" />
+              </motion.div>
+              <h4 className="font-serif text-xl font-bold text-primary mb-2">Contingut Protegit</h4>
+              <p className="text-stone-500 text-sm max-w-[200px] leading-relaxed">
+                {distanceMeters !== null ? (
+                  <>Ets a <span className="text-primary font-bold">{distanceStr}</span> de la història. Trepitja el punt per desbloquejar-la.</>
+                ) : (
+                  <span className="italic opacity-60">Esperant senyal GPS per obrir el cadenat...</span>
+                )}
+              </p>
             </div>
           )}
         </div>
+      </div>
+
+      {/* Interaction Zone */}
+      <div className="bg-muted/30 rounded-2xl p-6 space-y-4">
+        <div className="flex items-center justify-end mb-4">
+          <span className={`flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider px-2.5 py-1 rounded-full ${network.isOnline
+            ? (network.isSlowNetwork ? 'bg-orange-100 text-orange-600' : 'bg-emerald-100 text-emerald-600')
+            : 'bg-red-100 text-red-500'
+            }`}>
+            {network.isOnline ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
+            {network.isOnline ? (network.isSlowNetwork ? 'Lenta' : 'Connectat') : 'Offline'}
+          </span>
+        </div>
+
+        {/* Audio Player */}
+        {safeLegend.audioUrl && (
+          <div className={`p-4 rounded-xl flex items-center justify-between transition-colors ${isUnlocked
+            ? 'bg-primary text-primary-foreground shadow-lg'
+            : 'bg-stone-200 text-stone-500 cursor-not-allowed'
+            }`}>
+            <div className="flex items-center gap-4">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isUnlocked ? 'bg-white/20' : 'bg-black/10'}`}>
+                <Volume2 className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="font-bold text-sm">Àudio Guia</div>
+                <div className="text-xs opacity-80">{isPlaying ? 'Reproduint...' : 'Clica per escoltar'}</div>
+              </div>
+            </div>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handlePlayAudio}
+              disabled={!isUnlocked}
+              className={`hover:bg-white/20 rounded-full h-12 w-12 ${!isUnlocked && 'opacity-50'}`}
+            >
+              {isUnlocked ? (
+                isPlaying ? <Pause className="w-6 h-6 fill-current" /> : <Play className="w-6 h-6 fill-current" />
+              ) : <Lock className="w-5 h-5" />}
+            </Button>
+            <audio ref={audioRef} src={safeLegend.audioUrl} onEnded={() => setIsPlaying(false)} />
+          </div>
+        )}
+
+        {/* Punt d'Or (Sync Service for Offline) */}
+        <div className="p-4 rounded-xl bg-white border border-stone-200 shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white ${syncStatus === 'ready' ? 'bg-emerald-500' : 'bg-primary/40'}`}>
+                {syncStatus === 'ready' ? <CheckCircle2 className="w-4 h-4" /> : <Download className="w-4 h-4" />}
+              </div>
+              <div>
+                <div className="font-bold text-xs uppercase tracking-tighter">Punt d'Or</div>
+                <div className="text-[10px] text-muted-foreground">Paquet Offline</div>
+              </div>
+            </div>
+            {syncStatus !== 'ready' && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleDownload}
+                disabled={syncStatus === 'syncing' || !network.isOnline}
+                className="h-8 text-[10px] uppercase font-bold"
+              >
+                {syncStatus === 'syncing' ? (
+                  <>
+                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                    Baixant
+                  </>
+                ) : 'Baixar Ruta'}
+              </Button>
+            )}
+          </div>
+
+          {(safeLegend as any).downloadRequired && syncStatus !== 'ready' && (
+            <div className="mt-1 mb-3 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5" />
+              <div className="text-[10px] leading-tight text-amber-800 font-medium font-sans">
+                <span className="font-bold uppercase block mb-0.5 text-amber-900">Manca de cobertura</span>
+                Es recomana baixar la ruta abans de començar per evitar pèrdua de dades.
+              </div>
+            </div>
+          )}
+
+          {syncStatus === 'syncing' && syncProgress && (
+            <div className="mt-2 space-y-1">
+              <div className="h-1 w-full bg-stone-100 rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full bg-primary"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${(syncProgress.current / syncProgress.total) * 100}%` }}
+                />
+              </div>
+              <div className="text-[9px] text-stone-400 italic">
+                {syncProgress.label}
+              </div>
+            </div>
+          )}
+
+          {syncStatus === 'ready' && (
+            <div className="text-[10px] text-emerald-600 font-medium flex items-center gap-1 mt-1">
+              <CheckCircle2 className="w-3 h-3" />
+              Aquesta ruta està disponible sense connexió.
+            </div>
+          )}
+
+          {!network.isOnline && syncStatus !== 'ready' && (
+            <div className="text-[10px] text-red-500 italic mt-1">
+              Connecta't per baixar el paquet territorial.
+            </div>
+          )}
+        </div>
+
+        {/* Multi-Video Section */}
+        {safeLegend.videoUrls && safeLegend.videoUrls.length > 0 && (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 text-stone-500 font-serif text-sm px-1">
+              <Play className="w-3 h-3" />
+              <span>Imatges en Moviment</span>
+            </div>
+            <div className="grid grid-cols-1 gap-4">
+              {safeLegend.videoUrls.map((videoUrl: string, idx: number) => {
+                const variant = videoVariants[idx];
+                const lowResSrc = variant?.lowResUrl || undefined;
+                return (
+                  <div key={idx} className="relative aspect-video rounded-2xl overflow-hidden shadow-xl border border-white/20">
+                    {isUnlocked ? (
+                      <HlsVideoPlayer
+                        src={videoUrl.endsWith('.m3u8') ? videoUrl : videoUrl}
+                        lowBitrateSrc={lowResSrc}
+                        className="w-full h-full"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-stone-900/5 backdrop-blur-md rounded-xl flex flex-col items-center justify-center gap-4 text-stone-400 relative">
+                        <div className="absolute inset-0 bg-gradient-to-br from-stone-900/10 to-transparent"></div>
+                        <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-2xl flex items-center justify-center text-white ring-4 ring-white/10">
+                          <Lock className="w-5 h-5" />
+                        </div>
+                        <div className="text-center z-10 px-6">
+                          <span className="block text-[10px] uppercase tracking-[0.2em] font-black text-stone-500 mb-1">Cadenat Digital</span>
+                          <p className="text-[11px] leading-tight text-stone-400">El vídeo es revelarà quan arribis a la localització.</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Map Button */}
+        <Button
+          variant="outline"
+          className="w-full py-6 border-primary text-primary hover:bg-primary/5 font-serif text-lg"
+          onClick={handleViewOnMap}
+        >
+          <MapPin className="w-5 h-5 mr-2" />
+          Veure al Mapa
+        </Button>
+
       </div>
     </div>
   );

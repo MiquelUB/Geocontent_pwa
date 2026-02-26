@@ -608,6 +608,7 @@ model Route {
   name                     String?
   nameTranslations         Json              @default("{}") @map("name_translations")
   thumbnail1x1             String?           @map("thumbnail_1x1")
+  downloadRequired         Boolean           @default(false) @map("download_required")
   routePois                RoutePoi[]
 
   municipality             Municipality?     @relation(fields: [municipalityId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "routes_municipality_fk")

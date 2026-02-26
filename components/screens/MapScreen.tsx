@@ -31,27 +31,17 @@ export function MapScreen({ onNavigate, onOpenHelp, focusLegend, userLocation, e
     zoom: 11
   });
 
-  function getColorByCategory(category: string) {
-    switch (category) {
-      case 'Criatures': return "#8B5A3C";
-      case 'Fantasmes': return "#6B7280";
-      case 'Tresors': return "#D97706";
-      case 'Màgia': return "#7C3AED";
-      default: return "#3E4E3F";
-    }
-  }
+  const [locations, setLocations] = useState<any[]>([{ id: "totes", label: "Totes" }]);
 
   useEffect(() => {
     async function fetchData() {
-      console.log('Fetching legends from server...');
       const data = await getLegends();
-      console.log('Received legends:', data);
       if (data) {
         const mapped = data.map((l: any) => ({
           id: l.id,
           title: l.title,
-          location: l.location_name || "Lugar",
-          category: l.category,
+          location: l.location_name || "",
+          category: l.category || "",
           latitude: l.latitude,
           longitude: l.longitude,
           coordinates: { lat: l.latitude, lng: l.longitude },
@@ -60,9 +50,17 @@ export function MapScreen({ onNavigate, onOpenHelp, focusLegend, userLocation, e
           audio: l.audio_url,
           video: l.video_url,
           description: l.description,
-          color: getColorByCategory(l.category)
+          color: "#3E4E3F" // Standard color instead of hardcoded categories
         }));
         setLegends(mapped);
+
+        // Extract unique locations (towns)
+        const uniqueLocs = Array.from(new Set(mapped.map(l => l.location).filter(Boolean)));
+        const locChips = [
+          { id: "totes", label: "Totes", color: "#3E4E3F" },
+          ...uniqueLocs.map(loc => ({ id: loc, label: loc, color: "#3E4E3F" }))
+        ];
+        setLocations(locChips);
       }
     }
     fetchData();
@@ -86,17 +84,9 @@ export function MapScreen({ onNavigate, onOpenHelp, focusLegend, userLocation, e
     }
   }, [focusLegend, userLocation]);
 
-  const categories = [
-    { id: "totes", label: "Todas", color: "#3E4E3F" },
-    { id: "Criatures", label: "Criaturas", color: "#8B5A3C" },
-    { id: "Fantasmes", label: "Fantasmas", color: "#6B7280" },
-    { id: "Tresors", label: "Tesoros", color: "#D97706" },
-    { id: "Màgia", label: "Magia", color: "#7C3AED" }
-  ];
-
   const filteredLegends = activeCategory === "totes"
     ? legends
-    : legends.filter(legend => legend.category === activeCategory);
+    : legends.filter(legend => legend.location === activeCategory);
 
   return (
     <div className="screen-full bg-background flex flex-col h-full">
@@ -117,7 +107,7 @@ export function MapScreen({ onNavigate, onOpenHelp, focusLegend, userLocation, e
                 Explorar Mapa
               </h1>
               <p className="text-xs text-primary-foreground/80">
-                {filteredLegends.length} lugares encontrados
+                {filteredLegends.length} llocs trobats
               </p>
             </div>
           </div>
@@ -128,7 +118,7 @@ export function MapScreen({ onNavigate, onOpenHelp, focusLegend, userLocation, e
               size="sm"
               onClick={onOpenHelp}
               className="text-primary-foreground hover:bg-background/10"
-              title="Ayuda"
+              title="Ajuda"
             >
               <HelpCircle className="w-5 h-5" />
             </Button>
@@ -151,22 +141,22 @@ export function MapScreen({ onNavigate, onOpenHelp, focusLegend, userLocation, e
             className="mt-3 overflow-hidden"
           >
             <div className="flex gap-2 overflow-x-auto pb-2">
-              {categories.map((category) => (
+              {locations.map((loc) => (
                 <Button
-                  key={category.id}
-                  variant={activeCategory === category.id ? "default" : "outline"}
+                  key={loc.id}
+                  variant={activeCategory === loc.id ? "default" : "outline"}
                   size="sm"
-                  onClick={() => setActiveCategory(category.id)}
-                  className={`whitespace-nowrap flex-shrink-0 ${activeCategory === category.id
+                  onClick={() => setActiveCategory(loc.id)}
+                  className={`whitespace-nowrap flex-shrink-0 ${activeCategory === loc.id
                     ? "bg-background text-primary"
                     : "border-primary-foreground text-primary-foreground hover:bg-background/10"
                     }`}
                 >
                   <div
                     className="w-2 h-2 rounded-full mr-2"
-                    style={{ backgroundColor: category.color }}
+                    style={{ backgroundColor: loc.color }}
                   ></div>
-                  {category.label}
+                  {loc.label}
                 </Button>
               ))}
             </div>
@@ -267,15 +257,6 @@ export function MapScreen({ onNavigate, onOpenHelp, focusLegend, userLocation, e
                     {selectedLegend.description}
                   </p>
                   <div className="flex items-center justify-between">
-                    <Badge
-                      className="text-xs border-0"
-                      style={{
-                        backgroundColor: `${selectedLegend.color}20`,
-                        color: selectedLegend.color
-                      }}
-                    >
-                      {selectedLegend.category}
-                    </Badge>
                     <div className="flex gap-2">
                       <Button
                         variant="outline"
@@ -286,13 +267,13 @@ export function MapScreen({ onNavigate, onOpenHelp, focusLegend, userLocation, e
                         }}
                         className="text-xs"
                       >
-                        Cerrar
+                        Tancar
                       </Button>
                       <Button
                         size="sm"
-                        className="text-xs bg-primary text-primary-foreground pointer-events-none" // Pointer events none because the parent clicks
+                        className="text-xs bg-primary text-primary-foreground pointer-events-none"
                       >
-                        Ver detalle
+                        Veure detall
                       </Button>
                     </div>
                   </div>

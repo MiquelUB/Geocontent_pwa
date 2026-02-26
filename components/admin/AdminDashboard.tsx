@@ -42,7 +42,7 @@ interface Poi {
 }
 
 export default function AdminDashboard({ legends: initialLegends, profiles, reports, municipalityId }: { legends: any[], profiles: any[], reports?: any[], municipalityId?: string }) {
-  const [activeTab, setActiveTab] = useState('rutes'); 
+  const [activeTab, setActiveTab] = useState('rutes');
   const [isLoading, setIsLoading] = useState(false);
   const [legends, setLegends] = useState<Legend[]>(initialLegends as any[]);
   const [title, setTitle] = useState('');
@@ -54,7 +54,7 @@ export default function AdminDashboard({ legends: initialLegends, profiles, repo
   const [audioUrl, setAudioUrl] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
   const [editingLegend, setEditingLegend] = useState<Legend | null>(null);
-  
+
   // Form State
   // Note: Original code used a Dialog. Now we want it in the right column (Split Screen).
   // We need state for the form fields if we want to "Edit".
@@ -67,7 +67,7 @@ export default function AdminDashboard({ legends: initialLegends, profiles, repo
   // Let's create a mode in the "Rutes" tab: "List" vs "Workspace".
   // OR: Just show the workspace and a list below/modal.
   // Given "Split-Screen" emphasis for copying from AI, we prioritize the grid.
-  
+
   const router = useRouter();
 
   // Route Form State
@@ -76,6 +76,7 @@ export default function AdminDashboard({ legends: initialLegends, profiles, repo
   const [routeLocation, setRouteLocation] = useState('');
   const [routeThumbnail, setRouteThumbnail] = useState('');
   const [routeCategory, setRouteCategory] = useState('mountain');
+  const [routeDownloadRequired, setRouteDownloadRequired] = useState(false);
   const [editingRoute, setEditingRoute] = useState<any>(null);
   const [managingRoute, setManagingRoute] = useState<{ id: string; name: string } | null>(null);
   const [editingPoi, setEditingPoi] = useState<any>(null);
@@ -83,14 +84,15 @@ export default function AdminDashboard({ legends: initialLegends, profiles, repo
 
   // Handle initialization/edit sync
   useEffect(() => {
-      if (editingLegend) {
-          setEditingRoute(editingLegend);
-          setRouteTitle(editingLegend.title || '');
-          setRouteDescription(editingLegend.description || '');
-          setRouteLocation(editingLegend.location_name || '');
-          setRouteThumbnail((editingLegend as any).thumbnail1x1 || '');
-          setRouteCategory(editingLegend.category || 'mountain');
-      }
+    if (editingLegend) {
+      setEditingRoute(editingLegend);
+      setRouteTitle(editingLegend.title || '');
+      setRouteDescription(editingLegend.description || '');
+      setRouteLocation(editingLegend.location_name || '');
+      setRouteThumbnail((editingLegend as any).thumbnail1x1 || '');
+      setRouteCategory(editingLegend.category || 'mountain');
+      setRouteDownloadRequired((editingLegend as any).downloadRequired || false);
+    }
   }, [editingLegend]);
 
   const resetRouteForm = () => {
@@ -102,6 +104,7 @@ export default function AdminDashboard({ legends: initialLegends, profiles, repo
     setRouteLocation('');
     setRouteThumbnail('');
     setRouteCategory('mountain');
+    setRouteDownloadRequired(false);
     setRouteThumbFile(null);
   };
 
@@ -109,63 +112,64 @@ export default function AdminDashboard({ legends: initialLegends, profiles, repo
     if (!routeTitle) return alert('El títol de la ruta és obligatori.');
     setIsLoading(true);
     try {
-        const formData = new FormData();
-        formData.append('title', routeTitle);
-        formData.append('description', routeDescription);
-        formData.append('location', routeLocation);
-        formData.append('category', routeCategory);
-        formData.append('thumbnail_1x1', routeThumbnail);
-        if (routeThumbFile) {
-            formData.append('thumbnail_file', routeThumbFile);
-        }
+      const formData = new FormData();
+      formData.append('title', routeTitle);
+      formData.append('description', routeDescription);
+      formData.append('location', routeLocation);
+      formData.append('category', routeCategory);
+      formData.append('thumbnail_1x1', routeThumbnail);
+      formData.append('download_required', routeDownloadRequired ? 'true' : 'false');
+      if (routeThumbFile) {
+        formData.append('thumbnail_file', routeThumbFile);
+      }
 
-        let res;
-        if (editingRoute) {
-            res = await updateRoute(editingRoute.id, formData);
-        } else {
-            res = await createRoute(formData);
-        }
+      let res;
+      if (editingRoute) {
+        res = await updateRoute(editingRoute.id, formData);
+      } else {
+        res = await createRoute(formData);
+      }
 
-        if (res.success) {
-            alert('Ruta guardada!');
-            if (!editingRoute) resetRouteForm();
-            const updated = await getAdminLegends();
-            setLegends(updated as any);
-        } else {
-            alert("Error: " + res.error);
-        }
+      if (res.success) {
+        alert('Ruta guardada!');
+        if (!editingRoute) resetRouteForm();
+        const updated = await getAdminLegends();
+        setLegends(updated as any);
+      } else {
+        alert("Error: " + res.error);
+      }
     } catch (error: any) {
-        alert("Error: " + error.message);
+      alert("Error: " + error.message);
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
     }
   }
 
   async function handleSavePoi(formData: FormData) {
     setIsLoading(true);
     try {
-        let res;
-        if (editingPoi) {
-            // Editar un POI existent
-            res = await updatePoi(editingPoi.id, formData);
-        } else {
-            // Crear un nou POI (amb route_id si managingRoute o editingLegend estan actius)
-            // ❌ NO cridem updateLegend — això sobreescriuria el nom de la ruta
-            res = await createPoi(formData);
-        }
+      let res;
+      if (editingPoi) {
+        // Editar un POI existent
+        res = await updatePoi(editingPoi.id, formData);
+      } else {
+        // Crear un nou POI (amb route_id si managingRoute o editingLegend estan actius)
+        // ❌ NO cridem updateLegend — això sobreescriuria el nom de la ruta
+        res = await createPoi(formData);
+      }
 
-        if (res.success) {
-            alert(editingPoi ? 'Punt actualitzat!' : 'Punt guardat correctament!');
-            setEditingPoi(null);
-            const updated = await getAdminLegends();
-            setLegends(updated as any);
-        } else {
-            alert("Error: " + res.error);
-        }
+      if (res.success) {
+        alert(editingPoi ? 'Punt actualitzat!' : 'Punt guardat correctament!');
+        setEditingPoi(null);
+        const updated = await getAdminLegends();
+        setLegends(updated as any);
+      } else {
+        alert("Error: " + res.error);
+      }
     } catch (error: any) {
-        alert("Error: " + error.message);
+      alert("Error: " + error.message);
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
     }
   }
 
@@ -177,28 +181,28 @@ export default function AdminDashboard({ legends: initialLegends, profiles, repo
           <h1 className="text-3xl font-serif text-stone-900 tracking-tight">PXX Studio</h1>
           <p className="text-stone-500 font-serif italic">Panell de Control Institucional</p>
         </div>
-        
+
         {/* NAVEGACIÓ SENSE IMAGE STORAGE */}
         <nav className="flex space-x-2 bg-stone-100 p-1 rounded-lg">
-          <button 
+          <button
             onClick={() => setActiveTab('rutes')}
             className={`px-4 py-2 rounded-md transition-all duration-200 text-sm font-medium ${activeTab === 'rutes' ? 'bg-white text-terracotta-600 shadow-sm ring-1 ring-stone-200' : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/50'}`}
           >
             Creació de Rutes
           </button>
-          <button 
+          <button
             onClick={() => setActiveTab('usuaris')}
             className={`px-4 py-2 rounded-md transition-all duration-200 text-sm font-medium ${activeTab === 'usuaris' ? 'bg-white text-terracotta-600 shadow-sm ring-1 ring-stone-200' : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/50'}`}
           >
             Gestió d'Usuaris
           </button>
-          <button 
+          <button
             onClick={() => setActiveTab('executiu')}
             className={`px-4 py-2 rounded-md transition-all duration-200 text-sm font-medium ${activeTab === 'executiu' ? 'bg-white text-terracotta-600 shadow-sm ring-1 ring-stone-200' : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/50'}`}
           >
             Informe Executiu
           </button>
-          <button 
+          <button
             onClick={() => setActiveTab('config')}
             className={`px-4 py-2 rounded-md transition-all duration-200 text-sm font-medium ${activeTab === 'config' ? 'bg-white text-terracotta-600 shadow-sm ring-1 ring-stone-200' : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/50'}`}
           >
@@ -212,7 +216,7 @@ export default function AdminDashboard({ legends: initialLegends, profiles, repo
         {activeTab === 'rutes' && (
           <div className="space-y-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-              
+
               {/* COLUMNA ESQUERRA: MOTOR IA (NOMÉS VISTA) */}
               <Card className="border-stone-200 shadow-sm bg-white h-full">
                 <CardHeader className="bg-stone-50/50 border-b border-stone-100 pb-4">
@@ -247,34 +251,34 @@ export default function AdminDashboard({ legends: initialLegends, profiles, repo
                         <Input id="routeLocation" value={routeLocation} onChange={(e) => setRouteLocation(e.target.value)} placeholder="Ex: Sort" />
                       </div>
                       <div className="grid gap-2">
-                         <Label htmlFor="routeThumb" className="flex items-center justify-between text-stone-600">
-                           <div className="flex items-center gap-2">
-                             <ImageIcon className="w-4 h-4" />
-                             Portada de Carpeta (1x1)
-                           </div>
-                           <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 font-bold uppercase">Upload Recomanat</span>
-                         </Label>
-                         <Input 
-                           type="file" 
-                           accept="image/*" 
-                           onChange={(e) => {
-                             const file = e.target.files?.[0];
-                             if (file) {
-                               setRouteThumbFile(file);
-                             }
-                           }}
-                           className="cursor-pointer" 
-                         />
-                         <div className="flex items-center gap-2">
-                            <span className="text-[10px] text-stone-400">O URL:</span>
-                            <Input id="routeThumb" value={routeThumbnail} onChange={(e) => setRouteThumbnail(e.target.value)} placeholder="URL imatge" className="h-8 text-xs" />
-                         </div>
+                        <Label htmlFor="routeThumb" className="flex items-center justify-between text-stone-600">
+                          <div className="flex items-center gap-2">
+                            <ImageIcon className="w-4 h-4" />
+                            Portada de Carpeta (1x1)
+                          </div>
+                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 font-bold uppercase">Upload Recomanat</span>
+                        </Label>
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setRouteThumbFile(file);
+                            }
+                          }}
+                          className="cursor-pointer"
+                        />
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] text-stone-400">O URL:</span>
+                          <Input id="routeThumb" value={routeThumbnail} onChange={(e) => setRouteThumbnail(e.target.value)} placeholder="URL imatge" className="h-8 text-xs" />
+                        </div>
                       </div>
                       <div className="grid gap-2">
                         <Label htmlFor="routeCategory">Pell / Estil Visual</Label>
-                        <select 
-                          id="routeCategory" 
-                          value={routeCategory} 
+                        <select
+                          id="routeCategory"
+                          value={routeCategory}
                           onChange={(e) => setRouteCategory(e.target.value)}
                           className="flex h-10 w-full rounded-md border border-stone-200 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-950 shadow-sm"
                         >
@@ -285,8 +289,20 @@ export default function AdminDashboard({ legends: initialLegends, profiles, repo
                           <option value="bloom">🌸 Floració (Rosa)</option>
                         </select>
                       </div>
+                      <div className="flex items-center gap-2 py-2">
+                        <input
+                          type="checkbox"
+                          id="routeDownloadRequired"
+                          checked={routeDownloadRequired}
+                          onChange={(e) => setRouteDownloadRequired(e.target.checked)}
+                          className="w-4 h-4 rounded border-stone-300 text-stone-800 focus:ring-stone-900"
+                        />
+                        <Label htmlFor="routeDownloadRequired" className="text-xs font-bold text-stone-600 mb-0 cursor-pointer">
+                          ⚠️ Baixada Recomanada (Manca Cobertura)
+                        </Label>
+                      </div>
                       <Button onClick={handleSaveRoute} disabled={isLoading} size="sm" className="w-fit bg-stone-800 hover:bg-stone-900 text-white">
-                         {editingRoute ? 'Actualitzar Ruta' : 'Crear Ruta'}
+                        {editingRoute ? 'Actualitzar Ruta' : 'Crear Ruta'}
                       </Button>
                     </div>
                   </div>
@@ -304,16 +320,16 @@ export default function AdminDashboard({ legends: initialLegends, profiles, repo
                         </span>
                       )}
                     </h3>
-                    <ManualPoiForm 
+                    <ManualPoiForm
                       key={editingPoi?.id ?? (managingRoute?.id ?? 'new')}
                       poi={editingPoi ?? null}
-                      onSave={handleSavePoi} 
-                      onCancel={resetRouteForm} 
+                      onSave={handleSavePoi}
+                      onCancel={resetRouteForm}
                       isLoading={isLoading}
                       routes={legends}
                       defaultRouteId={managingRoute?.id ?? (editingLegend?.id ?? undefined)}
                     />
-                    
+
                     {editingLegend && (
                       <div className="pt-6 border-t border-stone-100">
                         <Label className="mb-4 block text-stone-800 font-bold">Consola de Vídeo HLS (Extra)</Label>
@@ -325,91 +341,90 @@ export default function AdminDashboard({ legends: initialLegends, profiles, repo
               </Card>
             </div>
 
-          {/* ROUTE POI MANAGER PANEL */}
-          {managingRoute && (
-            <RoutePoiManager
-              routeId={managingRoute.id}
-              routeName={managingRoute.name}
-              onClose={() => setManagingRoute(null)}
-              onEditPoi={(poi) => {
-                setEditingPoi(poi);
-                setEditingLegend(null);
-              }}
-            />
-          )}
+            {/* ROUTE POI MANAGER PANEL */}
+            {managingRoute && (
+              <RoutePoiManager
+                routeId={managingRoute.id}
+                routeName={managingRoute.name}
+                onClose={() => setManagingRoute(null)}
+                onEditPoi={(poi) => {
+                  setEditingPoi(poi);
+                  setEditingLegend(null);
+                }}
+              />
+            )}
 
-              {/* LIST OF LEGENDS */}
-              <Card className="border-stone-200 shadow-sm bg-white">
-                  <CardHeader>
-                      <CardTitle className="font-serif text-xl text-stone-800">Llistat de Llegendes Existents</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                      <div className="rounded-md border border-stone-200">
-                        <table className="w-full text-sm">
-                          <thead className="bg-stone-50 text-stone-700">
-                            <tr className="text-left border-b border-stone-200">
-                              <th className="p-4 font-medium font-serif">Títol</th>
-                              <th className="p-4 font-medium font-serif">Categoria</th>
-                              <th className="p-4 font-medium font-serif text-right">Accions</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {legends?.map((legend: any) => (
-                              <tr key={legend.id} className="border-b border-stone-100 last:border-0 hover:bg-stone-50">
-                                <td className="p-4 font-medium text-stone-800">{legend.title}</td>
-                                <td className="p-4 text-stone-600">{legend.category}</td>
-                                <td className="p-4 text-right space-x-2">
-                                  <Button 
-                                    variant="ghost" 
-                                    size="sm"
-                                    className="text-terracotta-600 hover:text-terracotta-700 hover:bg-terracotta-50"
-                                    onClick={() => {
-                                        setEditingLegend(legend);
-                                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                                    }}
-                                  >
-                                    Editar
-                                  </Button>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="sm"
-                                    className={`${
-                                      managingRoute?.id === legend.id
-                                        ? 'text-terracotta-700 bg-terracotta-50'
-                                        : 'text-stone-500 hover:text-terracotta-700 hover:bg-terracotta-50'
-                                    }`}
-                                    onClick={() => {
-                                      const next = managingRoute?.id === legend.id
-                                        ? null
-                                        : { id: legend.id, name: legend.title };
-                                      setManagingRoute(next);
-                                      if (next) window.scrollTo({ top: 0, behavior: 'smooth' });
-                                      else setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100);
-                                    }}
-                                  >
-                                    {managingRoute?.id === legend.id ? '▲ Tancar Punts' : 'Punts →'}
-                                  </Button>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="sm"
-                                    className="text-stone-400 hover:text-red-600 hover:bg-red-50"
-                                    onClick={async () => {
-                                        if(confirm("Segur que vols esborrar?")) {
-                                            await deleteLegend(legend.id);
-                                            router.refresh();
-                                        }
-                                    }}
-                                  >
-                                    Esborrar
-                                  </Button>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                  </CardContent>
-              </Card>
+            {/* LIST OF LEGENDS */}
+            <Card className="border-stone-200 shadow-sm bg-white">
+              <CardHeader>
+                <CardTitle className="font-serif text-xl text-stone-800">Llistat de Llegendes Existents</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="rounded-md border border-stone-200">
+                  <table className="w-full text-sm">
+                    <thead className="bg-stone-50 text-stone-700">
+                      <tr className="text-left border-b border-stone-200">
+                        <th className="p-4 font-medium font-serif">Títol</th>
+                        <th className="p-4 font-medium font-serif">Categoria</th>
+                        <th className="p-4 font-medium font-serif text-right">Accions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {legends?.map((legend: any) => (
+                        <tr key={legend.id} className="border-b border-stone-100 last:border-0 hover:bg-stone-50">
+                          <td className="p-4 font-medium text-stone-800">{legend.title}</td>
+                          <td className="p-4 text-stone-600">{legend.category}</td>
+                          <td className="p-4 text-right space-x-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-terracotta-600 hover:text-terracotta-700 hover:bg-terracotta-50"
+                              onClick={() => {
+                                setEditingLegend(legend);
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                              }}
+                            >
+                              Editar
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className={`${managingRoute?.id === legend.id
+                                  ? 'text-terracotta-700 bg-terracotta-50'
+                                  : 'text-stone-500 hover:text-terracotta-700 hover:bg-terracotta-50'
+                                }`}
+                              onClick={() => {
+                                const next = managingRoute?.id === legend.id
+                                  ? null
+                                  : { id: legend.id, name: legend.title };
+                                setManagingRoute(next);
+                                if (next) window.scrollTo({ top: 0, behavior: 'smooth' });
+                                else setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100);
+                              }}
+                            >
+                              {managingRoute?.id === legend.id ? '▲ Tancar Punts' : 'Punts →'}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-stone-400 hover:text-red-600 hover:bg-red-50"
+                              onClick={async () => {
+                                if (confirm("Segur que vols esborrar?")) {
+                                  await deleteLegend(legend.id);
+                                  router.refresh();
+                                }
+                              }}
+                            >
+                              Esborrar
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         )}
 
@@ -419,7 +434,7 @@ export default function AdminDashboard({ legends: initialLegends, profiles, repo
         )}
 
         {activeTab === 'executiu' && (
-            // Assuming first municipality is the target for now, or pass prop
+          // Assuming first municipality is the target for now, or pass prop
           <ExecutiveReport municipalityId={municipalityId || ''} />
         )}
 

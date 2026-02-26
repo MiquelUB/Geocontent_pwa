@@ -9,7 +9,7 @@ export function BottomNavigation({ currentScreen, onScreenChange }: BottomNaviga
   const navItems = [
     {
       id: "home",
-      label: "Inicio",
+      label: "Inici",
       icon: Home,
     },
     {
@@ -30,26 +30,25 @@ export function BottomNavigation({ currentScreen, onScreenChange }: BottomNaviga
   ];
 
   return (
-    <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-black/80 backdrop-blur-md border border-white/10 rounded-full px-6 py-3 flex items-center gap-2 shadow-2xl z-50">
+    <div className="bg-black/80 backdrop-blur-md border border-white/10 rounded-full px-6 py-3 flex items-center gap-2 shadow-2xl z-50 mx-auto mb-6">
       {navItems.map((item) => {
         const Icon = item.icon;
         const isActive = currentScreen === item.id;
-        
+
         return (
           <button
             key={item.id}
             onClick={() => onScreenChange(item.id)}
-            className={`relative flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 ${
-              isActive 
-                ? "bg-white text-black scale-110 shadow-lg" 
+            className={`relative flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 ${isActive
+                ? "bg-white text-black scale-110 shadow-lg"
                 : "text-white/60 hover:text-white hover:bg-white/10"
-            }`}
+              }`}
           >
             <Icon size={20} className={isActive ? "stroke-[2.5px]" : "stroke-[1.5px]"} />
             {isActive && (
-                <span className="absolute -bottom-8 text-[10px] font-medium text-black bg-white px-2 py-0.5 rounded-md opacity-0 animate-in fade-in slide-in-from-top-1 hidden">
-                    {item.label}
-                </span>
+              <span className="absolute -bottom-8 text-[10px] font-medium text-black bg-white px-2 py-0.5 rounded-md opacity-0 animate-in fade-in slide-in-from-top-1 hidden">
+                {item.label}
+              </span>
             )}
           </button>
         );
