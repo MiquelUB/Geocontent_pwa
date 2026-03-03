@@ -15,7 +15,7 @@ interface PoiQuizProps {
         correcta: number;
         feedback?: string;
     };
-    onComplete?: () => void;
+    onComplete?: (res?: any) => void;
     isAlreadyCompleted?: boolean;
 }
 
@@ -36,8 +36,8 @@ export default function PoiQuiz({ poiId, userId, quiz, onComplete, isAlreadyComp
         if (correct) {
             setIsSubmitting(true);
             try {
-                await completePoiQuizAction(poiId, userId);
-                if (onComplete) onComplete();
+                const res = await completePoiQuizAction(poiId, userId);
+                if (onComplete) onComplete(res);
             } catch (err) {
                 console.error("Error saving quiz progress:", err);
             } finally {
@@ -79,8 +79,8 @@ export default function PoiQuiz({ poiId, userId, quiz, onComplete, isAlreadyComp
                         disabled={isCorrect !== null}
                         onClick={() => handleAnswer(idx)}
                         className={`justify-start text-xs h-auto py-3 px-4 text-left font-sans transition-all border-stone-200 ${selectedOption === idx
-                                ? (isCorrect ? 'bg-green-50 border-green-500 text-green-700 font-bold ring-2 ring-green-100' : 'bg-red-50 border-red-500 text-red-700 ring-2 ring-red-100')
-                                : 'hover:border-primary/50 hover:bg-stone-50'
+                            ? (isCorrect ? 'bg-green-50 border-green-500 text-green-700 font-bold ring-2 ring-green-100' : 'bg-red-50 border-red-500 text-red-700 ring-2 ring-red-100')
+                            : 'hover:border-primary/50 hover:bg-stone-50'
                             }`}
                     >
                         <div className="flex items-center w-full">

@@ -380,15 +380,15 @@ model auth_users {
   id                          String                 @id @db.Uuid
   aud                         String?                @db.VarChar(255)
   role                        String?                @db.VarChar(255)
-  email                       String?                @unique(map: "users_email_partial_key") @db.VarChar(255)
+  email                       String?                @unique @db.VarChar(255)
   encrypted_password          String?                @db.VarChar(255)
   email_confirmed_at          DateTime?              @db.Timestamptz(6)
   invited_at                  DateTime?              @db.Timestamptz(6)
-  confirmation_token          String?                @unique(map: "confirmation_token_idx") @db.VarChar(255)
+  confirmation_token          String?                @unique @db.VarChar(255)
   confirmation_sent_at        DateTime?              @db.Timestamptz(6)
-  recovery_token              String?                @unique(map: "recovery_token_idx") @db.VarChar(255)
+  recovery_token              String?                @unique @db.VarChar(255)
   recovery_sent_at            DateTime?              @db.Timestamptz(6)
-  email_change_token_new      String?                @unique(map: "email_change_token_new_idx") @db.VarChar(255)
+  email_change_token_new      String?                @unique @db.VarChar(255)
   email_change                String?                @db.VarChar(255)
   email_change_sent_at        DateTime?              @db.Timestamptz(6)
   last_sign_in_at             DateTime?              @db.Timestamptz(6)
@@ -403,10 +403,10 @@ model auth_users {
   phone_change_token          String?                @default("") @db.VarChar(255)
   phone_change_sent_at        DateTime?              @db.Timestamptz(6)
   confirmed_at                DateTime?              @default(dbgenerated("LEAST(email_confirmed_at, phone_confirmed_at)")) @db.Timestamptz(6)
-  email_change_token_current  String?                @unique(map: "email_change_token_current_idx") @default("") @db.VarChar(255)
+  email_change_token_current  String?                @unique @default("") @db.VarChar(255)
   email_change_confirm_status Int?                   @default(0) @db.SmallInt
   banned_until                DateTime?              @db.Timestamptz(6)
-  reauthentication_token      String?                @unique(map: "reauthentication_token_idx") @default("") @db.VarChar(255)
+  reauthentication_token      String?                @unique @default("") @db.VarChar(255)
   reauthentication_sent_at    DateTime?              @db.Timestamptz(6)
   is_sso_user                 Boolean                @default(false)
   deleted_at                  DateTime?              @db.Timestamptz(6)
@@ -427,8 +427,8 @@ model auth_users {
 
 model AiUsageLog {
   id        String   @id
-  createdAt DateTime @default(now()) @map("created_at")
-  userId    String?  @map("user_id")
+  createdAt DateTime @default(now())
+  userId    String?
   action    String   @default("generate_route")
   tokens    Int?
   status    String
@@ -438,14 +438,14 @@ model AiUsageLog {
 }
 
 model ExecutiveReportSnapshot {
-  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  municipalityId    String   @map("municipality_id") @db.Uuid
-  periodStart       DateTime @map("period_start") @db.Timestamptz(6)
-  periodEnd         DateTime @map("period_end") @db.Timestamptz(6)
-  totalUsers        Int      @map("total_users")
-  avgTimePerRoute   Int      @map("avg_time_per_route")
-  topPois           Json     @map("top_pois")
-  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  municipalityId  String   @map("municipality_id") @db.Uuid
+  periodStart     DateTime @map("period_start") @db.Timestamptz(6)
+  periodEnd       DateTime @map("period_end") @db.Timestamptz(6)
+  totalUsers      Int      @map("total_users")
+  avgTimePerRoute Int      @map("avg_time_per_route")
+  topPois         Json     @map("top_pois")
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
   @@map("executive_report_snapshots")
   @@schema("public")
@@ -461,7 +461,7 @@ model Municipality {
   createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt        DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   planTier         String   @default("basic") @map("plan_tier")
-  themeId          String   @default("mountain") @map("theme_id")
+  themeId          String?  @default("mountain") @map("theme_id")
   reports          Report[]
   routes           Route[]
   users            User[]
@@ -472,31 +472,31 @@ model Municipality {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model Organization {
-  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name             String
-  themeId          String   @default("terracotta") @map("theme_id")
-  mapStyleUrl      String   @map("map_style_url")
-  centerLatitude   Float?   @default(41.5912) @map("center_latitude")
-  centerLongitude  Float?   @default(1.5209) @map("center_longitude")
-  configJson       Json?    @default("{}") @map("config_json")
-  createdAt        DateTime? @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt        DateTime? @default(now()) @map("updated_at") @db.Timestamptz(6)
-  users            User[]
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            String
+  themeId         String    @default("terracotta") @map("theme_id")
+  mapStyleUrl     String    @map("map_style_url")
+  centerLatitude  Float?    @default(41.5912) @map("center_latitude")
+  centerLongitude Float?    @default(1.5209) @map("center_longitude")
+  configJson      Json?     @default("{}") @map("config_json")
+  createdAt       DateTime? @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime? @default(now()) @map("updated_at") @db.Timestamptz(6)
+  users           User[]
 
   @@map("organizations")
   @@schema("public")
 }
 
 model PoiVisits {
-  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId           String?  @map("user_id") @db.Uuid
-  poiId            String   @map("poi_id") @db.Uuid
-  entryTime        DateTime @map("entry_time") @db.Timestamptz(6)
-  exitTime         DateTime? @map("exit_time") @db.Timestamptz(6)
-  durationSeconds Int?     @map("duration_seconds")
-  rating           Int?     @default(0)
-  poi              Poi      @relation(fields: [poiId], references: [id], onDelete: Cascade)
-  user             User?    @relation(fields: [userId], references: [id])
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String?   @map("user_id") @db.Uuid
+  poiId           String    @map("poi_id") @db.Uuid
+  entryTime       DateTime  @map("entry_time") @db.Timestamptz(6)
+  exitTime        DateTime? @map("exit_time") @db.Timestamptz(6)
+  durationSeconds Int?      @map("duration_seconds")
+  rating          Int?      @default(0)
+  poi             Poi       @relation(fields: [poiId], references: [id], onDelete: Cascade)
+  user            User?     @relation(fields: [userId], references: [id])
 
   @@index([poiId])
   @@index([userId])
@@ -506,40 +506,40 @@ model PoiVisits {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model Poi {
-  id                         String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  title                      String
-  description                String?
-  titleTranslations          Json         @default("{}") @map("title_translations")
-  descriptionTranslations    Json         @default("{}") @map("description_translations")
-  latitude                   Float?
-  longitude                  Float?
-  audioUrl                   String?      @map("audio_url")
-  videoType                  VideoType?   @map("video_type")
-  type                       PoiType?
-  manualQuiz                 Json?        @map("manual_quiz")
-  quizQuestion               String?      @map("quiz_question")
-  quizOptions                Json?        @map("quiz_options")
-  quizCorrectIndex           Int?         @map("quiz_correct_index")
-  quizXpReward               Int          @default(100) @map("quiz_xp_reward")
-  quizQuestionTranslations   Json         @default("{}") @map("quiz_question_translations")
-  sortOrder                  Int          @default(0) @map("sort_order")
-  createdAt                  DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt                  DateTime     @default(now()) @map("updated_at") @db.Timestamptz(6)
-  altitude                   Float?
-  timeFromStart              Int?         @map("time_from_start")
-  images                     String[]     @default([])
-  isRecapture                Boolean      @default(false) @map("is_recapture")
-  municipalityId             String?      @map("municipality_id") @db.Uuid
-  videoMetadata              Json?        @map("video_metadata")
-  videoUrls                  String[]     @default([]) @map("video_urls")
-  appThumbnail               String?      @map("app_thumbnail")
-  carouselImages             String[]     @default([]) @map("carousel_images")
-  header16x9                 String?      @map("header_16x9")
-  textContent                String?      @map("text_content")
-  icon                       String?
-  poiVisits                  PoiVisits[]
-  routePois                  RoutePoi[]
-  userUnlocks                UserUnlock[]
+  id                       String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title                    String
+  description              String?
+  titleTranslations        Json         @default("{}") @map("title_translations")
+  descriptionTranslations  Json         @default("{}") @map("description_translations")
+  latitude                 Float?
+  longitude                Float?
+  audioUrl                 String?      @map("audio_url")
+  videoType                VideoType?   @map("video_type")
+  quizQuestion             String?      @map("quiz_question")
+  quizOptions              Json?        @map("quiz_options")
+  quizCorrectIndex         Int?         @map("quiz_correct_index")
+  quizXpReward             Int          @default(100) @map("quiz_xp_reward")
+  quizQuestionTranslations Json         @default("{}") @map("quiz_question_translations")
+  sortOrder                Int          @default(0) @map("sort_order")
+  createdAt                DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                DateTime     @default(now()) @map("updated_at") @db.Timestamptz(6)
+  altitude                 Float?
+  timeFromStart            Int?         @map("time_from_start")
+  images                   String[]     @default([])
+  isRecapture              Boolean      @default(false) @map("is_recapture")
+  municipalityId           String?      @map("municipality_id") @db.Uuid
+  videoMetadata            Json?        @map("video_metadata")
+  videoUrls                String[]     @default([]) @map("video_urls")
+  appThumbnail             String?      @map("app_thumbnail")
+  carouselImages           String[]     @default([]) @map("carousel_images")
+  header16x9               String?      @map("header_16x9")
+  textContent              String?      @map("text_content")
+  icon                     String?
+  type                     PoiType?
+  manualQuiz               Json?        @map("manual_quiz")
+  poiVisits                PoiVisits[]
+  routePois                RoutePoi[]
+  userUnlocks              UserUnlock[]
 
   @@index([municipalityId], map: "idx_pois_municipality")
   @@map("pois")
@@ -549,30 +549,32 @@ model Poi {
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model Profile {
-  id         String     @id @db.Uuid
-  updatedAt  DateTime?  @map("updated_at") @db.Timestamptz(6)
-  username   String?    @unique
-  avatarUrl  String?    @map("avatar_url")
-  role       String?    @default("user")
-  xp         Int?       @default(0)
-  level      Int?       @default(1)
-  user       auth_users @relation(fields: [id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  id                String              @id @db.Uuid
+  updatedAt         DateTime?           @map("updated_at") @db.Timestamptz(6)
+  username          String?             @unique
+  avatarUrl         String?             @map("avatar_url")
+  role              String?             @default("user")
+  xp                Int?                @default(0)
+  level             Int?                @default(1)
+  user              auth_users          @relation(fields: [id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  userUnlocks       UserUnlock[]
+  userRouteProgress UserRouteProgress[]
 
   @@map("profiles")
   @@schema("public")
 }
 
 model Report {
-  id              String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  municipalityId  String       @map("municipality_id") @db.Uuid
-  title           String
-  status          ReportStatus @default(PENDING)
-  resultUrl       String?      @map("result_url")
-  data            Json?
-  error           String?
-  createdAt       DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt       DateTime     @default(now()) @map("updated_at") @db.Timestamptz(6)
-  municipality    Municipality @relation(fields: [municipalityId], references: [id], onDelete: Cascade)
+  id             String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  municipalityId String       @map("municipality_id") @db.Uuid
+  title          String
+  status         ReportStatus @default(PENDING)
+  resultUrl      String?      @map("result_url")
+  data           Json?
+  error          String?
+  createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime     @default(now()) @map("updated_at") @db.Timestamptz(6)
+  municipality   Municipality @relation(fields: [municipalityId], references: [id], onDelete: Cascade)
 
   @@index([municipalityId], map: "idx_reports_municipality")
   @@map("reports")
@@ -580,13 +582,13 @@ model Report {
 }
 
 model RoutePoi {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  routeId     String   @map("route_id") @db.Uuid
-  poiId       String   @map("poi_id") @db.Uuid
-  orderIndex  Int      @default(0) @map("order_index")
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  poi         Poi      @relation(fields: [poiId], references: [id], onDelete: Cascade)
-  route       Route    @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  routeId    String   @map("route_id") @db.Uuid
+  poiId      String   @map("poi_id") @db.Uuid
+  orderIndex Int      @default(0) @map("order_index")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  poi        Poi      @relation(fields: [poiId], references: [id], onDelete: Cascade)
+  route      Route    @relation(fields: [routeId], references: [id], onDelete: Cascade)
 
   @@unique([routeId, poiId])
   @@map("route_pois")
@@ -595,28 +597,28 @@ model RoutePoi {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model Route {
-  id                       String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  municipalityId           String?           @map("municipality_id") @db.Uuid
-  slug                     String            @unique
-  description              String?
-  descriptionTranslations  Json              @default("{}") @map("description_translations")
-  themeId                  ThemeId           @default(mountain) @map("theme_id")
-  availabilityType         RouteAvailability @default(permanent) @map("availability_type")
-  status                   RouteStatus       @default(DRAFT)
-  finalQuiz                Json?             @map("final_quiz")
-  startDate                DateTime?         @map("start_date") @db.Timestamptz(6)
-  endDate                  DateTime?         @map("end_date") @db.Timestamptz(6)
-  isPremium                Boolean           @default(false) @map("is_premium")
-  createdAt                DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt                DateTime          @default(now()) @map("updated_at") @db.Timestamptz(6)
-  organizationId           String?           @map("organization_id") @db.Uuid
-  name                     String?
-  nameTranslations         Json              @default("{}") @map("name_translations")
-  thumbnail1x1             String?           @map("thumbnail_1x1")
-  downloadRequired         Boolean           @default(false) @map("download_required")
-  routePois                RoutePoi[]
-
-  municipality             Municipality?     @relation(fields: [municipalityId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "routes_municipality_fk")
+  id                      String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  municipalityId          String?             @map("municipality_id") @db.Uuid
+  slug                    String              @unique
+  description             String?
+  descriptionTranslations Json                @default("{}") @map("description_translations")
+  themeId                 ThemeId             @default(mountain) @map("theme_id")
+  availabilityType        RouteAvailability   @default(permanent) @map("availability_type")
+  startDate               DateTime?           @map("start_date") @db.Timestamptz(6)
+  endDate                 DateTime?           @map("end_date") @db.Timestamptz(6)
+  isPremium               Boolean             @default(false) @map("is_premium")
+  createdAt               DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt               DateTime            @default(now()) @map("updated_at") @db.Timestamptz(6)
+  organizationId          String?             @map("organization_id") @db.Uuid
+  name                    String?
+  nameTranslations        Json                @default("{}") @map("name_translations")
+  thumbnail1x1            String?             @map("thumbnail_1x1")
+  downloadRequired        Boolean?            @default(false) @map("download_required")
+  status                  RouteStatus         @default(DRAFT)
+  finalQuiz               Json?               @map("final_quiz")
+  routePois               RoutePoi[]
+  municipality            Municipality?       @relation(fields: [municipalityId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "routes_municipality_fk")
+  userRouteProgress       UserRouteProgress[]
 
   @@index([startDate, endDate], map: "idx_routes_dates")
   @@index([municipalityId], map: "idx_routes_municipality")
@@ -648,37 +650,86 @@ model user_telemetry {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model UserUnlock {
-  userId      String   @map("user_id") @db.Uuid
-  poiId       String   @map("poi_id") @db.Uuid
-  unlockedAt  DateTime @default(now()) @map("unlocked_at") @db.Timestamptz(6)
-  earnedXp    Int      @map("earned_xp")
-  progress    Float    @default(0.0)
-  poi         Poi      @relation(fields: [poiId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "user_unlocks_poi_fk")
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "user_unlocks_user_fk")
+  userId     String   @map("user_id") @db.Uuid
+  poiId      String   @map("poi_id") @db.Uuid
+  unlockedAt DateTime @default(now()) @map("unlocked_at") @db.Timestamptz(6)
+  earnedXp   Int      @map("earned_xp")
+  progress   Float    @default(0)
+  quizSolved Boolean  @default(false) @map("quiz_solved")
+  poi        Poi      @relation(fields: [poiId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "user_unlocks_poi_fk")
+  user       Profile  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "user_unlocks_profile_fk")
 
   @@id([userId, poiId])
   @@map("user_unlocks")
   @@schema("public")
 }
 
+model UserRouteProgress {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String    @map("user_id") @db.Uuid
+  routeId         String    @map("route_id") @db.Uuid
+  finalQuizPassed Boolean   @default(false) @map("final_quiz_passed")
+  completedAt     DateTime? @map("completed_at") @db.Timestamptz(6)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  route           Route     @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  user            Profile   @relation(fields: [userId], references: [id], onDelete: Cascade, map: "user_route_progress_profile_fk")
+
+  @@unique([userId, routeId])
+  @@map("user_route_progress")
+  @@schema("public")
+}
+
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model User {
-  id              String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email           String          @unique
-  displayName    String          @map("display_name")
-  avatarUrl       String?         @map("avatar_url")
-  xpPoints        Int             @default(0) @map("xp_points")
-  role            UserRole        @default(tourist)
-  createdAt       DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
-  municipalityId String?         @map("municipality_id") @db.Uuid
-  organizationId String?         @map("organization_id") @db.Uuid
+  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email          String        @unique
+  displayName    String        @map("display_name")
+  avatarUrl      String?       @map("avatar_url")
+  xpPoints       Int           @default(0) @map("xp_points")
+  role           UserRole      @default(tourist)
+  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  municipalityId String?       @map("municipality_id") @db.Uuid
+  organizationId String?       @map("organization_id") @db.Uuid
   poiVisits      PoiVisits[]
-  userUnlocks    UserUnlock[]
-  municipality    Municipality?   @relation(fields: [municipalityId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "users_municipality_fk")
-  organizations   Organization? @relation(fields: [organizationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  municipality   Municipality? @relation(fields: [municipalityId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "users_municipality_fk")
+  organizations  Organization? @relation(fields: [organizationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@map("users")
   @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model custom_oauth_providers {
+  id                    String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  provider_type         String
+  identifier            String    @unique
+  name                  String
+  client_id             String
+  client_secret         String
+  acceptable_client_ids String[]  @default([])
+  scopes                String[]  @default([])
+  pkce_enabled          Boolean   @default(true)
+  attribute_mapping     Json      @default("{}")
+  authorization_params  Json      @default("{}")
+  enabled               Boolean   @default(true)
+  email_optional        Boolean   @default(false)
+  issuer                String?
+  discovery_url         String?
+  skip_nonce_check      Boolean   @default(false)
+  cached_discovery      Json?
+  discovery_cached_at   DateTime? @db.Timestamptz(6)
+  authorization_url     String?
+  token_url             String?
+  userinfo_url          String?
+  jwks_uri              String?
+  created_at            DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime  @default(now()) @db.Timestamptz(6)
+
+  @@index([created_at])
+  @@index([enabled])
+  @@index([identifier])
+  @@index([provider_type])
+  @@schema("auth")
 }
 
 enum aal_level {

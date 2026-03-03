@@ -12,9 +12,12 @@ interface PoiProgress {
   title: string;
   isVisited: boolean;
   isQuizDone: boolean;
-  progress: number;   // 0.0 → 1.0
+  quizSolved: boolean; // NEW
+  progress: number;
   hasQuiz: boolean;
 }
+
+import { GraduationCap } from "lucide-react"; // Import icon
 
 export interface PassportStampProps {
   id: string;
@@ -141,7 +144,7 @@ export function PassportStamp({
   const slices: PoiProgress[] = poisProgress.length === N
     ? poisProgress
     : Array.from({ length: N }, (_, i) => poisProgress[i] ?? {
-      id: `empty-${i}`, title: '', isVisited: false, isQuizDone: false,
+      id: `empty-${i}`, title: '', isVisited: false, isQuizDone: false, quizSolved: false,
       progress: 0, hasQuiz: false,
     });
 
@@ -171,15 +174,6 @@ export function PassportStamp({
       )}
     >
 
-      {/* ── Background: full stamp always present, deeply faded ───────────── */}
-      <div className="absolute inset-0 pointer-events-none">
-        <img
-          src={stampUrl}
-          alt=""
-          loading="lazy"
-          className="w-full h-full object-cover grayscale opacity-[0.09]"
-        />
-      </div>
 
       {hasAnyVisit ? (
         <>
@@ -203,7 +197,7 @@ export function PassportStamp({
                   alt={name}
                   loading="lazy"
                   className={cn(
-                    "w-full h-full object-cover transition-all duration-500",
+                    "w-full h-full object-cover transition-all duration-500 mix-blend-multiply brightness-[1.15] contrast-[1.15]",
                     quizDone
                       ? "opacity-100 saturate-100"
                       : "opacity-55 saturate-[0.55]"
@@ -217,6 +211,12 @@ export function PassportStamp({
                       background: 'linear-gradient(180deg, rgba(180,140,80,0.12) 0%, transparent 60%)'
                     }}
                   />
+                )}
+                {/* Graduation cap if quiz solved */}
+                {poi.quizSolved && (
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white/80 dark:bg-black/60 rounded-full p-1 shadow-sm">
+                    <GraduationCap className="w-3 h-3 text-primary animate-pulse" />
+                  </div>
                 )}
               </motion.div>
             );

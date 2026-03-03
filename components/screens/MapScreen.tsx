@@ -111,8 +111,8 @@ export function MapScreen({ onNavigate, onOpenHelp, focusLegend, userLocation, e
   useEffect(() => {
     if (focusLegend) {
       setViewState({
-        longitude: focusLegend.coordinates.lng,
-        latitude: focusLegend.coordinates.lat,
+        longitude: focusLegend.coordinates?.lng ?? focusLegend.longitude ?? 0.9870,
+        latitude: focusLegend.coordinates?.lat ?? focusLegend.latitude ?? 42.4140,
         zoom: 14
       });
       setSelectedLegend(focusLegend);

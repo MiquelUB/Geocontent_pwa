@@ -17,7 +17,8 @@ const GENERIC_ERROR_MESSAGE = "S'ha produït un error al processar la sol·licit
 
 function logToFile(msg: string) {
   try {
-    fs.appendFileSync(path.join(process.cwd(), 'server-debug.log'), `[${new Date().toISOString()}] ${msg}\n`);
+    const logPath = path.join(os.tmpdir(), 'geocontent-server-debug.log');
+    fs.appendFileSync(logPath, `[${new Date().toISOString()}] ${msg}\n`);
   } catch (e) { }
 }
 
@@ -239,6 +240,7 @@ function mapRoute(route: any) {
     images: firstPoi?.images || [],
     manualQuiz: firstPoi?.manualQuiz,
     userUnlocks: firstPoi?.userUnlocks || [],
+    finalQuiz: route.finalQuiz || null,
   };
 }
 
@@ -335,24 +337,33 @@ export async function updateRoute(id: string, formData: FormData) {
   const downloadRequired = formData.get('download_required') === 'true';
   const municipalityId = await getOrCreateMunicipalityByName(location);
 
+  let finalQuizInfo = null;
+  const finalQuizRaw = formData.get('final_quiz') as string;
+  if (finalQuizRaw) {
+    try { finalQuizInfo = JSON.parse(finalQuizRaw); } catch (e) { }
+  }
+
   try {
-    await prisma.$executeRaw`
-            UPDATE routes 
-            SET 
-                name = ${name}, 
-                description = ${description}, 
-                municipality_id = ${municipalityId},
-                theme_id = ${category},
-                thumbnail1x1 = ${thumbnail1x1 || null},
-                download_required = ${downloadRequired}
-            WHERE id = ${id}
-        `;
+    await prisma.route.update({
+      where: { id },
+      data: {
+        name,
+        description,
+        municipalityId,
+        themeId: category as any,
+        thumbnail1x1: thumbnail1x1 || null,
+        downloadRequired,
+        finalQuiz: finalQuizInfo || undefined, // Evitem esborrar si no ve, o fem el control depenent. Si esborrem el text hauria d'enviar null explícit o {}
+        updatedAt: new Date()
+      }
+    });
+
     revalidatePath('/admin');
     revalidatePath('/');
     return { success: true };
   } catch (err: any) {
-    console.error(err);
-    return { success: false, error: GENERIC_ERROR_MESSAGE };
+    console.error("updateRoute Error:", err);
+    return { success: false, error: err.message || "Hi ha hagut un error intern." };
   }
 }
 
@@ -372,31 +383,38 @@ export async function createRoute(formData: FormData) {
   const downloadRequired = formData.get('download_required') === 'true';
   const municipalityId = await getOrCreateMunicipalityByName(location);
 
+  let finalQuizInfo = null;
+  const finalQuizRaw = formData.get('final_quiz') as string;
+  if (finalQuizRaw) {
+    try { finalQuizInfo = JSON.parse(finalQuizRaw); } catch (e) { }
+  }
+
   try {
     const id = uuidv4();
-    const slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '') + '-' + Date.now();
+    const slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '') + '-' + id.split('-')[0];
 
-    await prisma.$executeRaw`
-      INSERT INTO routes (id, municipality_id, name, slug, description, theme_id, thumbnail1x1, download_required, created_at, updated_at)
-      VALUES (
-        ${id}, 
-        ${municipalityId}, 
-        ${name}, 
-        ${slug}, 
-        ${description}, 
-        ${category}, 
-        ${thumbnail1x1 || null},
-        ${downloadRequired},
-        NOW(),
-        NOW()
-      )
-    `;
+    await prisma.route.create({
+      data: {
+        id,
+        name,
+        slug,
+        description,
+        municipalityId,
+        themeId: category as any,
+        thumbnail1x1: thumbnail1x1 || null,
+        downloadRequired,
+        finalQuiz: finalQuizInfo,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+    });
+
     revalidatePath('/admin');
     revalidatePath('/');
     return { success: true, id };
   } catch (err: any) {
-    console.error(err);
-    return { success: false, error: GENERIC_ERROR_MESSAGE };
+    console.error("createRoute Error:", err);
+    return { success: false, error: err.message || "Hi ha hagut un error intern." };
   }
 }
 
@@ -813,7 +831,8 @@ export async function loginOrRegister(name: string, email: string) {
         .single();
 
       if (existingProfile) {
-        return { success: true, user: existingProfile };
+        const fullProfile = await getUserProfile(existingAuthUser.id);
+        return { success: true, user: fullProfile };
       }
 
       const { data: newProfile, error: profileError } = await supabaseAdmin
@@ -832,7 +851,8 @@ export async function loginOrRegister(name: string, email: string) {
         console.error('Profile creation error:', profileError);
         return { success: false, error: GENERIC_ERROR_MESSAGE };
       }
-      return { success: true, user: newProfile };
+      const fullProfile = await getUserProfile(existingAuthUser.id);
+      return { success: true, user: fullProfile };
     }
 
     const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
@@ -866,7 +886,8 @@ export async function loginOrRegister(name: string, email: string) {
       return { success: false, error: GENERIC_ERROR_MESSAGE };
     }
 
-    return { success: true, user: finalProfile };
+    const fullProfile = await getUserProfile(authUser.user.id);
+    return { success: true, user: fullProfile };
   } catch (err: any) {
     console.error('[loginOrRegister error]', err);
     return { success: false, error: GENERIC_ERROR_MESSAGE };
@@ -875,25 +896,32 @@ export async function loginOrRegister(name: string, email: string) {
 
 export async function getUserProfile(userId: string) {
   noStore();
-  const { data: profile } = await supabaseAdmin
-    .from('profiles')
-    .select('*')
-    .eq('id', userId)
-    .single();
+  try {
+    const { data: profile } = await supabaseAdmin
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
 
-  if (!profile) return null;
+    if (!profile) return null;
 
-  const { count } = await supabaseAdmin
-    .from('visited_legends')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', userId);
+    // Count unlocks instead of visited_legends (which might not exist or be different)
+    const { count } = await supabaseAdmin
+      .from('user_unlocks')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId);
 
-  return {
-    ...profile,
-    visitedCount: count || 0,
-    username: profile.display_name || profile.name || "Explorador",
-    xp: profile.xp || 0
-  };
+    return {
+      ...profile,
+      visitedCount: count || 0,
+      username: profile.username || profile.display_name || profile.name || "Explorador",
+      avatarUrl: profile.avatar_url,
+      xp: profile.xp || 0
+    };
+  } catch (err) {
+    console.error('[getUserProfile error]', err);
+    return null;
+  }
 }
 
 /**
@@ -971,8 +999,7 @@ export async function closeRouteAndGenerateFinalQuiz(routeId: string) {
 }
 
 export async function updateProfileAvatar(userId: string, avatarUrl: string) {
-  const supabase = createClient(await cookies());
-  const { error } = await supabase
+  const { error } = await supabaseAdmin
     .from('profiles')
     .update({ avatar_url: avatarUrl })
     .eq('id', userId);
@@ -982,8 +1009,41 @@ export async function updateProfileAvatar(userId: string, avatarUrl: string) {
     return { success: false, error: GENERIC_ERROR_MESSAGE };
   }
 
+  const updatedProfile = await getUserProfile(userId);
   revalidatePath('/profile');
-  return { success: true };
+  return { success: true, user: updatedProfile };
+}
+
+async function updateProfileXpAndLevel(userId: string, points: number) {
+  const profile = await prisma.profile.findUnique({
+    where: { id: userId },
+    select: { xp: true, level: true }
+  });
+
+  if (profile) {
+    const newXp = (profile.xp || 0) + points;
+    // Simple leveling logic: every 500 XP is a level
+    const newLevel = Math.floor(newXp / 500) + 1;
+
+    await prisma.profile.update({
+      where: { id: userId },
+      data: { xp: newXp, level: newLevel }
+    });
+  }
+}
+
+export async function handleAvatarUploadAction(formData: FormData, userId: string) {
+  try {
+    const file = formData.get('file') as File;
+    if (!file) throw new Error("No file found");
+
+    const avatarUrl = await uploadFile(file, 'geocontent');
+    const result = await updateProfileAvatar(userId, avatarUrl);
+    return result;
+  } catch (err) {
+    console.error('handleAvatarUploadAction error:', err);
+    return { success: false, error: "Error al carregar l'avatar" };
+  }
 }
 
 
@@ -998,39 +1058,116 @@ export async function recordVisit(userId: string, poiId: string) {
 
     if (existing) return { success: true, message: 'Already visited' };
 
+    // Award 100 XP for unlocking POI
+    const points = 100;
+
     await prisma.userUnlock.create({
       data: {
         userId,
         poiId,
         unlockedAt: new Date(),
-        earnedXp: 50,
-        progress: 0.2
+        earnedXp: points,
+        progress: 0.1 // Just visited, quiz not necessarily done
       }
     });
 
-    const profile = await prisma.profile.findUnique({
-      where: { id: userId },
-      select: { xp: true, level: true }
+    // Update Profile XP & Level
+    await updateProfileXpAndLevel(userId, points);
+
+    // Fetch updated for return
+    const updated = await prisma.profile.findUnique({ where: { id: userId }, select: { level: true, xp: true } });
+    const newXp = updated?.xp || 0;
+    const newLevel = updated?.level || 1;
+
+    // CHECK ROUTE COMPLETION
+    const routePois = await prisma.routePoi.findMany({
+      where: { poiId: poiId },
+      select: { routeId: true }
     });
 
-    if (profile) {
-      const newXp = (profile.xp || 0) + 50;
-      let newLevel = profile.level || 1;
-      if (newXp >= 1000) newLevel = 4;
-      else if (newXp >= 500) newLevel = 3;
-      else if (newXp >= 200) newLevel = 2;
-      else newLevel = 1;
-
-      await prisma.profile.update({
-        where: { id: userId },
-        data: { xp: newXp, level: newLevel }
-      });
-      return { success: true, newXp, newLevel, leveledUp: newLevel > (profile.level || 1) };
+    for (const rp of routePois) {
+      await checkAndAwardRouteCompletion(userId, rp.routeId);
     }
-    return { success: true };
+
+    const updatedUser = await getUserProfile(userId);
+    return { success: true, user: updatedUser };
   } catch (err) {
     console.error('[recordVisit error]', err);
     return { success: false, error: GENERIC_ERROR_MESSAGE };
+  }
+}
+
+async function checkAndAwardRouteCompletion(userId: string, routeId: string) {
+  try {
+    const route = await prisma.route.findUnique({
+      where: { id: routeId },
+      include: { routePois: true }
+    });
+    if (!route) return;
+
+    const totalPois = route.routePois.length;
+    const unlockedPois = await prisma.userUnlock.count({
+      where: {
+        userId,
+        poiId: { in: route.routePois.map(rp => rp.poiId) }
+      }
+    });
+
+    if (totalPois > 0 && unlockedPois === totalPois) {
+      // Check if already completed
+      const existingProgress = await prisma.userRouteProgress.findUnique({
+        where: { userId_routeId: { userId, routeId } }
+      });
+
+      if (!existingProgress) {
+        // Award 500 XP for completion
+        // Create record
+        await prisma.userRouteProgress.create({
+          data: {
+            userId,
+            routeId,
+            completedAt: new Date()
+          }
+        });
+
+        // Award XP
+        await updateProfileXpAndLevel(userId, 500);
+        logToFile(`[GAMIFICATION] Route ${routeId} completed by ${userId}. Awarded 500 XP.`);
+      }
+    }
+  } catch (e) {
+    console.error("Error checking route completion:", e);
+  }
+}
+
+export async function getUserScore(userId: string) {
+  noStore();
+  try {
+    const unlocks = await prisma.userUnlock.findMany({
+      where: { userId },
+      select: { earnedXp: true, quizSolved: true }
+    });
+
+    const routePointsCount = await prisma.userRouteProgress.count({
+      where: { userId }
+    });
+
+    const finalQuizzesPassedCount = await prisma.userRouteProgress.count({
+      where: { userId, finalQuizPassed: true }
+    });
+
+    const totalScore = unlocks.reduce((acc, curr) => acc + (curr.earnedXp || 0), 0) + (routePointsCount * 500) + (finalQuizzesPassedCount * 1000);
+    const solvedQuizzesCount = unlocks.filter(u => u.quizSolved).length;
+
+    logToFile(`[GAMIFICATION] Calculated score for ${userId}: ${totalScore} XP and ${solvedQuizzesCount} quizes solved.`);
+
+    return {
+      totalScore,
+      solvedQuizzesCount
+    };
+  } catch (err) {
+    console.error('[getUserScore error]', err);
+    return { totalScore: 0, solvedQuizzesCount: 0 };
   }
 }
 
@@ -1239,7 +1376,7 @@ export async function getPassportData(userId: string) {
               include: {
                 userUnlocks: {
                   where: { userId },
-                  select: { progress: true, unlockedAt: true, earnedXp: true }
+                  select: { progress: true, unlockedAt: true, earnedXp: true, quizSolved: true }
                 }
               }
             }
@@ -1250,7 +1387,7 @@ export async function getPassportData(userId: string) {
       orderBy: { createdAt: 'asc' }
     });
 
-    return routes.map((route, routeIdx) => {
+    return await Promise.all(routes.map(async (route, routeIdx) => {
       const orderedPois = route.routePois.map(rp => {
         const unlock = rp.poi.userUnlocks[0] || null;
         return {
@@ -1258,6 +1395,7 @@ export async function getPassportData(userId: string) {
           title: rp.poi.title,
           isVisited: unlock !== null,
           isQuizDone: unlock !== null && (unlock.progress ?? 0) >= 1.0,
+          quizSolved: unlock?.quizSolved ?? false,
           progress: unlock?.progress ?? 0,
           unlockedAt: unlock?.unlockedAt ?? null,
           hasQuiz: !!rp.poi.manualQuiz,
@@ -1315,8 +1453,11 @@ export async function getPassportData(userId: string) {
         poisProgress: orderedPois,
         isCompleted,
         date: latestDate,
+        finalQuizPassed: (await prisma.userRouteProgress.findUnique({
+          where: { userId_routeId: { userId, routeId: route.id } }
+        }))?.finalQuizPassed ?? false,
       };
-    });
+    }));
   } catch (err) {
     console.error('[getPassportData error]', err);
     return [];
@@ -1328,29 +1469,65 @@ export async function getPassportData(userId: string) {
  */
 export async function completePoiQuizAction(poiId: string, userId: string) {
   try {
-    const poi = await prisma.poi.findUnique({ where: { id: poiId } });
-    if (!poi) return { success: false, error: "POI no trobat." };
+    // 50 XP for correct quiz
+    const points = 50;
 
-    // Update or create unlock with progress = 1.0
+    const unlock = await prisma.userUnlock.findUnique({
+      where: { userId_poiId: { userId, poiId } },
+      select: { quizSolved: true }
+    });
+
+    if (unlock?.quizSolved) return { success: true, message: 'Quiz already solved' };
+
     await prisma.userUnlock.upsert({
       where: { userId_poiId: { userId, poiId } },
       create: {
         userId,
         poiId,
         unlockedAt: new Date(),
-        earnedXp: 100,
-        progress: 1.0
+        earnedXp: 100 + points, // Unlocked (100) + Quiz (50)
+        progress: 1.0,
+        quizSolved: true
       },
       update: {
-        progress: 1.0
+        progress: 1.0,
+        quizSolved: true,
+        earnedXp: { increment: points }
       }
     });
 
-    // Give some XP
-    await prisma.profile.update({
-      where: { id: userId },
-      data: { xp: { increment: 100 } }
+    // Give XP & Level
+    await updateProfileXpAndLevel(userId, points);
+
+    const updatedUser = await getUserProfile(userId);
+    revalidatePath('/profile');
+    return { success: true, user: updatedUser };
+  } catch (err) {
+    console.error(err);
+    return { success: false, error: GENERIC_ERROR_MESSAGE };
+  }
+}
+
+export async function completeFinalRouteQuizAction(routeId: string, userId: string) {
+  try {
+    // 1000 XP for final quiz
+    const points = 1000;
+
+    await prisma.userRouteProgress.upsert({
+      where: { userId_routeId: { userId, routeId } },
+      create: {
+        userId,
+        routeId,
+        finalQuizPassed: true,
+        completedAt: new Date()
+      },
+      update: {
+        finalQuizPassed: true
+      }
     });
+
+    // Give XP & Level
+    await updateProfileXpAndLevel(userId, points);
 
     revalidatePath('/profile');
     return { success: true };

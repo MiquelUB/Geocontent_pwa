@@ -4,9 +4,82 @@ import { Navigation, Star, Clock, MapPin, HelpCircle } from "lucide-react";
 import { ImageWithFallback } from "../figma/ImageWithFallback";
 import { motion } from "motion/react";
 import MapLibreMap from '@/components/map/MapLibreMap';
+import { calculateDistance, calculateDistanceRaw } from "@/lib/location";
+import { Marker, useMap } from "react-map-gl/maplibre";
+import iconsMapping from '@/lib/icons-mapping.json';
 import { PxxConfig } from "@/projects/active/config";
 import { getLegends, getAppBranding } from "@/lib/actions";
-import { calculateDistance } from "@/lib/location";
+
+const BIOME_MAP: Record<string, string> = {
+  mountain: 'Montanya',
+  coast: 'Mar',
+  city: 'City',
+  interior: 'Interior',
+  bloom: 'Blossom',
+};
+
+const typeToIconName: Record<string, string> = {
+  'RELIGIOS': 'Esglesia',
+  'CIVIL': 'Casa',
+  'DEFENSIU': 'Castell',
+  'LLEGENDA': 'Castell',
+  'AIGUA': 'Aigua',
+  'MIRADOR': 'Vistes',
+  'NATURA': 'Arbre',
+  'GUERRA_CIVIL': 'Civil_war',
+  'PERSONA_ILLUSTRE': 'Personatje',
+};
+
+function getPoiIconSrc(poi: any) {
+  const category = (poi.parentRoute?.category || poi.category || 'mountain').toLowerCase();
+  const biome = BIOME_MAP[category] || BIOME_MAP['mountain'];
+
+  if (poi.icon) {
+    const baseName = poi.icon.split('.')[0];
+    return `/icons/${biome}/${baseName}.webp`;
+  }
+
+  const type = (poi.type || '').toUpperCase();
+  const mappedName = typeToIconName[type] || 'punt_interest';
+
+  const availableFiles = (iconsMapping as any)[biome] || [];
+  const finalIcon = availableFiles.find((f: string) =>
+    f.toLowerCase().startsWith(mappedName.toLowerCase())
+  ) || 'punt_interest.webp';
+
+  return `/icons/${biome}/${finalIcon}`;
+}
+
+function MapBoundsFitter({ pois, userLoc }: { pois: any[], userLoc: any }) {
+  const { current: map } = useMap();
+
+  useEffect(() => {
+    if (!map || !pois || pois.length === 0) return;
+
+    let minLng = userLoc?.longitude ?? pois[0].longitude;
+    let maxLng = userLoc?.longitude ?? pois[0].longitude;
+    let minLat = userLoc?.latitude ?? pois[0].latitude;
+    let maxLat = userLoc?.latitude ?? pois[0].latitude;
+
+    pois.forEach(p => {
+      if (p.longitude < minLng) minLng = p.longitude;
+      if (p.longitude > maxLng) maxLng = p.longitude;
+      if (p.latitude < minLat) minLat = p.latitude;
+      if (p.latitude > maxLat) maxLat = p.latitude;
+    });
+
+    try {
+      map.fitBounds(
+        [[minLng, minLat], [maxLng, maxLat]],
+        { padding: 40, maxZoom: 14, duration: 1000 }
+      );
+    } catch (e) {
+      console.error("Error fitting bounds", e);
+    }
+  }, [map, pois, userLoc]);
+
+  return null;
+}
 
 interface HomeScreenProps {
   onNavigate: (screen: string, data?: any) => void;
@@ -21,7 +94,7 @@ export function HomeScreen({ onNavigate, onOpenHelp, brand: propBrand, userLocat
   const defaultLoc = { latitude: 42.4140, longitude: 0.9870 };
   const currentLoc = userLocation || defaultLoc;
 
-  const [nearbyLegends, setNearbyLegends] = useState<any[]>([]);
+  const [nearbyPois, setNearbyPois] = useState<any[]>([]);
   const [brand, setBrand] = useState<any>(propBrand);
 
   useEffect(() => {
@@ -34,21 +107,40 @@ export function HomeScreen({ onNavigate, onOpenHelp, brand: propBrand, userLocat
       if (!propBrand) setBrand(brandData);
 
       if (legendsData) {
-        const mapped = legendsData.map((l: any) => ({
-          ...l,
-          location: l.location_name || "Lugar",
-          distance: calculateDistance(
-            currentLoc.latitude,
-            currentLoc.longitude,
-            l.latitude,
-            l.longitude
-          ),
-          image: l.image_url,
-          hero: l.hero_image_url,
-          rating: l.rating || 4.5,
-          coordinates: { lat: l.latitude, lng: l.longitude }
-        }));
-        setNearbyLegends(mapped);
+        const allPois: any[] = [];
+        legendsData.forEach((l: any) => {
+          if (l.pois && Array.isArray(l.pois)) {
+            l.pois.forEach((poi: any) => {
+              allPois.push({
+                ...poi,
+                parentRoute: l,
+                distance: calculateDistance(
+                  currentLoc.latitude,
+                  currentLoc.longitude,
+                  poi.latitude,
+                  poi.longitude
+                ),
+                distanceRaw: calculateDistanceRaw(
+                  currentLoc.latitude,
+                  currentLoc.longitude,
+                  poi.latitude,
+                  poi.longitude
+                ),
+                image: poi.image_url || l.image_url,
+                rating: l.rating || 4.5,
+                location: l.location_name || "Lloc",
+              });
+            });
+          }
+        });
+
+        // Filter out those with no coordinates, sort by distance, take top 3
+        const sortedPois = allPois
+          .filter(p => typeof p.latitude === 'number' && typeof p.longitude === 'number')
+          .sort((a, b) => a.distanceRaw - b.distanceRaw)
+          .slice(0, 3);
+
+        setNearbyPois(sortedPois);
       }
     }
     fetchData();
@@ -101,22 +193,60 @@ export function HomeScreen({ onNavigate, onOpenHelp, brand: propBrand, userLocat
         </div>
       </motion.div>
 
-      {/* Mapa del Pallars (Mini) */}
       <motion.div
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 0.2 }}
-        className="relative h-64 mx-4 mt-4 rounded-lg overflow-hidden bg-gradient-to-br from-green-100 to-blue-100 shadow-md"
+        className="relative h-64 mx-4 mt-4 rounded-lg overflow-hidden bg-gradient-to-br from-green-100 to-blue-100 shadow-md pointer-events-none"
       >
         <div className="absolute inset-0 z-0">
-          <MapLibreMap />
+          <MapLibreMap center={[currentLoc.longitude, currentLoc.latitude]} zoom={12}>
+            <MapBoundsFitter pois={nearbyPois} userLoc={userLocation} />
+            {nearbyPois.map((p, idx) => (
+              <Marker key={`p-${idx}`} longitude={p.longitude} latitude={p.latitude} anchor="bottom">
+                <div className="flex flex-col items-center pointer-events-none">
+                  {(() => {
+                    const iconSrc = getPoiIconSrc(p);
+                    return iconSrc ? (
+                      <img
+                        src={iconSrc}
+                        className="w-10 h-10 drop-shadow-md object-contain"
+                        alt={p.title}
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          const parent = target.parentElement;
+                          if (parent && !parent.querySelector('.fallback-lucide')) {
+                            const icon = document.createElement('div');
+                            icon.className = 'fallback-lucide w-8 h-8 text-primary flex items-center justify-center';
+                            icon.innerHTML = '📍';
+                            parent.appendChild(icon);
+                          }
+                        }}
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full border-2 border-white shadow-md overflow-hidden bg-primary/20 backdrop-blur-sm relative z-10">
+                        {p.image ? (
+                          <ImageWithFallback src={p.image} alt={p.title} className="w-full h-full object-cover" />
+                        ) : (
+                          <MapPin className="w-4 h-4 text-white m-1.5" />
+                        )}
+                      </div>
+                    );
+                  })()}
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1 shadow-sm" />
+                </div>
+              </Marker>
+            ))}
+          </MapLibreMap>
         </div>
 
         {/* Overlay per fer-lo clicable cap al mapa full */}
         <div
-          className="absolute inset-0 z-10 cursor-pointer"
+          className="absolute inset-0 z-10 cursor-pointer pointer-events-auto"
           onClick={() => onNavigate('map')}
         ></div>
+
 
         {/* Etiqueta zona */}
         <div className="absolute bottom-4 left-4 bg-primary/95 backdrop-blur-sm rounded-lg px-3 py-2 z-20 flex items-center space-x-2 border border-white/10 shadow-lg">
@@ -171,20 +301,20 @@ export function HomeScreen({ onNavigate, onOpenHelp, brand: propBrand, userLocat
         </motion.div>
 
         <div className="space-y-3">
-          {nearbyLegends.map((legend, index) => (
+          {nearbyPois.map((poi, index) => (
             <motion.div
-              key={legend.id}
+              key={poi.id}
               initial={{ x: -20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.5 + (index * 0.1) }}
-              onClick={() => onNavigate('legend-detail', legend)}
+              onClick={() => onNavigate('legend-detail', poi.parentRoute)}
               className="pallars-card cursor-pointer hover:shadow-lg transition-all"
             >
               <div className="flex space-x-3">
                 <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
                   <ImageWithFallback
-                    src={legend.image}
-                    alt={legend.title}
+                    src={poi.image}
+                    alt={poi.title}
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -192,41 +322,30 @@ export function HomeScreen({ onNavigate, onOpenHelp, brand: propBrand, userLocat
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between mb-1">
                     <h3 className="font-serif font-medium text-primary truncate">
-                      {legend.title}
+                      {poi.title}
                     </h3>
-                    <div className="flex items-center space-x-1 ml-2">
-                      <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                      <span className="text-xs text-muted-foreground">{legend.rating}</span>
-                    </div>
                   </div>
 
-                  <div className="flex items-center space-x-1 text-sm text-muted-foreground mb-2">
+                  <div className="flex items-center space-x-1 text-sm text-muted-foreground mb-1">
                     <MapPin className="w-3 h-3" />
-                    <span className="truncate">{legend.location}</span>
-                    <span>•</span>
-                    <span>{legend.distance}</span>
+                    <span className="truncate">{poi.location}</span>
                   </div>
 
-                  <p className="text-sm text-foreground/80 line-clamp-2 mb-2">
-                    {legend.description}
+                  <p className="text-sm text-foreground/80 line-clamp-1 mb-2">
+                    {poi.description || poi.parentRoute.title}
                   </p>
 
                   <div className="flex items-center justify-between">
-                    {legend.category && legend.category !== 'mountain' && (
-                      <span className="text-xs bg-secondary/10 text-secondary px-2 py-1 rounded-full">
-                        {legend.category}
-                      </span>
-                    )}
-                    <div className="flex items-center space-x-1 text-xs text-muted-foreground">
-                      <Clock className="w-3 h-3" />
-                      <span>5 min</span>
-                    </div>
+                    <span className="text-xs bg-secondary/10 text-secondary px-2 py-1 rounded-full font-medium">
+                      a {poi.distance} per desbloquejar
+                    </span>
                   </div>
                 </div>
               </div>
             </motion.div>
           ))}
         </div>
+
       </div>
     </div>
   );

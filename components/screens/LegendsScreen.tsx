@@ -45,11 +45,21 @@ export function LegendsScreen({ onNavigate, brand: propBrand }: LegendsScreenPro
                 console.log("Mapped routes for library:", mapped[0]); // Debug coords
                 setLegends(mapped);
 
-                // Extract unique locations for the filter chips
-                const uniqueLocs = Array.from(new Set(mapped.map(l => l.location).filter(Boolean)));
+                // Extract unique locations and their first found category for coloring
+                const uniqueLocsMap = new Map();
+                mapped.forEach((l: any) => {
+                    if (l.location && !uniqueLocsMap.has(l.location)) {
+                        uniqueLocsMap.set(l.location, l.category);
+                    }
+                });
+
                 const locChips = [
-                    { id: "all", label: "Totes" },
-                    ...uniqueLocs.map(loc => ({ id: loc, label: loc, icon: '📍' }))
+                    { id: "all", label: "Totes", category: "all" },
+                    ...Array.from(uniqueLocsMap.entries()).map(([loc, cat]) => ({
+                        id: loc,
+                        label: loc,
+                        category: cat
+                    }))
                 ];
                 setLocations(locChips);
             }
@@ -93,18 +103,27 @@ export function LegendsScreen({ onNavigate, brand: propBrand }: LegendsScreenPro
 
                 {/* Filter Chips (Horizontal Scroll) */}
                 <div className="flex gap-3 px-6 overflow-x-auto pb-6 pt-6 no-scrollbar">
-                    {locations.map(loc => (
-                        <button
-                            key={loc.id}
-                            onClick={() => setSelectedLocation(loc.id)}
-                            className={`whitespace-nowrap px-5 py-2 rounded-full text-sm font-medium transition-colors shadow-sm ${selectedLocation === loc.id
-                                ? "bg-primary text-white ring-1 ring-primary/20"
-                                : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:border-primary/50"
-                                }`}
-                        >
-                            {loc.icon} {loc.label}
-                        </button>
-                    ))}
+                    {locations.map(loc => {
+                        const isSelected = selectedLocation === loc.id;
+                        const biomeColor = loc.category !== 'all' && PxxConfig.chameleonThemes[loc.category as keyof typeof PxxConfig.chameleonThemes]?.primary
+                            ? PxxConfig.chameleonThemes[loc.category as keyof typeof PxxConfig.chameleonThemes].primary
+                            : PxxConfig.chameleonThemes['mountain'].primary; // Fallback to safe hex instead of var(--primary) which breaks inline styles
+
+                        return (
+                            <button
+                                key={loc.id}
+                                onClick={() => setSelectedLocation(loc.id)}
+                                className={`whitespace-nowrap px-5 py-2 rounded-full text-sm font-bold transition-transform shadow-sm active:scale-95`}
+                                style={{
+                                    backgroundColor: isSelected ? biomeColor : 'transparent',
+                                    color: isSelected ? 'white' : biomeColor,
+                                    border: `2px solid ${biomeColor}`
+                                }}
+                            >
+                                {loc.label}
+                            </button>
+                        );
+                    })}
                 </div>
 
                 {/* Route List */}
@@ -143,17 +162,17 @@ export function LegendsScreen({ onNavigate, brand: propBrand }: LegendsScreenPro
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
 
-                                <button className="absolute top-4 right-4 bg-white/20 backdrop-blur-md p-2 rounded-full hover:bg-white/30 transition-all text-white border border-white/20 group-active:scale-95">
-                                    <Bookmark className="w-5 h-5" />
-                                </button>
-
                                 <div className="absolute bottom-0 left-0 w-full p-5">
                                     <h3 className="font-serif text-white text-2xl font-bold mb-3 tracking-wide drop-shadow-md">{legend.title}</h3>
 
-                                    <div className="flex flex-wrap gap-2 text-xs font-medium tracking-wide text-white/90">
+                                    <div className="flex flex-wrap gap-2 text-xs font-bold tracking-wide text-white">
                                         {legend.location && (
-                                            <div className="flex items-center gap-1 bg-[#1E5631] px-3 py-1 rounded backdrop-blur-sm border border-white/10 shadow-sm">
-                                                <MapPin className="w-3.5 h-3.5 opacity-80" />
+                                            <div
+                                                className="px-3 py-1 rounded shadow-sm"
+                                                style={{
+                                                    backgroundColor: PxxConfig.chameleonThemes[legend.category as keyof typeof PxxConfig.chameleonThemes]?.primary || 'var(--primary)'
+                                                }}
+                                            >
                                                 <span>{legend.location}</span>
                                             </div>
                                         )}

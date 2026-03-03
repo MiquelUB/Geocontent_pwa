@@ -79,6 +79,8 @@ export default function AdminDashboard({ legends: initialLegends, profiles, repo
   const [routeThumbnail, setRouteThumbnail] = useState('');
   const [routeCategory, setRouteCategory] = useState(municipalityTheme || 'mountain');
   const [routeDownloadRequired, setRouteDownloadRequired] = useState(false);
+  const [routeFinalQuiz, setRouteFinalQuiz] = useState<any>(null);
+  const [isGeneratingRouteQuiz, setIsGeneratingRouteQuiz] = useState(false);
   const [editingRoute, setEditingRoute] = useState<any>(null);
   const [managingRoute, setManagingRoute] = useState<{ id: string; name: string } | null>(null);
   const [editingPoi, setEditingPoi] = useState<any>(null);
@@ -94,6 +96,7 @@ export default function AdminDashboard({ legends: initialLegends, profiles, repo
       setRouteThumbnail((editingLegend as any).thumbnail1x1 || '');
       setRouteCategory(editingLegend.category || 'mountain');
       setRouteDownloadRequired((editingLegend as any).downloadRequired || false);
+      setRouteFinalQuiz((editingLegend as any).finalQuiz || null);
     }
   }, [editingLegend]);
 
@@ -108,6 +111,7 @@ export default function AdminDashboard({ legends: initialLegends, profiles, repo
     setRouteCategory(municipalityTheme || 'mountain');
     setRouteDownloadRequired(false);
     setRouteThumbFile(null);
+    setRouteFinalQuiz(null);
   };
 
   async function handleSaveRoute() {
@@ -120,9 +124,12 @@ export default function AdminDashboard({ legends: initialLegends, profiles, repo
       formData.append('location', routeLocation);
       formData.append('category', routeCategory);
       formData.append('thumbnail_1x1', routeThumbnail);
-      formData.append('download_required', routeDownloadRequired ? 'true' : 'false');
+      formData.append('download_required', String(routeDownloadRequired));
       if (routeThumbFile) {
         formData.append('thumbnail_file', routeThumbFile);
+      }
+      if (routeFinalQuiz) {
+        formData.append('final_quiz', JSON.stringify(routeFinalQuiz));
       }
 
       let res;
@@ -249,6 +256,10 @@ export default function AdminDashboard({ legends: initialLegends, profiles, repo
                         <Input id="routeTitle" value={routeTitle} onChange={(e) => setRouteTitle(e.target.value)} placeholder="Ex: Ruta de l'Ecomuseu" />
                       </div>
                       <div className="grid gap-2">
+                        <Label htmlFor="routeDescription">Descripció</Label>
+                        <Textarea id="routeDescription" value={routeDescription} onChange={(e) => setRouteDescription(e.target.value)} placeholder="Escriu una breu descripció de la ruta..." />
+                      </div>
+                      <div className="grid gap-2">
                         <Label htmlFor="routeLocation">Localització (Municipi/Poble)</Label>
                         <Input id="routeLocation" value={routeLocation} onChange={(e) => setRouteLocation(e.target.value)} placeholder="Ex: Sort" />
                       </div>
@@ -289,6 +300,84 @@ export default function AdminDashboard({ legends: initialLegends, profiles, repo
                           ⚠️ Baixada Recomanada (Manca Cobertura)
                         </Label>
                       </div>
+
+                      {/* AI Quiz per Ruta */}
+                      {editingRoute && managingRoute && (
+                        <div className="mt-2 p-4 rounded-xl border border-primary/20 bg-primary/5 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <Label className="flex items-center gap-2">
+                              <span>🤖</span>
+                              Repte Final de Ruta (IA)
+                            </Label>
+                            {routeFinalQuiz && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setRouteFinalQuiz(null)}
+                                className="h-7 text-xs text-red-500 hover:text-red-700 hover:bg-red-50"
+                              >
+                                Eliminar
+                              </Button>
+                            )}
+                          </div>
+
+                          {routeFinalQuiz ? (
+                            <div className="bg-white/80 p-3 rounded-lg border border-primary/10 text-xs space-y-3">
+                              <p className="text-stone-500 italic">S'han generat múltiples preguntes per al repte final.</p>
+                              {routeFinalQuiz.preguntes?.map((q: any, i: number) => (
+                                <div key={i} className="space-y-1">
+                                  <p className="font-bold text-primary">{i + 1}. {q.pregunta}</p>
+                                  <ul className="list-disc list-inside text-stone-600">
+                                    {q.opcions.map((o: string, idx: number) => (
+                                      <li key={idx} className={idx === q.correcta ? "text-green-600 font-bold" : ""}>
+                                        {o} {idx === q.correcta && "✓"}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-[10px] text-stone-500 italic">No hi ha repte final generat per aquesta ruta.</p>
+                          )}
+
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            disabled={isGeneratingRouteQuiz || !managingRoute.pois || managingRoute.pois.length === 0}
+                            onClick={async () => {
+                              setIsGeneratingRouteQuiz(true);
+                              try {
+                                const poisData = managingRoute.pois.map((p: any) => ({
+                                  title: p.title,
+                                  content: p.textContent || p.description || ''
+                                }));
+                                const res = await fetch('/api/ai/generate-route-quiz', {
+                                  method: 'POST',
+                                  body: JSON.stringify({ title: routeTitle, pois: poisData })
+                                });
+                                const data = await res.json();
+                                if (data.quiz && data.quiz.preguntes) setRouteFinalQuiz(data.quiz);
+                                else alert(data.error || "No s'ha pogut generar el quiz");
+                              } catch (e) {
+                                console.error("Error generant repte final:", e);
+                              } finally {
+                                setIsGeneratingRouteQuiz(false);
+                              }
+                            }}
+                            className="w-full h-8 text-xs border-primary/30 text-primary hover:bg-primary/10"
+                          >
+                            {isGeneratingRouteQuiz ? (
+                              <>Generant...</>
+                            ) : (
+                              <>{routeFinalQuiz ? "Regenerar Repte Final amb IA" : "Generar Repte Final amb IA"}</>
+                            )}
+                          </Button>
+                        </div>
+                      )}
+
                       <Button onClick={handleSaveRoute} disabled={isLoading} size="sm" className={`w-fit ${adminTheme.primary} ${adminTheme.hover} text-white`}>
                         {editingRoute ? 'Actualitzar Ruta' : 'Crear Ruta'}
                       </Button>

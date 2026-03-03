@@ -22,10 +22,6 @@ export function PassportGrid({ initialStamps = [] }: PassportGridProps) {
     }
   };
 
-  // Fill empty slots to always show at least 3 cells
-  const minSlots = Math.max(stamps.length, 3);
-  const emptyCount = minSlots - stamps.length;
-
   return (
     <div className="grid grid-cols-3 gap-3">
       {stamps.map((stamp, index) => (
@@ -42,14 +38,6 @@ export function PassportGrid({ initialStamps = [] }: PassportGridProps) {
           isCompleted={stamp.isCompleted ?? false}
           onClick={() => handleStampClick(stamp)}
           index={index}
-        />
-      ))}
-
-      {/* Empty placeholder slots */}
-      {Array.from({ length: emptyCount }).map((_, i) => (
-        <div
-          key={`empty-${i}`}
-          className="aspect-square rounded-xl border-2 border-dashed border-primary/[0.07] bg-primary/[0.015]"
         />
       ))}
     </div>

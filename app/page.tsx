@@ -124,11 +124,15 @@ export default function Home() {
   };
 
   const handleRetry = () => {
-
     setErrorType(null);
     setCurrentScreen("splash");
     // Tornar a executar la lògica de càrrega
     window.location.reload();
+  };
+
+  const handleUserUpdate = (updatedUser: any) => {
+    setCurrentUser(updatedUser);
+    localStorage.setItem("core_user", JSON.stringify(updatedUser));
   };
 
   // Renderitzat condicionals de pantalles
@@ -144,12 +148,12 @@ export default function Home() {
       case "legends":
         return <LegendsScreen onNavigate={handleNavigate} brand={brand} />;
       case "legend-detail":
-        return <LegendDetailScreen legend={navigationData} onNavigate={handleNavigate} userLocation={location} currentUser={currentUser} />;
+        return <LegendDetailScreen legend={navigationData} onNavigate={handleNavigate} userLocation={location} currentUser={currentUser} onUserUpdate={handleUserUpdate} />;
       case "map":
         return <MapScreen onNavigate={handleNavigate} focusLegend={navigationData} userLocation={location} onOpenHelp={reopenOnboarding} />;
 
       case "profile":
-        return <ProfileScreen onNavigate={handleNavigate} currentUser={currentUser} />;
+        return <ProfileScreen onNavigate={handleNavigate} currentUser={currentUser} onUserUpdate={handleUserUpdate} />;
       case "error":
         return (
           <ErrorScreen

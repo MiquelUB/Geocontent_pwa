@@ -82,8 +82,9 @@ export async function generateFinalRouteQuiz(routeName: string, poisData: { titl
 
     const context = poisData.map(p => `[Punt: ${p.title}] ${p.content}`).join("\n\n");
 
-    const systemPrompt = `Ets l'expert en patrimoni de PXX. Genera el "Repte Final" que tanca la ruta "${routeName}". Ha de ser un quiz transversal que analitzi o connecti diversos punts de la ruta basant-se ÚNICAMENT en el contingut proporcionat.
-Format JSON: { "pregunta": "...", "opcions": ["A", "B", "C"], "correcta": 0 }`;
+    const systemPrompt = `Ets l'expert en patrimoni de PXX. Genera el "Repte Final" que tanca la ruta "${routeName}". Ha de ser un quiz transversal de 5 preguntes diferents i originals que analitzi o connecti diversos punts de la ruta basant-se ÚNICAMENT en el contingut proporcionat.
+Les preguntes HAN DE SER NOVES, no copiïs possibles preguntes individuals de cada punt.
+Format JSON EXACTE: { "preguntes": [ { "pregunta": "...", "opcions": ["A", "B", "C"], "correcta": 0 }, ... ] }`;
 
     const completion = await client.chat.completions.create({
       model: process.env.AI_MODEL_ID || "qwen/qwen-2.5-72b-instruct",
@@ -92,7 +93,7 @@ Format JSON: { "pregunta": "...", "opcions": ["A", "B", "C"], "correcta": 0 }`;
         { role: "user", content: `Context de la ruta:\n${context}` }
       ],
       response_format: { type: "json_object" },
-      temperature: 0.4,
+      temperature: 0.5,
     });
 
     return JSON.parse(completion.choices[0]?.message?.content || "{}");

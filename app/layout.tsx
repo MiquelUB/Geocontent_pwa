@@ -61,8 +61,8 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     manifest: "/manifest.json",
     icons: {
-      icon: "/favicon.png",
-      apple: "/apple-touch-icon.png",
+      icon: brand?.logoUrl || "/favicon.png",
+      apple: brand?.logoUrl || "/apple-touch-icon.png",
     },
   };
 }
