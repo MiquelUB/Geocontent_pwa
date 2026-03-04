@@ -211,7 +211,6 @@ export default function AiRouteGenerator({ theme }: { theme?: any }) {
       <Card className="border-stone-200 bg-white">
         <CardHeader className="pb-4">
           <CardTitle className={`flex items-center gap-2 font-serif ${activeTheme.text}`}>
-            <FileText className="h-5 w-5" />
             Analista de Documents
           </CardTitle>
           <CardDescription>

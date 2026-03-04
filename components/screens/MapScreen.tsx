@@ -31,9 +31,9 @@ const typeToIconName: Record<string, string> = {
   'PERSONA_ILLUSTRE': 'Personatje',
 };
 
-function getPoiIconSrc(poi: any) {
+function getPoiIconSrc(poi: any, globalBiome?: string) {
   // Ens assegurem que el bioma estigui normalitzat (lowercase)
-  const category = (poi.category || 'mountain').toLowerCase();
+  const category = globalBiome || (poi.category || 'mountain').toLowerCase();
   const biome = BIOME_MAP[category] || BIOME_MAP['mountain']; // Fallback a Montanya si no trobem el bioma
 
   // Si el POI ja té una icona definida a la base de dades
@@ -60,12 +60,13 @@ interface MapScreenProps {
   onNavigate: (screen: string, data?: any) => void;
   onOpenHelp: () => void;
   focusLegend?: any;
+  brand?: any;
   userLocation: { latitude: number; longitude: number } | null;
   error?: string | null;
 }
 
 
-export function MapScreen({ onNavigate, onOpenHelp, focusLegend, userLocation, error: geoError }: MapScreenProps) {
+export function MapScreen({ onNavigate, onOpenHelp, focusLegend, brand, userLocation, error: geoError }: MapScreenProps) {
 
   const [selectedLegend, setSelectedLegend] = useState<any>(null);
   const [showFilters, setShowFilters] = useState(false);
@@ -270,7 +271,7 @@ export function MapScreen({ onNavigate, onOpenHelp, focusLegend, userLocation, e
                 }}
               >
                 {(() => {
-                  const iconSrc = getPoiIconSrc(poi);
+                  const iconSrc = getPoiIconSrc(poi, brand?.themeId);
                   return iconSrc ? (
                     <img
                       src={iconSrc}

@@ -1,4 +1,4 @@
-import { getAdminLegends, getAllProfiles, getDefaultMunicipalityId, getDefaultMunicipalityTheme } from "@/lib/actions";
+import { getAdminLegends, getAllProfiles, getDefaultMunicipalityId, getDefaultMunicipalityTheme, getAppBranding } from "@/lib/actions";
 import { getReports } from "@/lib/actions/reports";
 import AdminDashboard from "@/components/admin/AdminDashboard";
 
@@ -10,6 +10,7 @@ export default async function AdminPage() {
   const reports = await getReports();
   const municipalityId = await getDefaultMunicipalityId();
   const municipalityTheme = await getDefaultMunicipalityTheme();
+  const brand = await getAppBranding();
 
   return (
     <AdminDashboard
@@ -18,6 +19,7 @@ export default async function AdminPage() {
       reports={reports || []}
       municipalityId={municipalityId ?? undefined}
       municipalityTheme={municipalityTheme}
+      brand={brand}
     />
   );
 }

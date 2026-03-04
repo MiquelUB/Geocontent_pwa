@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { generateReport } from '@/lib/actions/reports'
 import { Button } from '@/components/ui/button'
 import { FileText, Loader2, Download, AlertTriangle, CheckCircle } from 'lucide-react'
@@ -26,6 +26,23 @@ export function ReportsDashboard({ initialReports, municipalityId }: ReportsDash
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
 
+    // Sync local state when props change (e.g. after router.refresh())
+    useEffect(() => {
+        setReports(initialReports);
+    }, [initialReports]);
+
+    // Polling effect: Refresh data every 5s if there are pending/processing reports
+    useEffect(() => {
+        const hasActiveJobs = reports.some(r => r.status === 'PENDING' || r.status === 'PROCESSING');
+
+        if (hasActiveJobs) {
+            const interval = setInterval(() => {
+                router.refresh();
+            }, 5000);
+            return () => clearInterval(interval);
+        }
+    }, [reports, router]);
+
     const handleGenerate = async () => {
         if (!municipalityId) {
             alert("No municipality selected");
@@ -35,11 +52,8 @@ export function ReportsDashboard({ initialReports, municipalityId }: ReportsDash
         const result = await generateReport(municipalityId);
         setIsLoading(false);
         if (result.success) {
-            // Optimistic update or refresh
-            router.refresh(); // Triggers server re-fetch if this component is server component children, but here it's client. 
-            // Ideally we'd fetch new list or receive it. For now relying on router.refresh() 
-            // and maybe polling in real implementation for status updates.
-            alert("Generació iniciada. L'informe apareixerà aviat.");
+            router.refresh();
+            alert("Generació iniciada. L'informe apareixerà i s'actualitzarà automàticament.");
         } else {
             alert("Error: " + result.error);
         }
@@ -61,8 +75,8 @@ export function ReportsDashboard({ initialReports, municipalityId }: ReportsDash
                     <h2 className="text-2xl font-serif font-bold text-[#1e2b25]">Informes d'Impacte</h2>
                     <p className="text-gray-500">Generació automàtica d'informes via IA.</p>
                 </div>
-                <Button 
-                    onClick={handleGenerate} 
+                <Button
+                    onClick={handleGenerate}
                     disabled={isLoading}
                     className="bg-[#568F72] hover:bg-[#3e6b53] text-white"
                 >
@@ -100,12 +114,11 @@ export function ReportsDashboard({ initialReports, municipalityId }: ReportsDash
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex items-center space-x-2">
                                             {getStatusIcon(report.status)}
-                                            <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                                                report.status === 'COMPLETED' ? 'bg-green-100 text-green-700' :
+                                            <span className={`text-xs px-2 py-1 rounded-full font-medium ${report.status === 'COMPLETED' ? 'bg-green-100 text-green-700' :
                                                 report.status === 'FAILED' ? 'bg-red-100 text-red-700' :
-                                                report.status === 'PROCESSING' ? 'bg-blue-100 text-blue-700' :
-                                                'bg-gray-100 text-gray-700'
-                                            }`}>
+                                                    report.status === 'PROCESSING' ? 'bg-blue-100 text-blue-700' :
+                                                        'bg-gray-100 text-gray-700'
+                                                }`}>
                                                 {report.status}
                                             </span>
                                         </div>
@@ -116,9 +129,9 @@ export function ReportsDashboard({ initialReports, municipalityId }: ReportsDash
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right">
                                         {report.status === 'COMPLETED' && report.resultUrl && (
-                                            <a 
-                                                href={report.resultUrl} 
-                                                target="_blank" 
+                                            <a
+                                                href={report.resultUrl}
+                                                target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="inline-flex items-center text-[#568F72] hover:text-[#3e6b53] font-medium text-sm"
                                             >

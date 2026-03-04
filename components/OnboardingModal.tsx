@@ -1,133 +1,94 @@
 'use client';
 
-import { useState } from 'react';
 import { X } from 'lucide-react';
-import { onboardingSteps, type OnboardingStep } from '@/lib/onboarding-content';
 
 interface OnboardingModalProps {
   isOpen: boolean;
   onComplete: () => void;
   onSkip: () => void;
+  onNavigate?: (screen: string, data?: any) => void;
 }
 
-export function OnboardingModal({ isOpen, onComplete, onSkip }: OnboardingModalProps) {
-  const [currentStep, setCurrentStep] = useState(0);
-
+export function OnboardingModal({ isOpen, onComplete, onSkip, onNavigate }: OnboardingModalProps) {
   if (!isOpen) return null;
 
-  const step = onboardingSteps[currentStep];
-  const isLastStep = currentStep === onboardingSteps.length - 1;
-
-  const handleNext = () => {
-    if (isLastStep) {
-      onComplete();
-    } else {
-      setCurrentStep(currentStep + 1);
+  const handleStart = () => {
+    onComplete();
+    if (onNavigate) {
+      onNavigate('map');
     }
   };
 
-  const handlePrevious = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-
-  const handleClose = () => {
-    onSkip();
-    setCurrentStep(0); // Reset for next time
-  };
+  const InstructionItem = ({ title, desc }: { title: string, desc: string }) => (
+    <div className="flex flex-col space-y-1">
+      <h3 className="font-serif text-[1.1rem] leading-snug font-bold tracking-tight text-foreground">{title}</h3>
+      <p className="text-sm leading-relaxed text-muted-foreground">{desc}</p>
+    </div>
+  );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-2xl animate-in zoom-in-95 duration-300">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
-          <span className="text-sm text-gray-500 dark:text-gray-400">
-            {currentStep + 1}/{onboardingSteps.length}
-          </span>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-300">
+      <div className="relative w-full max-w-md h-[90vh] md:h-auto max-h-[850px] bg-background border border-primary/10 rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-500">
+
+        {/* Header - Fixed */}
+        <div className="flex items-center justify-between p-6 pb-4 border-b border-primary/5 bg-background z-10">
+          <h2 className="text-3xl font-serif font-black tracking-tighter text-primary">
+            Quadern de Camp Digital
+          </h2>
           <button
-            onClick={handleClose}
-            className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            onClick={onSkip}
+            className="p-2 rounded-full bg-secondary/10 hover:bg-secondary/20 transition-colors text-secondary"
             aria-label="Cerrar"
           >
-            <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Content */}
-        <div className="p-6 space-y-6">
-          {/* Title */}
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center">
-            {step.title}
-          </h2>
+        {/* Scrolling Content */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-8 no-scrollbar">
+          <div className="space-y-7">
 
-          {/* Content Items */}
-          <div className="space-y-4">
-            {step.content.map((item, index) => (
-              <div key={index} className="flex gap-3">
-                <span className="text-2xl flex-shrink-0">{item.icon}</span>
-                <div className="flex-1">
-                  <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line leading-relaxed">
-                    {item.text}
-                  </p>
-                </div>
-              </div>
-            ))}
+            <InstructionItem
+              title="APARCA I CAMINA"
+              desc="Els carrers són estrets, fets per a les persones. Si us plau, deixa el cotxe al pàrquing i gaudeix a peu."
+            />
+
+            <InstructionItem
+              title="EL SILENCI ÉS PATRIMONI"
+              desc="Gaudeix de la calma. Sense altaveus ni crits. Respecta els animals, ells són a casa seva."
+            />
+
+            <InstructionItem
+              title="ANTICIPA'T A LA COBERTURA"
+              desc="Baixa't els continguts indicats abans de sortir. Així tindràs els mapes i àudios quan falli el 5G."
+            />
+
+            <InstructionItem
+              title="TIME SLIDER"
+              desc="Mou el dit per veure el passat (o l'ànima) del paisatge."
+            />
+
+            <InstructionItem
+              title="EL TEU LLEGAT"
+              desc="Completa la ruta per segellar el teu Passaport. No col·leccionem dades, col·leccionem moments."
+            />
+
+            <InstructionItem
+              title="GPS DE PRECISIÓ"
+              desc="Activa la ubicació per trobar els secrets. Tip: El Bluetooth ajuda a afinar la posició."
+            />
+
           </div>
-
-          {/* Tip for geolocation step */}
-          {step.id === 'geolocation' && (
-            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-              <p className="text-sm text-blue-800 dark:text-blue-200">
-                💡 <strong>Consejo:</strong> Algunos lugares tienen contenido especial que solo se desbloquea al visitarlos en persona.
-              </p>
-            </div>
-          )}
         </div>
 
-        {/* Footer */}
-        <div className="p-6 pt-0 space-y-4">
-          {/* Progress Dots */}
-          <div className="flex justify-center gap-2">
-            {onboardingSteps.map((_, index) => (
-              <div
-                key={index}
-                className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                  index === currentStep
-                    ? 'bg-blue-600 dark:bg-blue-400 w-6'
-                    : 'bg-gray-300 dark:bg-gray-700'
-                }`}
-              />
-            ))}
-          </div>
-
-          {/* Buttons */}
-          <div className="flex gap-3">
-            {currentStep > 0 && (
-              <button
-                onClick={handlePrevious}
-                className="flex-1 px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-              >
-                Anterior
-              </button>
-            )}
-            <button
-              onClick={handleNext}
-              className="flex-1 px-4 py-3 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors shadow-lg shadow-blue-500/30"
-            >
-              {step.ctaText}
-            </button>
-          </div>
-
-          {/* Skip Link */}
-          {!isLastStep && (
-            <button
-              onClick={handleClose}
-              className="w-full text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
-            >
-              Saltar tutorial
-            </button>
-          )}
+        {/* Footer actions - Fixed */}
+        <div className="p-6 pt-5 bg-gradient-to-t from-background via-background to-background/90 border-t border-primary/5 z-10">
+          <button
+            onClick={handleStart}
+            className="w-full py-4 px-6 font-serif font-bold text-lg tracking-widest text-primary-foreground bg-primary rounded-2xl hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_8px_30px_rgb(0,0,0,0.12)] uppercase"
+          >
+            Comença a Caminar
+          </button>
         </div>
       </div>
     </div>

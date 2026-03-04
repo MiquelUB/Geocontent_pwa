@@ -55,9 +55,22 @@ export default function MapLibreMap({
     };
   }, [heatmapData]);
 
+  const mapRef = React.useRef<any>(null);
+
+  React.useEffect(() => {
+    if (mapRef.current && center) {
+      mapRef.current.flyTo({
+        center: center,
+        zoom: zoom || 13,
+        essential: true
+      });
+    }
+  }, [center, zoom]);
+
   return (
     <div className={`w-full h-full relative ${className || ''}`} id="map-container">
       <Map
+        ref={mapRef}
         initialViewState={initialView}
         style={{ width: '100%', height: '100%' }}
         mapStyle={MAP_STYLE}

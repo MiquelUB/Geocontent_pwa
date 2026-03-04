@@ -28,7 +28,7 @@ export default function Home() {
   const [errorType, setErrorType] = useState<"no-connection" | "gps-denied" | "general" | null>(null);
 
   const { location, error: geoError } = useGeolocation();
-  const { isOpen: isOnboardingOpen, completeOnboarding, skipOnboarding, reopenOnboarding } = useOnboarding();
+  const { isOpen: isOnboardingOpen, completeOnboarding, skipOnboarding, reopenOnboarding } = useOnboarding(currentScreen === "home");
 
 
 
@@ -109,6 +109,13 @@ export default function Home() {
   };
 
   const handleSplashComplete = () => {
+    // Si encara no tenim brand, forcem un mini-espera o check
+    if (!brand && !errorType) {
+      console.log("Splash finished but brand not ready. Waiting...");
+      // La pantalla de splash es quedarà en un bucle fins que isLoaded sigui true
+      return;
+    }
+
     if (errorType) {
       setCurrentScreen("error");
     } else if (currentUser) {
@@ -150,7 +157,7 @@ export default function Home() {
       case "legend-detail":
         return <LegendDetailScreen legend={navigationData} onNavigate={handleNavigate} userLocation={location} currentUser={currentUser} onUserUpdate={handleUserUpdate} />;
       case "map":
-        return <MapScreen onNavigate={handleNavigate} focusLegend={navigationData} userLocation={location} onOpenHelp={reopenOnboarding} />;
+        return <MapScreen onNavigate={handleNavigate} focusLegend={navigationData} brand={brand} userLocation={location} onOpenHelp={reopenOnboarding} />;
 
       case "profile":
         return <ProfileScreen onNavigate={handleNavigate} currentUser={currentUser} onUserUpdate={handleUserUpdate} />;
@@ -191,6 +198,7 @@ export default function Home() {
         isOpen={isOnboardingOpen}
         onComplete={completeOnboarding}
         onSkip={skipOnboarding}
+        onNavigate={handleNavigate}
       />
 
     </div>

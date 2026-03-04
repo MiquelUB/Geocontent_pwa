@@ -42,7 +42,7 @@ interface Poi {
   videoUrls: string[];
 }
 
-export default function AdminDashboard({ legends: initialLegends, profiles, reports, municipalityId, municipalityTheme }: { legends: any[], profiles: any[], reports?: any[], municipalityId?: string, municipalityTheme?: string }) {
+export default function AdminDashboard({ legends: initialLegends, profiles, reports, municipalityId, municipalityTheme, brand }: { legends: any[], profiles: any[], reports?: any[], municipalityId?: string, municipalityTheme?: string, brand?: any }) {
   const adminTheme = getAdminTheme(municipalityTheme);
   const [activeTab, setActiveTab] = useState('rutes');
   const [isLoading, setIsLoading] = useState(false);
@@ -82,7 +82,7 @@ export default function AdminDashboard({ legends: initialLegends, profiles, repo
   const [routeFinalQuiz, setRouteFinalQuiz] = useState<any>(null);
   const [isGeneratingRouteQuiz, setIsGeneratingRouteQuiz] = useState(false);
   const [editingRoute, setEditingRoute] = useState<any>(null);
-  const [managingRoute, setManagingRoute] = useState<{ id: string; name: string } | null>(null);
+  const [managingRoute, setManagingRoute] = useState<{ id: string; name: string; pois?: any[] } | null>(null);
   const [editingPoi, setEditingPoi] = useState<any>(null);
   const [routeThumbFile, setRouteThumbFile] = useState<File | null>(null);
 
@@ -184,36 +184,54 @@ export default function AdminDashboard({ legends: initialLegends, profiles, repo
 
   return (
     <div className="min-h-screen bg-stone-50 text-stone-800 p-8 font-sans">
-      {/* CAPÇALERA INSTITUCIONAL */}
-      <header className="mb-8 flex flex-col md:flex-row justify-between items-center border-b border-stone-200 pb-4 gap-4">
-        <div>
-          <h1 className="text-3xl font-serif text-stone-900 tracking-tight">PXX Studio</h1>
-          <p className="text-stone-500 font-serif italic">Panell de Control Institucional</p>
+      {/* CAPÇALERA INSTITUCIONAL AMB TONS DE BIOMA VIBRANTS */}
+      <header
+        className={`mb-8 flex flex-col md:flex-row justify-between items-center border ${adminTheme.border} backdrop-blur-md p-8 rounded-3xl gap-6 shadow-sm text-white`}
+        style={{ backgroundColor: `${adminTheme.hex}EE` }} // 93% opacity hex
+      >
+        <div className="flex items-center gap-4">
+          {brand?.logoUrl ? (
+            <div className={`w-14 h-14 rounded-xl overflow-hidden bg-white shadow-md border ${adminTheme.border} flex items-center justify-center p-2 flex-shrink-0 bg-white transition-transform hover:scale-105`}>
+              <img src={brand.logoUrl} alt="Logo Consistori" className="w-full h-full object-contain" />
+            </div>
+          ) : (
+            <div className={`w-14 h-14 rounded-xl overflow-hidden bg-white shadow-sm border ${adminTheme.border} flex items-center justify-center p-2 flex-shrink-0`}>
+              <span className="text-2xl">🏛️</span>
+            </div>
+          )}
+          <div>
+            <h1 className="text-3xl font-serif text-white tracking-tight">{brand?.name || 'Geocontent Studio'}</h1>
+            <p className="text-white/80 font-serif italic">Panell de Control Institucional</p>
+          </div>
         </div>
 
-        {/* NAVEGACIÓ SENSE IMAGE STORAGE */}
-        <nav className="flex space-x-2 bg-stone-100 p-1 rounded-lg">
+        {/* NAVEGACIÓ AMB TONS DE BIOMA VIBRANTS */}
+        <nav className={`flex flex-wrap md:flex-nowrap justify-center space-x-2 bg-white/20 p-1.5 rounded-xl border border-white/30 backdrop-blur-sm`}>
           <button
             onClick={() => setActiveTab('rutes')}
-            className={`px-4 py-2 rounded-md transition-all duration-200 text-sm font-medium ${activeTab === 'rutes' ? `bg-white ${adminTheme.mainText} shadow-sm ring-1 ring-stone-200` : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/50'}`}
+            className={`px-5 py-2.5 rounded-lg transition-all duration-300 text-sm font-bold ${activeTab === 'rutes' ? 'bg-white shadow-lg scale-105' : 'text-white hover:bg-white/20'}`}
+            style={activeTab === 'rutes' ? { color: adminTheme.hex } : {}}
           >
             Creació de Rutes
           </button>
           <button
             onClick={() => setActiveTab('usuaris')}
-            className={`px-4 py-2 rounded-md transition-all duration-200 text-sm font-medium ${activeTab === 'usuaris' ? `bg-white ${adminTheme.mainText} shadow-sm ring-1 ring-stone-200` : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/50'}`}
+            className={`px-5 py-2.5 rounded-lg transition-all duration-300 text-sm font-bold ${activeTab === 'usuaris' ? 'bg-white shadow-lg scale-105' : 'text-white hover:bg-white/20'}`}
+            style={activeTab === 'usuaris' ? { color: adminTheme.hex } : {}}
           >
             Gestió d'Usuaris
           </button>
           <button
             onClick={() => setActiveTab('executiu')}
-            className={`px-4 py-2 rounded-md transition-all duration-200 text-sm font-medium ${activeTab === 'executiu' ? `bg-white ${adminTheme.mainText} shadow-sm ring-1 ring-stone-200` : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/50'}`}
+            className={`px-5 py-2.5 rounded-lg transition-all duration-300 text-sm font-bold ${activeTab === 'executiu' ? 'bg-white shadow-lg scale-105' : 'text-white hover:bg-white/20'}`}
+            style={activeTab === 'executiu' ? { color: adminTheme.hex } : {}}
           >
             Informe Executiu
           </button>
           <button
             onClick={() => setActiveTab('config')}
-            className={`px-4 py-2 rounded-md transition-all duration-200 text-sm font-medium ${activeTab === 'config' ? `bg-white ${adminTheme.mainText} shadow-sm ring-1 ring-stone-200` : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/50'}`}
+            className={`px-5 py-2.5 rounded-lg transition-all duration-300 text-sm font-bold ${activeTab === 'config' ? 'bg-white shadow-lg scale-105' : 'text-white hover:bg-white/20'}`}
+            style={activeTab === 'config' ? { color: adminTheme.hex } : {}}
           >
             Configuració
           </button>
@@ -230,7 +248,7 @@ export default function AdminDashboard({ legends: initialLegends, profiles, repo
               <Card className="border-stone-200 shadow-sm bg-white h-full">
                 <CardHeader className="bg-stone-50/50 border-b border-stone-100 pb-4">
                   <CardTitle className="font-serif text-xl text-stone-800 flex items-center gap-2">
-                    <span>🤖</span> 1. Analista Documental (IA)
+                    1. Analista Documental (IA)
                   </CardTitle>
                   <p className="text-sm text-stone-500">Puja documents per extraure informació de referència.</p>
                 </CardHeader>
@@ -243,7 +261,7 @@ export default function AdminDashboard({ legends: initialLegends, profiles, repo
               <Card className="border-stone-200 shadow-sm bg-white h-full overflow-hidden">
                 <CardHeader className="bg-stone-50/50 border-b border-stone-100 pb-4">
                   <CardTitle className="font-serif text-xl text-stone-800 flex items-center gap-2">
-                    <span>✍️</span> 2. Gestió de Carpeta i Punts
+                    2. Gestió de Carpeta i Punts
                   </CardTitle>
                   <p className="text-sm text-stone-500">Omple les dades manualment basant-te en la IA.</p>
                 </CardHeader>
@@ -346,8 +364,9 @@ export default function AdminDashboard({ legends: initialLegends, profiles, repo
                             type="button"
                             variant="outline"
                             size="sm"
-                            disabled={isGeneratingRouteQuiz || !managingRoute.pois || managingRoute.pois.length === 0}
+                            disabled={isGeneratingRouteQuiz || !managingRoute?.pois || managingRoute.pois.length === 0}
                             onClick={async () => {
+                              if (!managingRoute?.pois) return;
                               setIsGeneratingRouteQuiz(true);
                               try {
                                 const poisData = managingRoute.pois.map((p: any) => ({
@@ -511,7 +530,7 @@ export default function AdminDashboard({ legends: initialLegends, profiles, repo
         )}
 
         {activeTab === 'executiu' && (
-          <ExecutiveReport municipalityId={municipalityId || ''} theme={adminTheme} />
+          <ExecutiveReport municipalityId={municipalityId || ''} theme={adminTheme} reports={reports} />
         )}
 
         {activeTab === 'config' && (

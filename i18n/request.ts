@@ -4,11 +4,15 @@
  */
 
 import { getRequestConfig } from "next-intl/server";
+import { routing } from "./routing";
 
-export default getRequestConfig(async () => {
-  // For now, use a fixed locale. In the future, this will be
-  // determined by the user's preference or Accept-Language header.
-  const locale = "ca";
+export default getRequestConfig(async ({ requestLocale }) => {
+  let locale = await requestLocale;
+
+  // Fallback al Català si l'idioma no és vàlid
+  if (!locale || !routing.locales.includes(locale as any)) {
+    locale = routing.defaultLocale;
+  }
 
   return {
     locale,

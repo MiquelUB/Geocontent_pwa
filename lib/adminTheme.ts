@@ -8,6 +8,7 @@
  */
 
 export const ADMIN_THEMES: Record<string, {
+    hex: string;      // Raw HEX color
     text: string;     // Primary brand color text
     mainText: string; // Slightly muted version for secondary text
     bg: string;       // Very light background (5-10% opacity)
@@ -22,6 +23,7 @@ export const ADMIN_THEMES: Record<string, {
     chartColors: string[]; // Gradient steps for charts
 }> = {
     mountain: {
+        hex: "#2D4636",
         text: "text-[#2D4636]",
         mainText: "text-[#2D4636]/80",
         bg: "bg-[#2D4636]/10",
@@ -36,6 +38,7 @@ export const ADMIN_THEMES: Record<string, {
         chartColors: ["#2D4636", "#43614F", "#5D7A68"]
     },
     coast: {
+        hex: "#1A3A5A",
         text: "text-[#1A3A5A]",
         mainText: "text-[#1A3A5A]/80",
         bg: "bg-[#1A3A5A]/10",
@@ -50,6 +53,7 @@ export const ADMIN_THEMES: Record<string, {
         chartColors: ["#1A3A5A", "#2B5178", "#416E98"]
     },
     interior: {
+        hex: "#B24C39",
         text: "text-[#B24C39]",
         mainText: "text-[#B24C39]/80",
         bg: "bg-[#B24C39]/10",
@@ -64,6 +68,7 @@ export const ADMIN_THEMES: Record<string, {
         chartColors: ["#B24C39", "#CD6B59", "#E58D7D"]
     },
     bloom: {
+        hex: "#D982B5",
         text: "text-[#D982B5]",
         mainText: "text-[#D982B5]/80",
         bg: "bg-[#D982B5]/10",
@@ -78,6 +83,7 @@ export const ADMIN_THEMES: Record<string, {
         chartColors: ["#D982B5", "#E4A1C8", "#F0C1DA"]
     },
     city: {
+        hex: "#1A1A1A",
         text: "text-[#1A1A1A]",
         mainText: "text-[#1A1A1A]/70",
         bg: "bg-[#1A1A1A]/10",

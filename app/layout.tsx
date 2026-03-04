@@ -72,6 +72,7 @@ export const viewport: Viewport = {
 };
 
 import { getAppBranding } from "@/lib/actions";
+import { Toaster } from "sonner";
 
 function hexToHsl(hex: string) {
   if (!hex || typeof hex !== 'string') return "0 0% 0%";
@@ -149,6 +150,7 @@ export default async function RootLayout({
         style={themeStyles}
       >
         {children}
+        <Toaster richColors position="top-right" />
       </body>
     </html>
   );

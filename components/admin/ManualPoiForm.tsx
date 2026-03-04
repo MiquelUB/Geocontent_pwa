@@ -237,7 +237,7 @@ export default function ManualPoiForm({ poi, onSave, onCancel, isLoading, routes
               id="poiType"
               value={poiType}
               onChange={(e) => setPoiType(e.target.value)}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-primary/20"
             >
               {[
                 'RELIGIOS', 'DEFENSIU', 'CIVIL', 'NATURA', 'AIGUA',
@@ -266,7 +266,7 @@ export default function ManualPoiForm({ poi, onSave, onCancel, isLoading, routes
           <div className="grid gap-2 p-4 rounded-xl border border-stone-100 bg-stone-50/30">
             <Label className="flex items-center gap-2 mb-2">
               <MapIcon className="w-4 h-4 text-stone-400" />
-              Icona del Punt (Segons Bioma)
+              Icona del Punt (Estil {BIOME_MAP[municipalityTheme || 'mountain']})
             </Label>
 
             {!municipalityTheme ? (
@@ -296,7 +296,7 @@ export default function ManualPoiForm({ poi, onSave, onCancel, isLoading, routes
                         <img
                           src={`/icons/${biomeFolder}/${iconFileName}`}
                           alt={iconFileName}
-                          className="w-full h-auto aspect-square object-contain"
+                          className={`w-full h-auto aspect-square object-contain transition-transform group-hover:scale-110 ${isSelected ? 'drop-shadow-[0_0_8px_rgba(0,0,0,0.1)]' : 'opacity-80 group-hover:opacity-100'}`}
                         />
                         {isSelected && (
                           <div className={`absolute -top-1.5 -right-1.5 ${activeTheme.primary} text-white rounded-full p-0.5 shadow-sm border border-white`}>

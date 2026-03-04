@@ -30,8 +30,8 @@ const typeToIconName: Record<string, string> = {
   'PERSONA_ILLUSTRE': 'Personatje',
 };
 
-function getPoiIconSrc(poi: any) {
-  const category = (poi.parentRoute?.category || poi.category || 'mountain').toLowerCase();
+function getPoiIconSrc(poi: any, globalBiome?: string) {
+  const category = globalBiome || (poi.parentRoute?.category || poi.category || 'mountain').toLowerCase();
   const biome = BIOME_MAP[category] || BIOME_MAP['mountain'];
 
   if (poi.icon) {
@@ -56,10 +56,10 @@ function MapBoundsFitter({ pois, userLoc }: { pois: any[], userLoc: any }) {
   useEffect(() => {
     if (!map || !pois || pois.length === 0) return;
 
-    let minLng = userLoc?.longitude ?? pois[0].longitude;
-    let maxLng = userLoc?.longitude ?? pois[0].longitude;
-    let minLat = userLoc?.latitude ?? pois[0].latitude;
-    let maxLat = userLoc?.latitude ?? pois[0].latitude;
+    let minLng = pois[0].longitude;
+    let maxLng = pois[0].longitude;
+    let minLat = pois[0].latitude;
+    let maxLat = pois[0].latitude;
 
     pois.forEach(p => {
       if (p.longitude < minLng) minLng = p.longitude;
@@ -69,14 +69,19 @@ function MapBoundsFitter({ pois, userLoc }: { pois: any[], userLoc: any }) {
     });
 
     try {
-      map.fitBounds(
-        [[minLng, minLat], [maxLng, maxLat]],
-        { padding: 40, maxZoom: 14, duration: 1000 }
-      );
+      const isSinglePoint = minLng === maxLng && minLat === maxLat;
+      if (isSinglePoint) {
+        map.flyTo({ center: [minLng, minLat], zoom: 16, duration: 1000 });
+      } else {
+        map.fitBounds(
+          [[minLng, minLat], [maxLng, maxLat]],
+          { padding: 50, maxZoom: 15, duration: 1000 }
+        );
+      }
     } catch (e) {
       console.error("Error fitting bounds", e);
     }
-  }, [map, pois, userLoc]);
+  }, [map, pois]);
 
   return null;
 }
@@ -95,6 +100,7 @@ export function HomeScreen({ onNavigate, onOpenHelp, brand: propBrand, userLocat
   const currentLoc = userLocation || defaultLoc;
 
   const [nearbyPois, setNearbyPois] = useState<any[]>([]);
+  const [mapPois, setMapPois] = useState<any[]>([]);
   const [brand, setBrand] = useState<any>(propBrand);
 
   useEffect(() => {
@@ -134,13 +140,24 @@ export function HomeScreen({ onNavigate, onOpenHelp, brand: propBrand, userLocat
           }
         });
 
-        // Filter out those with no coordinates, sort by distance, take top 3
-        const sortedPois = allPois
-          .filter(p => typeof p.latitude === 'number' && typeof p.longitude === 'number')
+        const validPois = allPois.filter(p => typeof p.latitude === 'number' && typeof p.longitude === 'number');
+
+        // Deduplicate for the map
+        const uniquePoisMap = new Map();
+        validPois.forEach(p => {
+          if (!uniquePoisMap.has(p.id)) {
+            uniquePoisMap.set(p.id, p);
+          }
+        });
+        const uniqueMapPois = Array.from(uniquePoisMap.values());
+
+        // Sort by distance and take top 3 for the list
+        const sortedPois = [...uniqueMapPois]
           .sort((a, b) => a.distanceRaw - b.distanceRaw)
           .slice(0, 3);
 
         setNearbyPois(sortedPois);
+        setMapPois(uniqueMapPois);
       }
     }
     fetchData();
@@ -201,12 +218,12 @@ export function HomeScreen({ onNavigate, onOpenHelp, brand: propBrand, userLocat
       >
         <div className="absolute inset-0 z-0">
           <MapLibreMap center={[currentLoc.longitude, currentLoc.latitude]} zoom={12}>
-            <MapBoundsFitter pois={nearbyPois} userLoc={userLocation} />
-            {nearbyPois.map((p, idx) => (
-              <Marker key={`p-${idx}`} longitude={p.longitude} latitude={p.latitude} anchor="bottom">
+            <MapBoundsFitter pois={mapPois.length > 0 ? mapPois : nearbyPois} userLoc={userLocation} />
+            {mapPois.map((p, idx) => (
+              <Marker key={`p-${idx}-${p.id}`} longitude={p.longitude} latitude={p.latitude} anchor="bottom">
                 <div className="flex flex-col items-center pointer-events-none">
                   {(() => {
-                    const iconSrc = getPoiIconSrc(p);
+                    const iconSrc = getPoiIconSrc(p, brand?.themeId);
                     return iconSrc ? (
                       <img
                         src={iconSrc}
@@ -234,7 +251,6 @@ export function HomeScreen({ onNavigate, onOpenHelp, brand: propBrand, userLocat
                       </div>
                     );
                   })()}
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1 shadow-sm" />
                 </div>
               </Marker>
             ))}

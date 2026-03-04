@@ -2,7 +2,7 @@ import { Trophy } from "lucide-react";
 
 interface StatsCardProps {
   title: string;
-  description: string;
+  description: React.ReactNode;
   icon?: React.ReactNode;
 }
 
@@ -14,7 +14,7 @@ export function StatsCard({ title, description, icon }: StatsCardProps) {
       </div>
       <div>
         <h3 className="font-serif font-bold text-lg text-primary mb-1">{title}</h3>
-        <p className="text-sm text-primary/80 leading-snug">{description}</p>
+        <div className="text-sm text-primary/80 leading-snug">{description}</div>
       </div>
     </div>
   );

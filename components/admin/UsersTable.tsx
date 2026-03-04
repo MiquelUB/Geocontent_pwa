@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { createClient } from "@/lib/database/supabase/client";
+import { getUserVisits } from "@/lib/actions";
 
 interface UserProfile {
   id: string;
@@ -36,7 +36,6 @@ export function UsersTable({ profiles, theme }: { profiles: any[], theme?: any }
   const [visits, setVisits] = useState<Visit[]>([]);
   const [isLoadingVisits, setIsLoadingVisits] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const supabase = createClient();
 
   const handleUserClick = async (user: any) => {
     setSelectedUser(user);
@@ -45,33 +44,8 @@ export function UsersTable({ profiles, theme }: { profiles: any[], theme?: any }
     setVisits([]);
 
     try {
-      // Fetch visits for this user
-      // Note: This assumes we can query poi_visits directly via Supabase client 
-      // or we might need a server action if RLS prevents it.
-      // For now, attempting client-side fetch.
-      const { data, error } = await supabase
-        .from('poi_visits')
-        .select(`
-          id,
-          entry_time,
-          duration_seconds,
-          rating,
-          poi:pois(title)
-        `)
-        .eq('user_id', user.id)
-        .order('entry_time', { ascending: false });
-
-      if (error) {
-        console.error("Error fetching visits:", error);
-      } else {
-        setVisits(data.map((v: any) => ({
-          id: v.id,
-          poi: v.poi,
-          entryTime: v.entry_time,
-          durationSeconds: v.duration_seconds,
-          rating: v.rating
-        })));
-      }
+      const data = await getUserVisits(user.id);
+      setVisits(data);
     } catch (e) {
       console.error("Exception fetching visits:", e);
     } finally {
@@ -87,7 +61,7 @@ export function UsersTable({ profiles, theme }: { profiles: any[], theme?: any }
       <CardContent>
         <div className="rounded-md border border-stone-200">
           <Table>
-            <TableHeader className="bg-stone-50">
+            <TableHeader className="border-b" style={{ backgroundColor: `${activeTheme.hex}15` }}>
               <TableRow>
                 <TableHead className="font-serif text-stone-700">Usuari</TableHead>
                 <TableHead className="font-serif text-stone-700">Email</TableHead>
@@ -113,7 +87,7 @@ export function UsersTable({ profiles, theme }: { profiles: any[], theme?: any }
                     </span>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="sm" className={`${activeTheme.mainText} ${activeTheme.hover} ${activeTheme.bg}`}>
+                    <Button variant="ghost" size="sm" className={`text-xs font-bold ${activeTheme.text} hover:scale-105 transition-transform`} style={{ backgroundColor: `${activeTheme.hex}10` }}>
                       Veure Detalls
                     </Button>
                   </TableCell>
@@ -155,13 +129,13 @@ export function UsersTable({ profiles, theme }: { profiles: any[], theme?: any }
                         {new Date(visit.entryTime).toLocaleString()}
                       </p>
                     </div>
-                    <div className="text-right">
-                      <div className={`text-sm font-medium ${activeTheme.mainText}`}>
-                        {visit.durationSeconds ? `${Math.floor(visit.durationSeconds / 60)} min` : 'En curs'}
+                    <div className="text-right flex flex-col items-end gap-1">
+                      <div className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${visit.rating === 5 ? 'bg-green-100 text-green-700' : 'bg-stone-100 text-stone-600'}`}>
+                        {visit.rating === 5 ? 'Quiz Superat ✓' : 'Desbloquejat'}
                       </div>
-                      {visit.rating && (
-                        <div className="text-xs text-amber-500 mt-1">
-                          {'★'.repeat(visit.rating)}
+                      {visit.durationSeconds && (
+                        <div className={`text-xs ${activeTheme.mainText}`}>
+                          ⏱ {Math.floor(visit.durationSeconds / 60)} min
                         </div>
                       )}
                     </div>

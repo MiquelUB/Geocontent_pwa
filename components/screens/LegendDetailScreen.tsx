@@ -36,8 +36,8 @@ const typeToIconName: Record<string, string> = {
   'PERSONA_ILLUSTRE': 'Personatje',
 };
 
-function getPoiIconSrc(poi: any, parentRoute: any) {
-  const category = (poi.category || parentRoute?.category || 'mountain').toLowerCase();
+function getPoiIconSrc(poi: any, parentRoute: any, globalBiome?: string) {
+  const category = globalBiome || (poi.category || parentRoute?.category || 'mountain').toLowerCase();
   const biome = BIOME_MAP[category] || BIOME_MAP['mountain'];
 
   if (poi.icon) {
@@ -57,15 +57,15 @@ function getPoiIconSrc(poi: any, parentRoute: any) {
 }
 
 interface LegendDetailScreenProps {
-
   legend: any;
   onNavigate: (screen: string, data?: any) => void;
+  brand?: any;
   userLocation?: { latitude: number; longitude: number } | null;
   currentUser?: any;
   onUserUpdate?: (user: any) => void;
 }
 
-export function LegendDetailScreen({ legend, onNavigate, userLocation, currentUser, onUserUpdate }: LegendDetailScreenProps) {
+export function LegendDetailScreen({ legend, onNavigate, brand, userLocation, currentUser, onUserUpdate }: LegendDetailScreenProps) {
   // Extract coordinates safely
   const lat = legend?.latitude ?? legend?.coordinates?.lat ?? 0;
   const lng = legend?.longitude ?? legend?.coordinates?.lng ?? 0;
@@ -364,12 +364,12 @@ export function LegendDetailScreen({ legend, onNavigate, userLocation, currentUs
           </div>
         )}
 
-        {/* POIs del Recorregut */}
+        {/* POIs de la Ruta */}
         {safeLegend.pois && safeLegend.pois.length > 0 && (
           <div className="mb-10">
             <h3 className="font-serif font-bold text-lg text-primary mb-5 flex items-center">
               <span className="w-8 h-px bg-primary/40 mr-3"></span>
-              Punts del Recorregut
+              Punts de la Ruta
               <span className="ml-3 text-[10px] font-normal text-stone-400 uppercase tracking-wider">
                 {safeLegend.pois.length} punts
               </span>
@@ -405,7 +405,7 @@ export function LegendDetailScreen({ legend, onNavigate, userLocation, currentUs
                       }`}>
                       {(poi.icon || poi.type) ? (
                         <div className="w-10 h-10 -mt-1 ml-0.5" style={{ filter: poiUnlocked ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' : 'grayscale(100%) opacity(40%)' }}>
-                          <img src={getPoiIconSrc(poi, safeLegend)} alt={poi.title || ''} className="w-full h-full object-contain" />
+                          <img src={getPoiIconSrc(poi, safeLegend, brand?.themeId)} alt={poi.title || ''} className="w-full h-full object-contain" />
                         </div>
                       ) : (poi.image_url ? (
                         <div className={`w-full h-full rounded-xl overflow-hidden ${poiUnlocked ? '' : 'grayscale opacity-50'}`}>

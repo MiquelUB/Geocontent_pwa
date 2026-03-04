@@ -3,23 +3,48 @@
 import { reportQueue } from '@/lib/queue/client';
 import { prisma } from '@/lib/database/prisma';
 import { revalidatePath } from 'next/cache';
+import { processReport } from '../services/reportProcessor';
 
 export async function generateReport(municipalityId: string) {
+  console.log(`[generateReport] Request for municipality: ${municipalityId}`);
   try {
+    if (!municipalityId || municipalityId.length < 32 || municipalityId === 'null') {
+      return { success: false, error: "Municipi no vàlid" };
+    }
+
+    const muni = await prisma.municipality.findUnique({
+      where: { id: municipalityId },
+      select: { name: true }
+    });
+    const muniName = muni?.name || 'Municipi';
+
     const report = await prisma.report.create({
       data: {
         municipalityId,
-        title: `Informe Impacte Turístic - ${new Date().toLocaleDateString('es-ES')}`,
-        status: 'PENDING'
+        status: 'PENDING',
+        title: `Informe Impacte - ${muniName} - ${new Date().toLocaleDateString('es-ES')}`
       }
     });
 
-    await reportQueue.add('generate-report', {
-      reportId: report.id,
-      municipalityId
-    });
-    
-    revalidatePath('/admin/reports'); // Depending on where the UI is
+    console.log(`[generateReport] Created DB record: ${report.id}`);
+
+    try {
+      await reportQueue.add('generate-report', {
+        reportId: report.id,
+        municipalityId
+      });
+      console.log(`[generateReport] Added to queue`);
+    } catch (queueError: any) {
+      console.warn("[generateReport] Queue error (Redis down). Falling back to direct process (Dev Mode).");
+      // Fallback: Trigger immediately but don't await (background task)
+      processReport(report.id, municipalityId).catch(err => {
+        console.error("[generateReport] Fallback process failed:", err);
+      });
+
+      revalidatePath('/admin');
+      return { success: true, reportId: report.id, note: "Processant directament (Redis no detectat)" };
+    }
+
     revalidatePath('/admin');
     return { success: true, reportId: report.id };
   } catch (error: any) {
@@ -29,16 +54,28 @@ export async function generateReport(municipalityId: string) {
 }
 
 export async function getReports(municipalityId?: string) {
-    try {
-        const whereClause = municipalityId ? { municipalityId } : {};
-        const reports = await prisma.report.findMany({
-            where: whereClause,
-            orderBy: { createdAt: 'desc' },
-            include: { municipality: true }
-        });
-        return reports;
-    } catch (error) {
-        console.error("Error fetching reports:", error);
-        return [];
-    }
+  try {
+    const whereClause = (municipalityId && municipalityId !== 'null' && municipalityId !== 'undefined') ? { municipalityId } : {};
+    const reports = await prisma.report.findMany({
+      where: whereClause,
+      orderBy: { createdAt: 'desc' }
+    });
+    return reports;
+  } catch (error) {
+    console.error("Error fetching reports:", error);
+    return [];
+  }
+}
+
+export async function deleteReport(reportId: string) {
+  try {
+    await prisma.report.delete({
+      where: { id: reportId }
+    });
+    revalidatePath('/admin');
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error deleting report:", error);
+    return { success: false, error: "No s'ha pogut eliminar l'informe" };
+  }
 }

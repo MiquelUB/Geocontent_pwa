@@ -57,29 +57,34 @@ export function SplashScreen({ onComplete, brand }: SplashScreenProps) {
             </motion.div>
           </div>
 
-          <motion.h1
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{
-              duration: 0.8,
-              delay: 0.5
-            }}
-            className="text-4xl font-serif font-bold text-primary-foreground mb-2"
-          >
-            {brand?.name || PxxConfig.appName}
-          </motion.h1>
-
-          <motion.p
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{
-              duration: 0.8,
-              delay: 0.7
-            }}
-            className="text-lg text-primary-foreground/80"
-          >
-            {PxxConfig.appDescription}
-          </motion.p>
+          {brand?.name ? (
+            <>
+              <motion.h1
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{
+                  duration: 0.8,
+                  delay: 0.5
+                }}
+                className="text-4xl font-serif font-bold text-primary-foreground mb-2"
+              >
+                {brand.name}
+              </motion.h1>
+              <motion.p
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{
+                  duration: 0.8,
+                  delay: 0.7
+                }}
+                className="text-lg text-primary-foreground/80"
+              >
+                {brand.description || PxxConfig.appDescription}
+              </motion.p>
+            </>
+          ) : (
+            <div className="h-12 w-48 bg-white/10 animate-pulse rounded-full mt-4" />
+          )}
         </motion.div>
 
         {/* Indicador de càrrega */}

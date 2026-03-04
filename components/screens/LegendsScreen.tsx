@@ -17,6 +17,42 @@ function getDifficulty(poiCount: number): string {
     return 'Fàcil';
 }
 
+function hexToHsl(hex: string) {
+    if (!hex || typeof hex !== 'string') return "0 0% 0%";
+
+    let r = 0, g = 0, b = 0;
+    const cleanHex = hex.startsWith('#') ? hex : `#${hex}`;
+
+    if (cleanHex.length === 4) {
+        r = parseInt(cleanHex[1] + cleanHex[1], 16);
+        g = parseInt(cleanHex[2] + cleanHex[2], 16);
+        b = parseInt(cleanHex[3] + cleanHex[3], 16);
+    } else if (cleanHex.length === 7) {
+        r = parseInt(cleanHex.substring(1, 3), 16);
+        g = parseInt(cleanHex.substring(3, 5), 16);
+        b = parseInt(cleanHex.substring(5, 7), 16);
+    } else {
+        return "0 0% 0%";
+    }
+
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h = 0, s = 0, l = (max + min) / 2;
+
+    if (max !== min) {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+            case g: h = (b - r) / d + 2; break;
+            case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+    }
+    return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+}
+
+
 export function LegendsScreen({ onNavigate, brand: propBrand }: LegendsScreenProps) {
     const [selectedLocation, setSelectedLocation] = useState("all");
     const [legends, setLegends] = useState<any[]>([]);
@@ -73,14 +109,29 @@ export function LegendsScreen({ onNavigate, brand: propBrand }: LegendsScreenPro
         ? legends
         : legends.filter(l => l.location === selectedLocation);
 
-    const activeLabel = locations.find(c => c.id === selectedLocation)?.label ?? 'Totes';
+    const activeLoc = locations.find(c => c.id === selectedLocation);
+    const activeLabel = activeLoc?.label ?? 'Totes';
+
+    // El bioma de la plana SEMPRE ha de ser el del municipi (brand), no el de la ruta filtrada
+    const activeCategory = brand?.themeId || 'mountain';
+    const theme = PxxConfig.chameleonThemes[activeCategory as keyof typeof PxxConfig.chameleonThemes] || PxxConfig.chameleonThemes['mountain'];
+
+    // We explicitly cast to string, then React.CSSProperties
+    const themeStyles = {
+        '--primary': hexToHsl(theme.primary),
+        '--accent': hexToHsl(theme.accent),
+        '--background': hexToHsl(theme.bg),
+    } as any;
 
 
     return (
-        <div className="bg-[#f6f7f7] dark:bg-[#171b18] min-h-screen font-serif text-gray-900 dark:text-gray-100 flex flex-col">
+        <div
+            className="bg-background min-h-screen font-serif text-foreground flex flex-col transition-colors duration-500"
+            style={themeStyles}
+        >
 
             {/* Header */}
-            <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#171b18]/95 backdrop-blur-sm px-6 py-4 flex justify-between items-center border-b border-primary/10 dark:border-primary/5">
+            <header className="sticky top-0 z-40 bg-primary/95 backdrop-blur-sm px-6 py-4 flex justify-between items-center border-b border-primary/10">
                 <div className="flex items-center gap-2 cursor-pointer" onClick={() => onNavigate('home')}>
                     {/* Logo Mark */}
                     {brand?.logoUrl ? (
@@ -88,11 +139,11 @@ export function LegendsScreen({ onNavigate, brand: propBrand }: LegendsScreenPro
                             <img src={brand.logoUrl} alt="Logo" className="w-full h-full object-contain bg-white" />
                         </div>
                     ) : (
-                        <div className="w-8 h-8 bg-primary text-white flex items-center justify-center rounded font-serif font-bold text-lg tracking-tighter shadow-sm">
+                        <div className="w-8 h-8 bg-white/20 text-white flex items-center justify-center rounded font-serif font-bold text-lg tracking-tighter shadow-sm">
                             {brand?.name?.[0] || 'P'}
                         </div>
                     )}
-                    <h1 className="font-serif text-xl font-bold tracking-tight text-gray-900 dark:text-white">
+                    <h1 className="font-serif text-xl font-bold tracking-tight text-primary-foreground">
                         {brand?.name || 'PXX Guide'}
                     </h1>
                 </div>
@@ -105,9 +156,10 @@ export function LegendsScreen({ onNavigate, brand: propBrand }: LegendsScreenPro
                 <div className="flex gap-3 px-6 overflow-x-auto pb-6 pt-6 no-scrollbar">
                     {locations.map(loc => {
                         const isSelected = selectedLocation === loc.id;
-                        const biomeColor = loc.category !== 'all' && PxxConfig.chameleonThemes[loc.category as keyof typeof PxxConfig.chameleonThemes]?.primary
-                            ? PxxConfig.chameleonThemes[loc.category as keyof typeof PxxConfig.chameleonThemes].primary
-                            : PxxConfig.chameleonThemes['mountain'].primary; // Fallback to safe hex instead of var(--primary) which breaks inline styles
+                        const globalThemeId = brand?.themeId || 'mountain';
+
+                        // Usem el color del bioma global per als chips per coherència institucional
+                        const biomeColor = PxxConfig.chameleonThemes[globalThemeId as keyof typeof PxxConfig.chameleonThemes]?.primary || PxxConfig.chameleonThemes['mountain'].primary;
 
                         return (
                             <button
@@ -130,7 +182,7 @@ export function LegendsScreen({ onNavigate, brand: propBrand }: LegendsScreenPro
                 <div className="px-6 space-y-8">
                     {/* Section Header */}
                     <div className="flex items-center gap-4">
-                        <h2 className="font-serif text-2xl text-gray-900 dark:text-white font-bold">
+                        <h2 className="font-serif text-2xl text-foreground font-bold">
                             {selectedLocation === 'all' ? 'Totes les Rutes' : `Rutes a ${activeLabel}`}
                         </h2>
                         <div className="h-px bg-gray-200 dark:bg-gray-700 flex-1"></div>
@@ -170,7 +222,7 @@ export function LegendsScreen({ onNavigate, brand: propBrand }: LegendsScreenPro
                                             <div
                                                 className="px-3 py-1 rounded shadow-sm"
                                                 style={{
-                                                    backgroundColor: PxxConfig.chameleonThemes[legend.category as keyof typeof PxxConfig.chameleonThemes]?.primary || 'var(--primary)'
+                                                    backgroundColor: PxxConfig.chameleonThemes[legend.category as keyof typeof PxxConfig.chameleonThemes]?.primary || 'hsl(var(--primary))'
                                                 }}
                                             >
                                                 <span>{legend.location}</span>

@@ -72,7 +72,10 @@ export async function getOrCreateMunicipalityByName(name: string): Promise<strin
 
 export async function getDefaultMunicipalityId(): Promise<string | null> {
   try {
-    const municipality = await prisma.municipality.findFirst({ select: { id: true } });
+    const municipality = await prisma.municipality.findFirst({
+      orderBy: { createdAt: 'asc' },
+      select: { id: true }
+    });
     return municipality?.id ?? null;
   } catch {
     return null;
@@ -1197,16 +1200,54 @@ export async function getVisitedLegends(userId: string) {
 
 export async function getAllProfiles() {
   noStore();
-  const { data, error } = await supabaseAdmin
-    .from('profiles')
-    .select('*')
 
-  if (error) {
-    console.error('Error fetching all profiles:', error)
-    return []
+  try {
+    const profiles = await prisma.profile.findMany({
+      include: {
+        user: {
+          select: {
+            email: true
+          }
+        }
+      },
+      orderBy: {
+        updatedAt: 'desc'
+      }
+    });
+
+    return profiles.map(p => ({
+      ...p,
+      email: p.user?.email || '-'
+    }));
+  } catch (error) {
+    console.error('Error fetching all profiles with email:', error);
+    return [];
   }
+}
 
-  return data
+export async function getUserVisits(userId: string) {
+  try {
+    const visits = await prisma.userUnlock.findMany({
+      where: { userId },
+      include: {
+        poi: {
+          select: { title: true }
+        }
+      },
+      orderBy: { unlockedAt: 'desc' }
+    });
+
+    return visits.map(v => ({
+      id: `${v.userId}-${v.poiId}`,
+      poi: v.poi,
+      entryTime: v.unlockedAt.toISOString(),
+      durationSeconds: null, // Durations are not tracked in unlocks initially
+      rating: v.quizSolved ? 5 : null // Show a 5-star if quiz was solved as a placeholder feedback
+    }));
+  } catch (error) {
+    console.error('Error fetching user visits (unlocks):', error);
+    return [];
+  }
 }
 export async function addVideoToPoi(poiId: string, formData: FormData) {
   const videoFile = formData.get('video') as File;

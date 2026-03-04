@@ -61,7 +61,7 @@ export default function RoutePoiManager({ routeId, routeName, onClose, onEditPoi
   }, [fetchData]);
 
   async function handleRemovePoi(poiId: string) {
-    if (!confirm('Treure aquest punt del recorregut?')) return;
+    if (!confirm('Treure aquest punt de la ruta?')) return;
     setIsSaving(poiId);
     const res = await removePoiFromRoute(routeId, poiId);
     if (res.success) {
@@ -241,7 +241,7 @@ export default function RoutePoiManager({ routeId, routeName, onClose, onEditPoi
                       onClick={() => handleRemovePoi(poi.id)}
                       disabled={isSaving === poi.id}
                       className="text-stone-400 hover:text-red-600 hover:bg-red-50 flex-shrink-0 p-1.5 h-auto"
-                      title="Treure del recorregut"
+                      title="Treure de la ruta"
                     >
                       {isSaving === poi.id
                         ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
