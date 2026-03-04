@@ -79,6 +79,7 @@ export function MapScreen({ onNavigate, onOpenHelp, focusLegend, brand, userLoca
   });
 
   const [locations, setLocations] = useState<any[]>([{ id: "totes", label: "Totes" }]);
+  const [hasInitialPosition, setHasInitialPosition] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -108,8 +109,9 @@ export function MapScreen({ onNavigate, onOpenHelp, focusLegend, brand, userLoca
     fetchData();
   }, []);
 
-  // If focusLegend provided, center map on it
+  // Gestió intel·ligent del reposicionament del mapa
   useEffect(() => {
+    // Cas 1: Atenció a una llegenda específica (ex: venim del botó "Veure al Mapa" d'un POI)
     if (focusLegend) {
       setViewState({
         longitude: focusLegend.coordinates?.lng ?? focusLegend.longitude ?? 0.9870,
@@ -117,14 +119,18 @@ export function MapScreen({ onNavigate, onOpenHelp, focusLegend, brand, userLoca
         zoom: 14
       });
       setSelectedLegend(focusLegend);
-    } else if (userLocation) {
+      setHasInitialPosition(true); // Evitem que el GPS sobrescrigui aquest focus
+    }
+    // Cas 2: Posicionament inicial per GPS
+    else if (userLocation && !hasInitialPosition) {
       setViewState({
         longitude: userLocation.longitude,
         latitude: userLocation.latitude,
         zoom: 12
       });
+      setHasInitialPosition(true);
     }
-  }, [focusLegend, userLocation]);
+  }, [focusLegend, userLocation, hasInitialPosition]);
 
   const filteredLegends = activeCategory === "totes"
     ? legends

@@ -57,15 +57,9 @@ export default function MapLibreMap({
 
   const mapRef = React.useRef<any>(null);
 
-  React.useEffect(() => {
-    if (mapRef.current && center) {
-      mapRef.current.flyTo({
-        center: center,
-        zoom: zoom || 13,
-        essential: true
-      });
-    }
-  }, [center, zoom]);
+  // El 'flyTo' es treu per evitar que el mapa "salti" cada vegada que rep 
+  // una actualització subtil de coordenades, especialment si l'usuari està fent zoom.
+  // MapLibre respectarà la initialViewState i el component pare ja gestiona el centre.
 
   return (
     <div className={`w-full h-full relative ${className || ''}`} id="map-container">

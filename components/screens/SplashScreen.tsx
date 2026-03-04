@@ -128,8 +128,8 @@ export function SplashScreen({ onComplete, brand }: SplashScreenProps) {
           delay: 2
         }}
       >
-        <div className="flex items-center space-x-2 text-primary-foreground/60 text-xs">
-          <span>{brand?.name || PxxConfig.appName} Engine</span>
+        <div className="flex items-center space-x-2 text-primary-foreground/40 text-[10px] tracking-[0.2em] font-serif italic uppercase">
+          <span>Projecte Xino Xano</span>
         </div>
       </motion.div>
     </div>

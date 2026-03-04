@@ -187,10 +187,17 @@ export default function Home() {
       </main>
 
       {showBottomNav && (
-        <BottomNavigation
-          currentScreen={currentScreen}
-          onScreenChange={handleNavigate}
-        />
+        <div className="flex flex-col items-center mb-4">
+          <div className="mb-2 opacity-30 select-none pointer-events-none">
+            <span className="text-[9px] font-serif italic tracking-[0.15em] text-stone-500 uppercase">
+              Projecte Xino Xano
+            </span>
+          </div>
+          <BottomNavigation
+            currentScreen={currentScreen}
+            onScreenChange={handleNavigate}
+          />
+        </div>
       )}
 
       {/* Onboarding Modal */}

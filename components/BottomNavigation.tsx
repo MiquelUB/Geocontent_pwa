@@ -30,7 +30,7 @@ export function BottomNavigation({ currentScreen, onScreenChange }: BottomNaviga
   ];
 
   return (
-    <div className="bg-black/80 backdrop-blur-md border border-white/10 rounded-full px-6 py-3 flex items-center gap-2 shadow-2xl z-50 mx-auto mb-6">
+    <div className="bg-black/80 backdrop-blur-md border border-white/10 rounded-full px-6 py-3 flex items-center gap-2 shadow-2xl z-50 mx-auto">
       {navItems.map((item) => {
         const Icon = item.icon;
         const isActive = currentScreen === item.id;
@@ -40,8 +40,8 @@ export function BottomNavigation({ currentScreen, onScreenChange }: BottomNaviga
             key={item.id}
             onClick={() => onScreenChange(item.id)}
             className={`relative flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 ${isActive
-                ? "bg-white text-black scale-110 shadow-lg"
-                : "text-white/60 hover:text-white hover:bg-white/10"
+              ? "bg-white text-black scale-110 shadow-lg"
+              : "text-white/60 hover:text-white hover:bg-white/10"
               }`}
           >
             <Icon size={20} className={isActive ? "stroke-[2.5px]" : "stroke-[1.5px]"} />
