@@ -1,77 +1,64 @@
 version: "2"
-type: backend
+type: frontend
 tech_stack:
   - TypeScript
   - Next.js (App Router)
-  - Prisma (PostgreSQL)
-  - Supabase
-  - Zod
+  - React (SPA Pattern)
+  - TailwindCSS
+  - shadcn/ui
+  - Framer Motion
+  - Lucide Icons
+routes:
+  - path: /
+    file: app/page.tsx
+    auth_required: false
+    description: "Main Application (SPA). Contains screens Home (Inici), Legends (Explorar), Map (Mapa), Profile (Perfil)."
+  - path: /admin
+    file: app/admin/page.tsx
+    auth_required: false
+    description: "Admin dashboard protected by Master Password gate."
 features:
-  - name: Admin Municipality Settings
-    description: Update municipality configurations such as plan tiers and passwords.
+  - name: App Navigation (SPA)
+    description: "The main app switches screens via a Bottom Navigation bar with icons without full page reloads."
     files:
-      - app/api/admin/municipality/route.ts
-      - lib/actions.ts
-    endpoints:
-      - method: POST
-        path: /api/admin/municipality
-        description: Save municipality global settings, themes, and limits
-        auth_required: false
-        request_schema:
-          body:
-            id: string
-            name: string
-            logoUrl: string
-            themeId: string
-            adminMasterPassword: string
-            planTier: string
-            extraRoutesCount: number
-        response_schema:
-          "200": "{ success: true }"
-          "500": "{ success: false, error: string }"
-    depends_on:
-      - Prisma
-  - name: Analytics and Executive Reports
-    description: Fetch dashboard stats and generate PDF executive reports
+      - components/BottomNavigation.tsx
+    entry_route: /
+    user_interactions:
+      - "Navigate using buttons with labels: 'Inici', 'Explorar', 'Mapa', 'Perfil'"
+      - "Wait for SplashScreen (~800ms) before interacting"
+  - name: Admin Dashboard Gateway
+    description: "Accessing administrative tools using master password 'mistic_master_audit'."
     files:
-      - app/api/analytics/executive-report/route.ts
-      - lib/analytics.ts
-      - lib/services/reportProcessor.ts
-      - lib/actions/reports.ts
-    endpoints:
+      - components/admin/AdminSecurityGate.tsx
+    entry_route: /admin
+    user_interactions:
+      - "Enter password 'mistic_master_audit' to unlock for testing"
+      - "Click 'Accedir' (data-testid='admin-gate-submit')"
+    auth_required: false
+  - name: User Passport & Gamification
+    description: "View unlocked stamps and player level. Note labels: 'Stamps' is used for tokens."
+    files:
+      - components/passport/PassportGrid.tsx
+      - app/profile/page.tsx
+    entry_route: /
+    user_interactions:
+      - "Navigate to 'Perfil' screen"
+      - "View 'Nivell' (Level) and 'Stamps' (Segells)"
+  - name: Executive Impact Analytics
+    description: "View KPIs and charts for the territory."
+    files:
+      - components/admin/ExecutiveReport.tsx
+    entry_route: /admin
+    user_interactions:
+      - "Unlock Admin gate"
+      - "Select 'Informe Executiu' tab"
+    api_calls:
       - method: GET
-        path: /api/analytics/executive-report
-        description: Fetch analytical data including user metrics, completions, and heatmap telemetry
-        auth_required: false
-        response_schema:
-          "200": "{ success: true, data: object }"
-          "400": "{ success: false, error: string }"
-          "500": "{ success: false, error: string }"
-    depends_on:
-      - Prisma
-  - name: AI Content Generation
-    description: Generate POI Quizzes, Final Route Quizzes, and full routes from PDFs using OpenRouter
-    files:
-      - app/api/ai/generate-quiz/route.ts
-      - app/api/ai/generate-route/route.ts
-      - app/api/ai/generate-route-quiz/route.ts
-      - lib/services/openrouter.ts
-    endpoints:
-      - method: POST
-        path: /api/ai/generate-quiz
-        description: Generate a 3-option quiz for a single POI
-        auth_required: false
-      - method: POST
-        path: /api/ai/generate-route
-        description: Generate a full route breakdown parsing a provided PDF file
-        auth_required: false
-      - method: POST
-        path: /api/ai/generate-route-quiz
-        description: Generate the final transversal challenge quiz for a route
-        auth_required: false
-    depends_on:
-      - OpenRouter (OpenAI SDK)
+        endpoint: /api/analytics/executive-report
 known_limitations:
-  - issue: AI routes might timeout if parsing large PDFs due to Vercel's 60s boundary
-    location: app/api/ai/generate-route/route.ts
-    impact: Potential 504 Gateway Timeout or 500 error when processing very long PDFs
+  - issue: "The app is a Single Page App on path '/'. Routes like '/library' or '/profile' as direct browser URLs might result in 404; use internal navigation."
+    location: app/page.tsx
+    impact: "Tests MUST start at '/' and click the BottomNavigation items."
+  - issue: "Local project is running on PORT 3000."
+    location: testsprite_tests/tmp/config.json
+    impact: "All navigation must use http://localhost:3000."

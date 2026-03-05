@@ -136,7 +136,12 @@ export function ProfileScreen({ onNavigate, currentUser, onUserUpdate }: Profile
                 {/* Passport Section */}
                 <div className="px-4 mt-2">
                     <div className="flex items-center justify-between mb-4">
-                        <h3 className="font-serif text-2xl font-bold text-[#1e2b25] dark:text-white italic">El Teu Passaport</h3>
+                        <div>
+                            <h3 className="font-serif text-2xl font-bold text-[#1e2b25] dark:text-white italic">El Teu Passaport</h3>
+                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-widest mt-0.5">
+                                Segells — {passportData.filter((s: any) => s.isCompleted).length} / {passportData.length} desbloquejats
+                            </p>
+                        </div>
                     </div>
 
                     {/* Stamps Grid Container */}

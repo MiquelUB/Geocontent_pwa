@@ -1,9 +1,18 @@
 {
   "status": "commited",
-  "type": "backend",
+  "type": "frontend",
   "scope": "codebase",
   "localEndpoint": "http://localhost:3000",
-  "backendAuthType": "basic token",
-  "backendUsername": "Miquel",
-  "backendPassword": "mistic_master"
+  "executionArgs": {
+    "projectName": "Geocontent_Core",
+    "projectPath": "d:\\MK\\MP\\Geocontent_Core",
+    "testIds": [],
+    "additionalInstruction": "PROJECT IS AT http://localhost:3000. PASSWORD IS 'mistic_master_audit'. SPA ON '/'. USE CATALAN LABELS: 'Inici', 'Explorar', 'Mapa', 'Perfil'. LABEL FOR SEGELLS IS 'Stamps'. WAIT 2s FOR SPLASH. BUTTON IS 'Accedir' (data-testid='admin-gate-submit').",
+    "serverMode": "production",
+    "envs": {
+      "API_KEY": "sk-user-B0GPKpIEWrSsXFVQCs9dFUzmt4j5Ws1hXOecpTfFWgEIz4_NHCt1cumNW6CLH4JtjhVYYXW0pZwMhEwgfmPYs0dieBMNbFPfk2zJGbYON25TVsJPjFBovS_2EN2e6CC_4fo"
+    }
+  },
+  "serverPort": 54455,
+  "proxy": "http://dc807abd-c375-4496-a70f-47b2af6bc359:TXoBX6Cro2CNXlEtjzG7pziZYPj2Nq43@tun.testsprite.com:8080"
 }

@@ -364,371 +364,382 @@ export function LegendDetailScreen({ legend, onNavigate, brand, userLocation, cu
           </div>
         )}
 
-        {/* POIs de la Ruta */}
-        {safeLegend.pois && safeLegend.pois.length > 0 && (
-          <div className="mb-10">
-            <h3 className="font-serif font-bold text-lg text-primary mb-5 flex items-center">
-              <span className="w-8 h-px bg-primary/40 mr-3"></span>
-              Punts de la Ruta
-              <span className="ml-3 text-[10px] font-normal text-stone-400 uppercase tracking-wider">
-                {safeLegend.pois.length} punts
-              </span>
-            </h3>
-            <div className="space-y-3">
-              {sortedPois.map((poi: any, idx: number) => {
-                const poiHasCoords = typeof poi.latitude === 'number' && typeof poi.longitude === 'number';
-                // Utilitzem rawDist convertit a metres per veure si es desbloqueja
-                const poiDistMeters = poi.rawDist !== Infinity ? poi.rawDist * 1000 : null; // ja que rawDist retorna en km
+        <div className="mt-8 space-y-12">
 
-                const poiVisited = poi.userUnlocks?.some((u: any) => u.userId === currentUser?.id);
-                // Si la distància és menor a 0.03 km (30 m), ho alliberem
-                const poiUnlocked = poiVisited || (poi.rawDist !== Infinity && poi.rawDist <= (UNLOCK_DISTANCE / 1000));
-                const distLabel = poi.formattedDist;
+          {/* Audio Player */}
+          {safeLegend.audioUrl && (
+            <div className={`p-4 rounded-xl flex items-center justify-between transition-colors ${isUnlocked
+              ? 'bg-primary text-primary-foreground shadow-lg'
+              : 'bg-stone-200 text-stone-500 cursor-not-allowed'
+              }`}>
+              <div className="flex items-center gap-4">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isUnlocked ? 'bg-white/20' : 'bg-black/10'}`}>
+                  <Volume2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="font-bold text-sm">Àudio Guia</div>
+                  <div className="text-xs opacity-80">{isPlaying ? 'Reproduint...' : 'Clica per escoltar'}</div>
+                </div>
+              </div>
 
-                return (
-                  <div
-                    key={poi.id}
-                    onClick={() => poiUnlocked ? onNavigate('legend-detail', poi) : onNavigate('map', poi)}
-                    className={`relative flex gap-3 rounded-2xl border p-3.5 transition-all duration-300 ${poiUnlocked
-                      ? 'border-primary/20 bg-primary/5 cursor-pointer hover:bg-primary/10 shadow-sm'
-                      : 'border-stone-100 bg-stone-50/60 cursor-pointer hover:bg-stone-100'
-                      }`}
-                  >
-                    {/* Order index bubble */}
-                    <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold mt-0.5 ${poiUnlocked ? 'bg-primary text-white' : 'bg-stone-200 text-stone-400'
-                      }`}>
-                      {idx + 1}
-                    </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handlePlayAudio}
+                disabled={!isUnlocked}
+                className={`hover:bg-white/20 rounded-full h-12 w-12 ${!isUnlocked ? 'opacity-50' : ''}`}
+              >
+                {isUnlocked ? (
+                  isPlaying ? <Pause className="w-6 h-6 fill-current" /> : <Play className="w-6 h-6 fill-current" />
+                ) : <Lock className="w-5 h-5" />}
+              </Button>
+              <audio ref={audioRef} src={safeLegend.audioUrl} onEnded={() => setIsPlaying(false)} />
+            </div>
+          )}
 
-                    {/* POI Thumbnail / Icon */}
-                    <div className={`flex-shrink-0 w-14 h-14 rounded-xl flex items-center justify-center self-start ${poiUnlocked ? 'bg-primary/10' : 'bg-stone-100'
-                      }`}>
-                      {(poi.icon || poi.type) ? (
-                        <div className="w-10 h-10 -mt-1 ml-0.5" style={{ filter: poiUnlocked ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' : 'grayscale(100%) opacity(40%)' }}>
-                          <img src={getPoiIconSrc(poi, safeLegend, brand?.themeId)} alt={poi.title || ''} className="w-full h-full object-contain" />
-                        </div>
-                      ) : (poi.image_url ? (
-                        <div className={`w-full h-full rounded-xl overflow-hidden ${poiUnlocked ? '' : 'grayscale opacity-50'}`}>
-                          <ImageWithFallback
-                            src={poi.image_url}
-                            alt={poi.title}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
+          {/* Multi-Video Section */}
+          {safeLegend.videoUrls && safeLegend.videoUrls.length > 0 && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-stone-500 font-serif text-sm px-1">
+                <Play className="w-3 h-3" />
+                <span>Vídeo</span>
+              </div>
+              <div className="grid grid-cols-1 gap-4">
+                {safeLegend.videoUrls.map((videoUrl: string, idx: number) => {
+                  const variant = videoVariants[idx];
+                  const lowResSrc = variant?.lowResUrl || undefined;
+                  return (
+                    <div key={idx} className={`relative ${!isUnlocked ? 'aspect-video' : ''} rounded-2xl overflow-hidden shadow-xl border border-white/20 bg-black`}>
+                      {isUnlocked ? (
+                        <HlsVideoPlayer
+                          src={videoUrl.endsWith('.m3u8') ? videoUrl : videoUrl}
+                          lowBitrateSrc={lowResSrc}
+                          className="w-full"
+                        />
                       ) : (
-                        <MapPin className={`w-5 h-5 ${poiUnlocked ? 'text-primary/40' : 'text-stone-300'}`} />
-                      ))}
+                        <div className="w-full h-full min-h-[200px] bg-stone-900/5 backdrop-blur-md flex flex-col items-center justify-center gap-4 text-stone-400 relative">
+                          <div className="absolute inset-0 bg-gradient-to-br from-stone-900/10 to-transparent"></div>
+                          <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-2xl flex items-center justify-center text-white ring-4 ring-white/10">
+                            <Lock className="w-5 h-5" />
+                          </div>
+                          <div className="text-center z-10 px-6">
+                            <span className="block text-[10px] uppercase tracking-[0.2em] font-black text-stone-500 mb-1">Cadenat Digital</span>
+                            <p className="text-[11px] leading-tight text-stone-400">El vídeo es revelarà quan arribis a la localització.</p>
+                          </div>
+                        </div>
+                      )}
                     </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <p className={`font-serif font-bold text-sm leading-tight ${poiUnlocked ? 'text-stone-800' : 'text-stone-400'
-                          }`}>
-                          {poi.title}
-                        </p>
-                        {/* Distance / lock badge */}
-                        {distLabel ? (
-                          <span className={`flex-shrink-0 flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full ${poiUnlocked
-                            ? 'bg-primary/10 text-primary'
-                            : 'bg-stone-200 text-stone-400'
-                            }`}>
-                            {poiUnlocked
-                              ? <MapPin className="w-2.5 h-2.5" />
-                              : <Lock className="w-2.5 h-2.5" />}
-                            {distLabel}
-                          </span>
-                        ) : (
-                          <span className="flex-shrink-0 flex items-center gap-1 text-[10px] text-stone-300 bg-stone-100 px-2 py-0.5 rounded-full">
-                            <Lock className="w-2.5 h-2.5" />
-                            GPS off
-                          </span>
-                        )}
-                      </div>
-                      <p className={`text-xs mt-1 leading-relaxed line-clamp-2 ${poiUnlocked ? 'text-stone-500' : 'text-stone-300'
-                        }`}>
-                        {poi.description || 'Descobreix aquest punt in situ.'}
-                      </p>
-                    </div>
-
-                    {/* Unlock CTA */}
-                    {poiUnlocked && (
-                      <div className="flex-shrink-0 self-center">
-                        <Navigation2 className="w-4 h-4 text-primary" />
-                      </div>
-                    )}
+          {/* Galeria d'Imatges (Sota el text per aprofitar espai visual) */}
+          {((safeLegend.carouselImages?.length > 0) || (safeLegend.images?.length > 1)) && (
+            <div className="rounded-3xl overflow-hidden shadow-sm border border-stone-200 bg-stone-950">
+              {isUnlocked ? (
+                <div className="aspect-[4/5] sm:aspect-[4/3] md:aspect-video w-full relative">
+                  <ImageSlider
+                    images={(safeLegend.carouselImages?.length > 0 ? safeLegend.carouselImages : safeLegend.images).map(proxifyUrl)}
+                    isRecapture={safeLegend.is_recapture}
+                  />
+                </div>
+              ) : (
+                <div className="w-full aspect-[4/3] bg-stone-900/5 backdrop-blur-md flex flex-col items-center justify-center gap-4 text-stone-400 relative">
+                  <div className="absolute inset-0 bg-gradient-to-br from-stone-900/10 to-transparent"></div>
+                  <div className="w-12 h-12 rounded-full bg-stone-200 flex items-center justify-center text-stone-500 shadow-inner z-10">
+                    <Lock className="w-5 h-5" />
                   </div>
-                );
-              })}
+                  <span className="font-serif font-bold tracking-widest text-sm uppercase text-stone-600 drop-shadow-sm z-10 w-3/4 text-center">
+                    Galeria Protegida
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* POIs de la Ruta */}
+          {safeLegend.pois && safeLegend.pois.length > 0 && (
+            <div className="pt-4">
+              <h3 className="font-serif font-bold text-lg text-primary mb-5 flex items-center">
+                <span className="w-8 h-px bg-primary/40 mr-3"></span>
+                Punts de la Ruta
+                <span className="ml-3 text-[10px] font-normal text-stone-400 uppercase tracking-wider">
+                  {safeLegend.pois.length} punts
+                </span>
+              </h3>
+              <div className="space-y-3">
+                {sortedPois.map((poi: any, idx: number) => {
+                  const poiVisited = poi.userUnlocks?.some((u: any) => u.userId === currentUser?.id);
+                  const poiUnlocked = poiVisited || (poi.rawDist !== Infinity && poi.rawDist <= (UNLOCK_DISTANCE / 1000));
+                  const distLabel = poi.formattedDist;
+
+                  return (
+                    <div
+                      key={poi.id}
+                      onClick={() => poiUnlocked ? onNavigate('legend-detail', poi) : onNavigate('map', poi)}
+                      className={`relative flex gap-3 rounded-2xl border p-3.5 transition-all duration-300 ${poiUnlocked
+                        ? 'border-primary/20 bg-primary/5 cursor-pointer hover:bg-primary/10 shadow-sm'
+                        : 'border-stone-100 bg-stone-50/60 cursor-pointer hover:bg-stone-100'
+                        }`}
+                    >
+                      <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold mt-0.5 ${poiUnlocked ? 'bg-primary text-white' : 'bg-stone-200 text-stone-400'
+                        }`}>
+                        {idx + 1}
+                      </div>
+
+                      <div className={`flex-shrink-0 w-14 h-14 rounded-xl flex items-center justify-center self-start ${poiUnlocked ? 'bg-primary/10' : 'bg-stone-100'
+                        }`}>
+                        {(poi.icon || poi.type) ? (
+                          <div className="w-10 h-10 -mt-1 ml-0.5" style={{ filter: poiUnlocked ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' : 'grayscale(100%) opacity(40%)' }}>
+                            <img src={getPoiIconSrc(poi, safeLegend, brand?.themeId)} alt={poi.title || ''} className="w-full h-full object-contain" />
+                          </div>
+                        ) : (poi.image_url ? (
+                          <div className={`w-full h-full rounded-xl overflow-hidden ${poiUnlocked ? '' : 'grayscale opacity-50'}`}>
+                            <ImageWithFallback src={poi.image_url} alt={poi.title} className="w-full h-full object-cover" />
+                          </div>
+                        ) : (
+                          <MapPin className={`w-5 h-5 ${poiUnlocked ? 'text-primary/40' : 'text-stone-300'}`} />
+                        ))}
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className={`font-serif font-bold text-sm leading-tight ${poiUnlocked ? 'text-stone-800' : 'text-stone-400'
+                            }`}>
+                            {poi.title}
+                          </p>
+                          {distLabel ? (
+                            <span className={`flex-shrink-0 flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full ${poiUnlocked
+                              ? 'bg-primary/10 text-primary'
+                              : 'bg-stone-200 text-stone-400'
+                              }`}>
+                              {poiUnlocked ? <MapPin className="w-2.5 h-2.5" /> : <Lock className="w-2.5 h-2.5" />}
+                              {distLabel}
+                            </span>
+                          ) : (
+                            <span className="flex-shrink-0 flex items-center gap-1 text-[10px] text-stone-300 bg-stone-100 px-2 py-0.5 rounded-full">
+                              <Lock className="w-2.5 h-2.5" /> GPS off
+                            </span>
+                          )}
+                        </div>
+                        <p className={`text-xs mt-1 leading-relaxed line-clamp-2 ${poiUnlocked ? 'text-stone-500' : 'text-stone-300'
+                          }`}>
+                          {poi.description || 'Descobreix aquest punt in situ.'}
+                        </p>
+                      </div>
+
+                      {poiUnlocked && (
+                        <div className="flex-shrink-0 self-center">
+                          <Navigation2 className="w-4 h-4 text-primary" />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Final Quiz Button */}
+              {isRoute && !showFinalQuiz && (
+                <div className="mt-6 flex flex-col items-center gap-2">
+                  {!allPoisVisited ? (
+                    <div className="w-full p-4 rounded-2xl bg-stone-100 border border-stone-200 flex items-center justify-center gap-3 text-stone-400">
+                      <Lock className="w-4 h-4" />
+                      <span className="text-xs font-medium uppercase tracking-tighter">Visita tots els punts per al Repte Final</span>
+                    </div>
+                  ) : (
+                    <Button
+                      className="w-full py-8 text-xl font-serif rounded-3xl shadow-lg animate-bounce"
+                      onClick={() => setShowFinalQuiz(true)}
+                    >
+                      <Trophy className="w-6 h-6 mr-3" />
+                      Començar Repte Final
+                    </Button>
+                  )}
+                </div>
+              )}
+
+              {showFinalQuiz && (
+                <div className="mt-6">
+                  <FinalRouteQuiz
+                    routeId={safeLegend.id}
+                    userId={currentUser?.id}
+                    pois={safeLegend.pois}
+                    finalQuiz={safeLegend.finalQuiz}
+                    isAlreadyCompleted={finalQuizPassed}
+                    onComplete={(res?: any) => {
+                      if (res?.success && res.user && onUserUpdate) {
+                        onUserUpdate(res.user);
+                      }
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Quiz Section */}
+          {isUnlocked && safeLegend.manualQuiz && (
+            <div className="pt-2">
+              <PoiQuiz
+                poiId={safeLegend.id}
+                userId={currentUser?.id}
+                quiz={safeLegend.manualQuiz}
+                onComplete={(res) => {
+                  if (res?.success && res.user && onUserUpdate) {
+                    onUserUpdate(res.user);
+                  }
+                }}
+                isAlreadyCompleted={safeLegend.userUnlocks.some((u: any) => u.userId === currentUser?.id && u.progress >= 1.0)}
+              />
+            </div>
+          )}
+
+          {/* Punt D'Or & System Info */}
+          <div className="pt-6 border-t border-stone-200 space-y-4">
+            <div className="flex items-center justify-end">
+              <span className={`flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider px-2.5 py-1 rounded-full ${network.isOnline
+                ? (network.isSlowNetwork ? 'bg-orange-100 text-orange-600' : 'bg-emerald-100 text-emerald-600')
+                : 'bg-red-100 text-red-500'
+                }`}>
+                {network.isOnline ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
+                {network.isOnline ? (network.isSlowNetwork ? 'Lenta' : 'Connectat') : 'Offline'}
+              </span>
             </div>
 
-            {/* Final Quiz Button */}
-            {isRoute && !showFinalQuiz && (
-              <div className="mt-6 flex flex-col items-center gap-2">
-                {!allPoisVisited ? (
-                  <div className="w-full p-4 rounded-2xl bg-stone-100 border border-stone-200 flex items-center justify-center gap-3 text-stone-400">
-                    <Lock className="w-4 h-4" />
-                    <span className="text-xs font-medium uppercase tracking-tighter">Visita tots els punts per al Repte Final</span>
+            {(safeLegend as any).downloadRequired ? (
+              <div className="p-4 rounded-xl bg-amber-50 border-2 border-amber-400 shadow-md">
+                <div className="flex items-start gap-4 mb-3">
+                  <div className={`w-12 h-12 flex-shrink-0 rounded-full flex items-center justify-center text-white ${syncStatus === 'ready' ? 'bg-emerald-500' : 'bg-amber-500 shadow-lg'}`}>
+                    {syncStatus === 'ready' ? <CheckCircle2 className="w-6 h-6" /> : <Download className="w-6 h-6 animate-pulse" />}
                   </div>
-                ) : (
+                  <div>
+                    <div className="font-extrabold text-base uppercase tracking-tighter text-amber-900 drop-shadow-sm">Punt d'Or</div>
+                    <div className="text-sm font-bold text-amber-800 leading-tight mt-0.5">Baixa't aquesta ruta per poder-la disfrutar sense complicacions</div>
+                  </div>
+                </div>
+
+                {syncStatus !== 'ready' && (
                   <Button
-                    className="w-full py-8 text-xl font-serif rounded-3xl shadow-lg animate-bounce"
-                    onClick={() => setShowFinalQuiz(true)}
+                    variant="default"
+                    size="lg"
+                    onClick={handleDownload}
+                    disabled={syncStatus === 'syncing' || !network.isOnline}
+                    className="w-full mt-2 h-12 text-sm uppercase font-black tracking-widest bg-amber-500 hover:bg-amber-600 text-white shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transition-all"
                   >
-                    <Trophy className="w-6 h-6 mr-3" />
-                    Començar Repte Final
+                    {syncStatus === 'syncing' ? (
+                      <>
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        Baixant Dades...
+                      </>
+                    ) : 'DESCARREGAR ARA'}
                   </Button>
+                )}
+
+                {syncStatus === 'syncing' && syncProgress && (
+                  <div className="mt-4 space-y-1.5">
+                    <div className="h-2 w-full bg-amber-200/50 rounded-full overflow-hidden shadow-inner">
+                      <motion.div
+                        className="h-full bg-amber-500"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${(syncProgress.current / syncProgress.total) * 100}%` }}
+                      />
+                    </div>
+                    <div className="text-xs text-amber-700 font-bold italic text-center">
+                      Buscant els tresors i desant-los al telèfon... {syncProgress.label}
+                    </div>
+                  </div>
+                )}
+
+                {syncStatus === 'ready' && (
+                  <div className="text-sm text-emerald-700 font-bold flex items-center justify-center bg-emerald-100 p-2 rounded-lg gap-2 mt-3 border border-emerald-300">
+                    <CheckCircle2 className="w-5 h-5" />
+                    Descarregada. Ja pots gaudir-la offline!
+                  </div>
+                )}
+
+                {!network.isOnline && syncStatus !== 'ready' && (
+                  <div className="text-xs text-red-500 font-bold flex items-center gap-1 mt-3 justify-center text-center">
+                    <AlertCircle className="w-4 h-4" />
+                    No tens internet per baixar-la en aquest moment.
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="p-4 rounded-xl bg-white border border-stone-200 shadow-sm">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white ${syncStatus === 'ready' ? 'bg-emerald-500' : 'bg-primary/40'}`}>
+                      {syncStatus === 'ready' ? <CheckCircle2 className="w-4 h-4" /> : <Download className="w-4 h-4" />}
+                    </div>
+                    <div>
+                      <div className="font-bold text-xs uppercase tracking-tighter">Punt d'Or</div>
+                      <div className="text-[10px] text-muted-foreground">Paquet Offline</div>
+                    </div>
+                  </div>
+                  {syncStatus !== 'ready' && (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={handleDownload}
+                      disabled={syncStatus === 'syncing' || !network.isOnline}
+                      className="h-8 text-[10px] uppercase font-bold"
+                    >
+                      {syncStatus === 'syncing' ? (
+                        <>
+                          <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                          Baixant
+                        </>
+                      ) : 'Baixar Ruta'}
+                    </Button>
+                  )}
+                </div>
+
+                {syncStatus === 'syncing' && syncProgress && (
+                  <div className="mt-2 space-y-1">
+                    <div className="h-1 w-full bg-stone-100 rounded-full overflow-hidden">
+                      <motion.div
+                        className="h-full bg-primary"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${(syncProgress.current / syncProgress.total) * 100}%` }}
+                      />
+                    </div>
+                    <div className="text-[9px] text-stone-400 italic">
+                      {syncProgress.label}
+                    </div>
+                  </div>
+                )}
+
+                {syncStatus === 'ready' && (
+                  <div className="text-[10px] text-emerald-600 font-medium flex items-center gap-1 mt-1">
+                    <CheckCircle2 className="w-3 h-3" />
+                    Aquesta ruta està disponible sense connexió.
+                  </div>
+                )}
+
+                {!network.isOnline && syncStatus !== 'ready' && (
+                  <div className="text-[10px] text-red-500 italic mt-1">
+                    Connecta't per baixar el paquet territorial.
+                  </div>
                 )}
               </div>
             )}
-
-            {showFinalQuiz && (
-              <div className="mt-6">
-                <FinalRouteQuiz
-                  routeId={safeLegend.id}
-                  userId={currentUser?.id}
-                  pois={safeLegend.pois}
-                  finalQuiz={safeLegend.finalQuiz}
-                  isAlreadyCompleted={finalQuizPassed}
-                  onComplete={(res?: any) => {
-                    if (res?.success && res.user && onUserUpdate) {
-                      onUserUpdate(res.user);
-                    }
-                  }}
-                />
-              </div>
-            )}
           </div>
-        )}
 
-
-      </div>
-
-      {/* Interaction Zone */}
-      <div className="bg-muted/30 rounded-2xl p-6 space-y-4">
-        <div className="flex items-center justify-end mb-4">
-          <span className={`flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider px-2.5 py-1 rounded-full ${network.isOnline
-            ? (network.isSlowNetwork ? 'bg-orange-100 text-orange-600' : 'bg-emerald-100 text-emerald-600')
-            : 'bg-red-100 text-red-500'
-            }`}>
-            {network.isOnline ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
-            {network.isOnline ? (network.isSlowNetwork ? 'Lenta' : 'Connectat') : 'Offline'}
-          </span>
-        </div>
-
-        {/* Audio Player */}
-        {safeLegend.audioUrl && (
-          <div className={`p-4 rounded-xl flex items-center justify-between transition-colors ${isUnlocked
-            ? 'bg-primary text-primary-foreground shadow-lg'
-            : 'bg-stone-200 text-stone-500 cursor-not-allowed'
-            }`}>
-            <div className="flex items-center gap-4">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isUnlocked ? 'bg-white/20' : 'bg-black/10'}`}>
-                <Volume2 className="w-5 h-5" />
-              </div>
-              <div>
-                <div className="font-bold text-sm">Àudio Guia</div>
-                <div className="text-xs opacity-80">{isPlaying ? 'Reproduint...' : 'Clica per escoltar'}</div>
-              </div>
-            </div>
-
+          {/* Map Button */}
+          <div className="pb-8">
             <Button
-              variant="ghost"
-              size="icon"
-              onClick={handlePlayAudio}
-              disabled={!isUnlocked}
-              className={`hover:bg-white/20 rounded-full h-12 w-12 ${!isUnlocked && 'opacity-50'}`}
+              variant="outline"
+              className="w-full py-6 border-primary text-primary hover:bg-primary/5 font-serif text-lg"
+              onClick={handleViewOnMap}
             >
-              {isUnlocked ? (
-                isPlaying ? <Pause className="w-6 h-6 fill-current" /> : <Play className="w-6 h-6 fill-current" />
-              ) : <Lock className="w-5 h-5" />}
+              <MapPin className="w-5 h-5 mr-2" />
+              Veure al Mapa
             </Button>
-            <audio ref={audioRef} src={safeLegend.audioUrl} onEnded={() => setIsPlaying(false)} />
           </div>
-        )}
 
-        {/* Punt d'Or (Sync Service for Offline) */}
-        {(safeLegend as any).downloadRequired ? (
-          <div className="p-4 rounded-xl bg-amber-50 border-2 border-amber-400 shadow-md">
-            <div className="flex items-start gap-4 mb-3">
-              <div className={`w-12 h-12 flex-shrink-0 rounded-full flex items-center justify-center text-white ${syncStatus === 'ready' ? 'bg-emerald-500' : 'bg-amber-500 shadow-lg'}`}>
-                {syncStatus === 'ready' ? <CheckCircle2 className="w-6 h-6" /> : <Download className="w-6 h-6 animate-pulse" />}
-              </div>
-              <div>
-                <div className="font-extrabold text-base uppercase tracking-tighter text-amber-900 drop-shadow-sm">Punt d'Or</div>
-                <div className="text-sm font-bold text-amber-800 leading-tight mt-0.5">Baixa't aquesta ruta per poder-la disfrutar sense complicacions</div>
-              </div>
-            </div>
-
-            {syncStatus !== 'ready' && (
-              <Button
-                variant="default"
-                size="lg"
-                onClick={handleDownload}
-                disabled={syncStatus === 'syncing' || !network.isOnline}
-                className="w-full mt-2 h-12 text-sm uppercase font-black tracking-widest bg-amber-500 hover:bg-amber-600 text-white shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transition-all"
-              >
-                {syncStatus === 'syncing' ? (
-                  <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    Baixant Dades...
-                  </>
-                ) : 'DESCARREGAR ARA'}
-              </Button>
-            )}
-
-            {syncStatus === 'syncing' && syncProgress && (
-              <div className="mt-4 space-y-1.5">
-                <div className="h-2 w-full bg-amber-200/50 rounded-full overflow-hidden shadow-inner">
-                  <motion.div
-                    className="h-full bg-amber-500"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${(syncProgress.current / syncProgress.total) * 100}%` }}
-                  />
-                </div>
-                <div className="text-xs text-amber-700 font-bold italic text-center">
-                  Buscant els tresors i desant-los al telèfon... {syncProgress.label}
-                </div>
-              </div>
-            )}
-
-            {syncStatus === 'ready' && (
-              <div className="text-sm text-emerald-700 font-bold flex items-center justify-center bg-emerald-100 p-2 rounded-lg gap-2 mt-3 border border-emerald-300">
-                <CheckCircle2 className="w-5 h-5" />
-                Descarregada. Ja pots gaudir-la offline!
-              </div>
-            )}
-
-            {!network.isOnline && syncStatus !== 'ready' && (
-              <div className="text-xs text-red-500 font-bold flex items-center gap-1 mt-3 justify-center text-center">
-                <AlertCircle className="w-4 h-4" />
-                No tens internet per baixar-la en aquest moment.
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="p-4 rounded-xl bg-white border border-stone-200 shadow-sm">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-3">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white ${syncStatus === 'ready' ? 'bg-emerald-500' : 'bg-primary/40'}`}>
-                  {syncStatus === 'ready' ? <CheckCircle2 className="w-4 h-4" /> : <Download className="w-4 h-4" />}
-                </div>
-                <div>
-                  <div className="font-bold text-xs uppercase tracking-tighter">Punt d'Or</div>
-                  <div className="text-[10px] text-muted-foreground">Paquet Offline</div>
-                </div>
-              </div>
-              {syncStatus !== 'ready' && (
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={handleDownload}
-                  disabled={syncStatus === 'syncing' || !network.isOnline}
-                  className="h-8 text-[10px] uppercase font-bold"
-                >
-                  {syncStatus === 'syncing' ? (
-                    <>
-                      <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                      Baixant
-                    </>
-                  ) : 'Baixar Ruta'}
-                </Button>
-              )}
-            </div>
-
-            {syncStatus === 'syncing' && syncProgress && (
-              <div className="mt-2 space-y-1">
-                <div className="h-1 w-full bg-stone-100 rounded-full overflow-hidden">
-                  <motion.div
-                    className="h-full bg-primary"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${(syncProgress.current / syncProgress.total) * 100}%` }}
-                  />
-                </div>
-                <div className="text-[9px] text-stone-400 italic">
-                  {syncProgress.label}
-                </div>
-              </div>
-            )}
-
-            {syncStatus === 'ready' && (
-              <div className="text-[10px] text-emerald-600 font-medium flex items-center gap-1 mt-1">
-                <CheckCircle2 className="w-3 h-3" />
-                Aquesta ruta està disponible sense connexió.
-              </div>
-            )}
-
-            {!network.isOnline && syncStatus !== 'ready' && (
-              <div className="text-[10px] text-red-500 italic mt-1">
-                Connecta't per baixar el paquet territorial.
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Multi-Video Section */}
-        {safeLegend.videoUrls && safeLegend.videoUrls.length > 0 && (
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 text-stone-500 font-serif text-sm px-1">
-              <Play className="w-3 h-3" />
-              <span>Imatges en Moviment</span>
-            </div>
-            <div className="grid grid-cols-1 gap-4">
-              {safeLegend.videoUrls.map((videoUrl: string, idx: number) => {
-                const variant = videoVariants[idx];
-                const lowResSrc = variant?.lowResUrl || undefined;
-                return (
-                  <div key={idx} className="relative aspect-video rounded-2xl overflow-hidden shadow-xl border border-white/20">
-                    {isUnlocked ? (
-                      <HlsVideoPlayer
-                        src={videoUrl.endsWith('.m3u8') ? videoUrl : videoUrl}
-                        lowBitrateSrc={lowResSrc}
-                        className="w-full h-full"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-stone-900/5 backdrop-blur-md rounded-xl flex flex-col items-center justify-center gap-4 text-stone-400 relative">
-                        <div className="absolute inset-0 bg-gradient-to-br from-stone-900/10 to-transparent"></div>
-                        <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-2xl flex items-center justify-center text-white ring-4 ring-white/10">
-                          <Lock className="w-5 h-5" />
-                        </div>
-                        <div className="text-center z-10 px-6">
-                          <span className="block text-[10px] uppercase tracking-[0.2em] font-black text-stone-500 mb-1">Cadenat Digital</span>
-                          <p className="text-[11px] leading-tight text-stone-400">El vídeo es revelarà quan arribis a la localització.</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Quiz Section */}
-        {isUnlocked && safeLegend.manualQuiz && (
-          <PoiQuiz
-            poiId={safeLegend.id}
-            userId={currentUser?.id}
-            quiz={safeLegend.manualQuiz}
-            onComplete={(res) => {
-              if (res?.success && res.user && onUserUpdate) {
-                onUserUpdate(res.user);
-              }
-            }}
-            isAlreadyCompleted={safeLegend.userUnlocks.some((u: any) => u.userId === currentUser?.id && u.progress >= 1.0)}
-          />
-        )}
-
-        {/* Map Button */}
-        <Button
-          variant="outline"
-          className="w-full py-6 border-primary text-primary hover:bg-primary/5 font-serif text-lg"
-          onClick={handleViewOnMap}
-        >
-          <MapPin className="w-5 h-5 mr-2" />
-          Veure al Mapa
-        </Button>
-
+        </div>
       </div>
     </div >
   );

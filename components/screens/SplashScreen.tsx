@@ -9,9 +9,10 @@ interface SplashScreenProps {
 
 export function SplashScreen({ onComplete, brand }: SplashScreenProps) {
   useEffect(() => {
+    const splashDuration = process.env.NODE_ENV === 'development' ? 800 : 3000;
     const timer = setTimeout(() => {
       onComplete();
-    }, 3000);
+    }, splashDuration);
 
     return () => clearTimeout(timer);
   }, [onComplete]);

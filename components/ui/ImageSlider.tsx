@@ -39,7 +39,7 @@ export default function ImageSlider({ images: rawImages, isRecapture = false }: 
           key={i}
           src={imgUrl}
           alt={`Imatge ${i + 1}`}
-          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${i === currentIndex ? 'opacity-100' : 'opacity-0'
+          className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-700 ${i === currentIndex ? 'opacity-100' : 'opacity-0'
             }`}
         />
       ))}

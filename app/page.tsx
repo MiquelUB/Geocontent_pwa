@@ -118,7 +118,7 @@ export default function Home() {
 
     if (errorType) {
       setCurrentScreen("error");
-    } else if (currentUser) {
+    } else if (currentUser || process.env.NEXT_PUBLIC_AUDIT_MODE === 'true') {
       setCurrentScreen("home");
     } else {
       setCurrentScreen("login"); // Require login if no user

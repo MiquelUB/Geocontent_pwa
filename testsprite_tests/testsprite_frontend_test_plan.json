@@ -1,0 +1,669 @@
+[
+  {
+    "id": "TC001",
+    "title": "Deep-linking to /profile shows Not Found behavior (known SPA limitation)",
+    "description": "Verifies that direct navigation to a deep link like /profile results in a Not Found/404 state instead of the SPA screen.",
+    "category": "App Navigation (SPA)",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to \"http://localhost:3000/profile\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"404\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Not Found\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "Unlock admin dashboard with correct master password",
+    "description": "Verifies that a user can unlock the Admin Dashboard by entering the correct master password and submitting the gate form.",
+    "category": "Admin Dashboard Gateway",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to \"http://localhost:3000/admin\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"SplashScreen\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Wait for 1 second"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Accedir\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Type \"mistic_master_audit\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click \"Accedir\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Admin Dashboard\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "Deny access with wrong master password",
+    "description": "Verifies that an incorrect master password shows an access denied/validation error and the user remains on the security gate.",
+    "category": "Admin Dashboard Gateway",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to \"http://localhost:3000/admin\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"SplashScreen\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Wait for 1 second"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Accedir\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Type \"wrong_password\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click \"Accedir\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Access denied\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "title": "Deny access when password is empty",
+    "description": "Verifies that submitting the admin gate with an empty password shows validation feedback and does not unlock the dashboard.",
+    "category": "Admin Dashboard Gateway",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to \"http://localhost:3000/admin\""
+      },
+      {
+        "type": "action",
+        "description": "Wait for 1 second"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Accedir\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click \"Accedir\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Password\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"required\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "Splash screen transitions to admin gate UI",
+    "description": "Verifies that the SplashScreen appears initially and then the password gate is shown after the splash duration.",
+    "category": "Admin Dashboard Gateway",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to \"http://localhost:3000/admin\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"SplashScreen\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Wait for 1 second"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Accedir\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"password field\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "Press Enter to submit correct password and unlock",
+    "description": "Verifies that pressing Enter after typing the correct master password submits the gate and unlocks the admin dashboard.",
+    "category": "Admin Dashboard Gateway",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to \"http://localhost:3000/admin\""
+      },
+      {
+        "type": "action",
+        "description": "Wait for 1 second"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Accedir\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Type \"mistic_master_audit\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Press \"Enter\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Admin Dashboard\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "Remain on gate after wrong password even after retry attempt",
+    "description": "Verifies that after a failed attempt the gate remains usable and a subsequent attempt can be made (still blocked if wrong again).",
+    "category": "Admin Dashboard Gateway",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to \"http://localhost:3000/admin\""
+      },
+      {
+        "type": "action",
+        "description": "Wait for 1 second"
+      },
+      {
+        "type": "action",
+        "description": "Type \"wrong_password\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click \"Accedir\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Access denied\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Accedir\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"password field\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "View passport progression and unlocked stamps on Profile",
+    "description": "Verifies that the Profile screen displays the user's level (Nivell) and a stamps (Segells) grid with at least one unlocked stamp visible.",
+    "category": "User Passport & Gamification",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to \"http://localhost:3000/\""
+      },
+      {
+        "type": "action",
+        "description": "Wait for the SplashScreen to finish (~800ms)"
+      },
+      {
+        "type": "action",
+        "description": "Click \"Perfil\" in the Bottom Navigation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Nivell\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Segells\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the stamps grid is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify at least one unlocked stamp item is visible in the stamps grid"
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "Profile remains stable while passport content loads after navigation",
+    "description": "Verifies the Profile screen shows the passport section headings and renders the passport area without showing a broken/blank state immediately after navigation.",
+    "category": "User Passport & Gamification",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to \"http://localhost:3000/\""
+      },
+      {
+        "type": "action",
+        "description": "Wait for the SplashScreen to finish (~800ms)"
+      },
+      {
+        "type": "action",
+        "description": "Click \"Perfil\" in the Bottom Navigation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Nivell\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Segells\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the passport/stamps content area is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "Retry after a passport fetch failure keeps the user on Profile and shows stamps section",
+    "description": "Verifies that clicking refresh/retry does not navigate away and that the Segells section remains present (even if an error occurs).",
+    "category": "User Passport & Gamification",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to \"http://localhost:3000/\""
+      },
+      {
+        "type": "action",
+        "description": "Wait for the SplashScreen to finish (~800ms)"
+      },
+      {
+        "type": "action",
+        "description": "Click \"Perfil\" in the Bottom Navigation"
+      },
+      {
+        "type": "action",
+        "description": "Click the refresh or retry control in the passport/stamps section"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Segells\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the page shows the Profile passport area (not a blank screen)"
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "Catalan labels for gamification sections are visible on Profile",
+    "description": "Verifies that the gamification UI uses the expected Catalan labels for level and stamps.",
+    "category": "User Passport & Gamification",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to \"http://localhost:3000/\""
+      },
+      {
+        "type": "action",
+        "description": "Wait for the SplashScreen to finish (~800ms)"
+      },
+      {
+        "type": "action",
+        "description": "Click \"Perfil\" in the Bottom Navigation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Nivell\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Segells\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "Unlock admin gate and view Executive Report KPIs and charts",
+    "description": "Verifies an admin user can unlock the admin gate and see executive KPIs and charts rendered in the Executive Report tab.",
+    "category": "Executive Impact Analytics",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to http://localhost:3000/admin"
+      },
+      {
+        "type": "action",
+        "description": "Wait for the SplashScreen to disappear"
+      },
+      {
+        "type": "action",
+        "description": "Type \"mistic_master_audit\" into the admin password field"
+      },
+      {
+        "type": "action",
+        "description": "Click \"Accedir\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Informe Executiu\" tab"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Informe Executiu\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"KPIs\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Charts\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "Executive Report tab shows populated state when data loads successfully",
+    "description": "Verifies the Executive Report tab shows populated KPI values and at least one visible chart when the report loads successfully.",
+    "category": "Executive Impact Analytics",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to http://localhost:3000/admin"
+      },
+      {
+        "type": "action",
+        "description": "Wait for the SplashScreen to disappear"
+      },
+      {
+        "type": "action",
+        "description": "Type \"mistic_master_audit\" into the admin password field"
+      },
+      {
+        "type": "action",
+        "description": "Click \"Accedir\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Informe Executiu\" tab"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Executive report KPI value\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Executive report chart\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC014",
+    "title": "Executive Report shows a loading state before KPIs and charts appear",
+    "description": "Verifies the Executive Report presents a visible loading indicator while data is being fetched before the final populated state renders.",
+    "category": "Executive Impact Analytics",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to http://localhost:3000/admin"
+      },
+      {
+        "type": "action",
+        "description": "Wait for the SplashScreen to disappear"
+      },
+      {
+        "type": "action",
+        "description": "Type \"mistic_master_audit\" into the admin password field"
+      },
+      {
+        "type": "action",
+        "description": "Click \"Accedir\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Informe Executiu\" tab"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Executive report loading indicator\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Executive report chart\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC015",
+    "title": "Executive Report remains accessible after switching tabs and returning",
+    "description": "Verifies the Executive Report tab can be left and re-opened without losing access to the KPIs and charts view.",
+    "category": "Executive Impact Analytics",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to http://localhost:3000/admin"
+      },
+      {
+        "type": "action",
+        "description": "Wait for the SplashScreen to disappear"
+      },
+      {
+        "type": "action",
+        "description": "Type \"mistic_master_audit\" into the admin password field"
+      },
+      {
+        "type": "action",
+        "description": "Click \"Accedir\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Informe Executiu\" tab"
+      },
+      {
+        "type": "action",
+        "description": "Click another admin tab that is visible in the admin navigation"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Informe Executiu\" tab"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Executive report chart\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC016",
+    "title": "Admin gate submission works via Enter key on password field",
+    "description": "Verifies the admin can submit the admin gate by pressing Enter after typing the master password.",
+    "category": "Executive Impact Analytics",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to http://localhost:3000/admin"
+      },
+      {
+        "type": "action",
+        "description": "Wait for the SplashScreen to disappear"
+      },
+      {
+        "type": "action",
+        "description": "Type \"mistic_master_audit\" into the admin password field"
+      },
+      {
+        "type": "action",
+        "description": "Press \"Enter\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Admin dashboard\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Informe Executiu\" tab"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Informe Executiu\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC017",
+    "title": "Unlock admin gate and open IA PDF processing tool",
+    "description": "Verifies the admin gate can be unlocked and the IA PDF processing tool can be reached from the admin dashboard.",
+    "category": "IA 'Punt d'Or' PDF Processing (Admin)",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to http://localhost:3000/admin"
+      },
+      {
+        "type": "action",
+        "description": "Wait for the SplashScreen to disappear"
+      },
+      {
+        "type": "action",
+        "description": "Type \"mistic_master_audit\" into the admin password field"
+      },
+      {
+        "type": "action",
+        "description": "Click \"Accedir\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Admin\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"IA\" or \"Punt d'Or\" in the admin dashboard navigation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"IA\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Upload PDF\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC018",
+    "title": "Process button blocked when no PDF has been selected",
+    "description": "Verifies the tool prevents processing when the user has not selected a PDF file.",
+    "category": "IA 'Punt d'Or' PDF Processing (Admin)",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to http://localhost:3000/admin"
+      },
+      {
+        "type": "action",
+        "description": "Wait for the SplashScreen to disappear"
+      },
+      {
+        "type": "action",
+        "description": "Type \"mistic_master_audit\" into the admin password field"
+      },
+      {
+        "type": "action",
+        "description": "Click \"Accedir\""
+      },
+      {
+        "type": "action",
+        "description": "Click on \"IA\" or \"Punt d'Or\" in the admin dashboard navigation"
+      },
+      {
+        "type": "action",
+        "description": "Click \"Process\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Upload PDF\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Select a PDF\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC019",
+    "title": "Admin gate denies access with incorrect master password",
+    "description": "Verifies that entering an incorrect master password does not unlock the admin tools.",
+    "category": "IA 'Punt d'Or' PDF Processing (Admin)",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to http://localhost:3000/admin"
+      },
+      {
+        "type": "action",
+        "description": "Wait for the SplashScreen to disappear"
+      },
+      {
+        "type": "action",
+        "description": "Type \"wrong_password_123\" into the admin password field"
+      },
+      {
+        "type": "action",
+        "description": "Click \"Accedir\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Invalid\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Upload PDF\" is not visible"
+      }
+    ]
+  }
+]

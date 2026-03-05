@@ -230,7 +230,7 @@ export default function HlsVideoPlayer({
         poster={poster}
         muted={isMuted}
         playsInline
-        className="w-full h-full object-cover"
+        className="w-full h-auto max-h-[80vh] object-contain"
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
       />

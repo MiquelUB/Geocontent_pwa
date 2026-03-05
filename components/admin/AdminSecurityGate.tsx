@@ -65,7 +65,8 @@ export default function AdminSecurityGate({ onSuccess, title, description, verif
                         <Button
                             type="submit"
                             className="w-full bg-stone-800 hover:bg-stone-900 text-white"
-                            disabled={isLoading || !password}
+                            disabled={isLoading}
+                            data-testid="admin-gate-submit"
                         >
                             {isLoading ? <Loader2 className="animate-spin w-4 h-4" /> : "Accedir"}
                         </Button>
