@@ -50,7 +50,7 @@ const withPWA = require("next-pwa")({
 const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 
 const nextConfig = {
-  serverExternalPackages: ["pdf-parse"],
+  serverExternalPackages: ["pdf-parse", "puppeteer"],
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: '**.supabase.co' },
@@ -71,5 +71,6 @@ const nextConfig = {
   },
 };
 
-module.exports = withNextIntl(withPWA(nextConfig));
+// Exportació corregida per a Next.js 15 (desactivant PWA temporalment per al build)
+module.exports = withNextIntl(nextConfig);
 
