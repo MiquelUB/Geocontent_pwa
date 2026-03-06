@@ -13,35 +13,40 @@ const globalForPrisma = globalThis as unknown as {
   pool: Pool | undefined;
 };
 
-const connectionString = `${process.env.DATABASE_URL}`;
+const getPrismaClient = () => {
+  if (globalForPrisma.prisma) return globalForPrisma.prisma;
 
-// FIX: In development, if using Supabase Pooler (Session 5432), switch to Transaction 6543 to avoid ECONNREFUSED
-// because Next.js hot reload exhausts connections rapidly.
-if (process.env.NODE_ENV === "development" && connectionString.includes('pooler.supabase.com')) {
+  const connectionString = process.env.DATABASE_URL || "";
+  let finalConnectionString = connectionString;
+
+  if (process.env.NODE_ENV === "development" && connectionString.includes('pooler.supabase.com')) {
     if (connectionString.includes(':5432')) {
-        const newUrl = connectionString.replace(':5432', ':6543');
-        // valid PGBouncer requires pgbouncer=true flat, but Prisma handles it usually. 
-        // Let's add it if missing to be safe for Transaction mode.
-        const finalUrl = newUrl.includes('?') ? (newUrl.includes('pgbouncer=true') ? newUrl : `${newUrl}&pgbouncer=true`) : `${newUrl}?pgbouncer=true`;
-        process.env.DATABASE_URL = finalUrl;
-        console.log(" [Prisma] Dev: Switched to Transaction Pooling (6543)");
+      const newUrl = connectionString.replace(':5432', ':6543');
+      finalConnectionString = newUrl.includes('?') ? (newUrl.includes('pgbouncer=true') ? newUrl : `${newUrl}&pgbouncer=true`) : `${newUrl}?pgbouncer=true`;
+      console.log(" [Prisma] Dev: Switched to Transaction Pooling (6543)");
     }
-}
+  }
 
-// Create Pool and Adapter only once
-const pool = new Pool({ 
-    connectionString: process.env.DATABASE_URL, 
-    max: process.env.NODE_ENV === 'development' ? 1 : 10, // Restrict pool in dev
-    idleTimeoutMillis: 30000 
-});
-const adapter = new PrismaPg(pool);
+  const pool = new Pool({
+    connectionString: finalConnectionString,
+    max: process.env.NODE_ENV === 'development' ? 1 : 10,
+    idleTimeoutMillis: 30000
+  });
+  const adapter = new PrismaPg(pool);
 
-export const prisma =
-  globalForPrisma.prisma ??
-  new PrismaClient({
+  const client = new PrismaClient({
     adapter,
     log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
   });
+
+  if (process.env.NODE_ENV !== "production") {
+    globalForPrisma.prisma = client;
+  }
+
+  return client;
+};
+
+export const prisma = getPrismaClient();
 
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;
