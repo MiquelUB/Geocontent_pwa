@@ -109,10 +109,9 @@ export default function Home() {
   };
 
   const handleSplashComplete = () => {
-    // Si encara no tenim brand, forcem un mini-espera o check
-    if (!brand && !errorType) {
+    // If data is still loading, wait (splash will retry via its own loop)
+    if (!isLoaded && !errorType) {
       console.log("Splash finished but brand not ready. Waiting...");
-      // La pantalla de splash es quedarà en un bucle fins que isLoaded sigui true
       return;
     }
 
