@@ -856,7 +856,7 @@ export async function loginOrRegister(name: string, email: string) {
 
     if (listError) {
       console.error('Error listing users:', listError);
-      return { success: false, error: GENERIC_ERROR_MESSAGE };
+      return { success: false, error: `Error llistant usuaris: ${listError.message}` };
     }
 
     const existingAuthUser = users.find(u => u.email?.toLowerCase() === email.toLowerCase());
@@ -869,13 +869,15 @@ export async function loginOrRegister(name: string, email: string) {
       }
 
       // If profile missing, create it
-      await supabaseAdmin.from('profiles').upsert({
+      const { error: upsertError } = await supabaseAdmin.from('profiles').upsert({
         id: existingAuthUser.id,
         username: name,
         role: 'user',
         xp: 0,
         level: 1
       });
+
+      if (upsertError) throw upsertError;
 
       return { success: true, user: await getUserProfile(existingAuthUser.id) };
     }
@@ -892,13 +894,15 @@ export async function loginOrRegister(name: string, email: string) {
     if (!authUser.user) throw new Error("No s'ha pogut crear l'usuari");
 
     // 3. Create profile
-    await supabaseAdmin.from('profiles').upsert({
+    const { error: profileError } = await supabaseAdmin.from('profiles').upsert({
       id: authUser.user.id,
       username: name,
       role: 'user',
       xp: 0,
       level: 1
     });
+
+    if (profileError) throw profileError;
 
     const fullProfile = await getUserProfile(authUser.user.id);
     return { success: true, user: fullProfile };
