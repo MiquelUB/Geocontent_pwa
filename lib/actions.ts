@@ -884,7 +884,7 @@ export async function loginOrRegister(name: string, email: string) {
 export async function loginAsVisitor(name: string, email: string) {
   try {
     const adminUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const adminKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const adminKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY;
 
     // Si falten les claus CRÍTICS, donem un missatge d'error clar al front
     if (!adminUrl || !adminKey || adminKey === 'placeholder') {
