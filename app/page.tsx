@@ -58,11 +58,21 @@ export default function Home() {
           console.log("Auth callback detected, loading profile for:", uid);
           try {
             const { getUserProfile } = await import("@/lib/actions");
-            const profile = await getUserProfile(uid);
+            // Retry fins a 3 vegades: Supabase pot tardar un instant a crear el perfil
+            let profile = null;
+            for (let attempt = 0; attempt < 3 && !profile; attempt++) {
+              if (attempt > 0) {
+                console.log(`Reintentant getUserProfile (intent ${attempt + 1}/3)...`);
+                await new Promise(r => setTimeout(r, 600));
+              }
+              profile = await getUserProfile(uid);
+            }
             if (profile) {
               setCurrentUser(profile);
               localStorage.setItem("core_user", JSON.stringify(profile));
               console.log("Magic link login successful:", profile);
+            } else {
+              console.warn("No s'ha pogut carregar el perfil després de 3 intents per uid:", uid);
             }
           } catch (err) {
             console.error("Error loading profile after magic link:", err);
