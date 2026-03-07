@@ -33,23 +33,11 @@ export const createClient = (cookieStore: any) => {
 
 // Admin client for specialized tasks (bypassing RLS)
 export const getSupabaseAdmin = () => {
-  const adminUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL || "").trim();
-  const adminKey = (
-    process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY ||
-    process.env.UPABASE_SERVICE_ROLE_KEY ||
-    process.env.SERVICE_ROLE_KEY ||
-    ""
-  ).trim();
+  const adminUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const adminKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY;
 
-  if (!adminUrl || adminUrl === 'https://placeholder.supabase.co' || adminUrl === "") {
-    throw new Error("Dades de configuració incompletes: Falta NEXT_PUBLIC_SUPABASE_URL a Vercel.");
-  }
-
-  if (!adminKey || adminKey === 'placeholder' || adminKey === "") {
-    // Debug helper: ens diu quines claus SI que veu per orientar-nos
-    const keysPresent = Object.keys(process.env).filter(k => k.includes('SUPABASE') || k.includes('ROLE'));
-    throw new Error(`Falta la clau d'administració. Claus trobades: ${keysPresent.join(', ') || 'cap'}`);
+  if (!adminUrl || !adminKey) {
+    throw new Error("Missing Supabase Admin Credentials. Please check your Environment Variables in Vercel.");
   }
 
   return createSupabaseClient(adminUrl, adminKey, {

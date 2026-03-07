@@ -856,7 +856,7 @@ export async function loginOrRegister(name: string, email: string) {
 
     if (listError) {
       console.error('Error listing users:', listError);
-      return { success: false, error: `Error llistant usuaris: ${listError.message}` };
+      return { success: false, error: GENERIC_ERROR_MESSAGE };
     }
 
     const existingAuthUser = users.find(u => u.email?.toLowerCase() === email.toLowerCase());
@@ -908,7 +908,7 @@ export async function loginOrRegister(name: string, email: string) {
     return { success: true, user: fullProfile };
   } catch (err: any) {
     console.error('[loginOrRegister error]', err);
-    return { success: false, error: err.message || GENERIC_ERROR_MESSAGE };
+    return { success: false, error: GENERIC_ERROR_MESSAGE };
   }
 }
 
