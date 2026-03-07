@@ -147,6 +147,7 @@ export default function Home() {
 
   const handleLoginSuccess = (user: any) => {
     setCurrentUser(user);
+    localStorage.setItem("core_user", JSON.stringify(user));
     setCurrentScreen("home");
   };
 

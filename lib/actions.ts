@@ -877,6 +877,43 @@ export async function loginOrRegister(name: string, email: string) {
   }
 }
 
+/**
+ * Inicia sessió saltant-se el Magic Link (bypass de confirmació d'email)
+ * Útil mentre no estigui configurat el correu.
+ */
+export async function loginAsVisitor(name: string, email: string) {
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+
+    // Intentem buscar si l'usuari ja existeix a Auth per el seu email
+    const { data: { users } } = await supabaseAdmin.auth.admin.listUsers();
+    const existing = users.find(u => u.email === email);
+
+    let finalUserId = existing?.id;
+
+    if (!finalUserId) {
+      // Si no existeix, el creem confirmat
+      const { data: authResult, error: authError } = await supabaseAdmin.auth.admin.createUser({
+        email,
+        email_confirm: true,
+        user_metadata: { username: name }
+      });
+
+      if (authError) throw authError;
+      finalUserId = authResult.user?.id;
+    }
+
+    if (!finalUserId) throw new Error("No s'ha pogut trobar ni crear l'usuari");
+
+    // Obtenim/Creem el perfil a la taula pública
+    const profile = await getUserProfile(finalUserId);
+    return { success: true, user: profile };
+  } catch (err: any) {
+    console.error('[loginAsVisitor error]', err);
+    return { success: false, error: err.message || "Error al entrar directament" };
+  }
+}
+
 
 export async function verifyAdminPassword(municipalityId: string, password: string) {
   try {
