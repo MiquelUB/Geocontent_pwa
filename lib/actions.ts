@@ -883,16 +883,27 @@ export async function loginOrRegister(name: string, email: string) {
  */
 export async function loginAsVisitor(name: string, email: string) {
   try {
+    const adminUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const adminKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    // Si falten les claus CRÍTICS, donem un missatge d'error clar al front
+    if (!adminUrl || !adminKey || adminKey === 'placeholder') {
+      return {
+        success: false,
+        error: "ERROR DE CONFIGURACIÓ: Les claus de Supabase no s'han detectat a Vercel. Si us plau, revisa les 'Environment Variables' i fes un 'Redeploy'."
+      };
+    }
+
     const supabaseAdmin = getSupabaseAdmin();
 
     // Intentem buscar si l'usuari ja existeix a Auth per el seu email
     const { data: { users } } = await supabaseAdmin.auth.admin.listUsers();
-    const existing = users.find(u => u.email === email);
+    const existing = users.find(u => u.email && u.email.toLowerCase() === email.toLowerCase());
 
     let finalUserId = existing?.id;
 
     if (!finalUserId) {
-      // Si no existeix, el creem confirmat
+      // Si no existeix, el creem confirmat i sense enviar cap email
       const { data: authResult, error: authError } = await supabaseAdmin.auth.admin.createUser({
         email,
         email_confirm: true,
@@ -903,7 +914,7 @@ export async function loginAsVisitor(name: string, email: string) {
       finalUserId = authResult.user?.id;
     }
 
-    if (!finalUserId) throw new Error("No s'ha pogut trobar ni crear l'usuari");
+    if (!finalUserId) throw new Error("No s'ha pogut establir l'identificador d'usuari");
 
     // Obtenim/Creem el perfil a la taula pública
     const profile = await getUserProfile(finalUserId);
