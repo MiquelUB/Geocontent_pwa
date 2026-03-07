@@ -37,6 +37,7 @@ export const getSupabaseAdmin = () => {
   const adminKey = (
     process.env.SUPABASE_SERVICE_ROLE_KEY ||
     process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.UPABASE_SERVICE_ROLE_KEY ||
     process.env.SERVICE_ROLE_KEY ||
     ""
   ).trim();
