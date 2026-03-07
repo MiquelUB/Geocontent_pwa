@@ -883,17 +883,6 @@ export async function loginOrRegister(name: string, email: string) {
  */
 export async function loginAsVisitor(name: string, email: string) {
   try {
-    const adminUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const adminKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY;
-
-    // Si falten les claus CRÍTICS, donem un missatge d'error clar al front
-    if (!adminUrl || !adminKey || adminKey === 'placeholder') {
-      return {
-        success: false,
-        error: "ERROR DE CONFIGURACIÓ: Les claus de Supabase no s'han detectat a Vercel. Si us plau, revisa les 'Environment Variables' i fes un 'Redeploy'."
-      };
-    }
-
     const supabaseAdmin = getSupabaseAdmin();
 
     // Intentem buscar si l'usuari ja existeix a Auth per el seu email
